@@ -239,9 +239,10 @@ Table of Contents
    A client MAY be configured directly with one or more entry points,
    for instance by an operator, by a device profile, or by the
    application that includes the client.  A configured entry point has
-   the source "configuration" and is tried before any discovered entry
-   point.  Configuration is also the means by which a client learns
-   about catalogs that a publisher does not make discoverable.
+   the source "configuration", is tried before any discovered entry
+   point, and is verified like any other.  Configuration is also the
+   means by which a client learns about catalogs that a publisher does
+   not make discoverable.
 
 4.2.  Well-Known URI
 
@@ -253,22 +254,19 @@ Table of Contents
 
    A publisher supporting this mechanism MUST respond to a GET request
    for this URI with an ARD catalog or with a redirect to one.  The
-   catalog is served with the media type that [ARD] defines for it, and
-   a client SHOULD list that media type in the Accept header field of
-   the request.  The client MUST follow at most one redirect
-   (Section 15.4 of [RFC9110]) and records the final URI as the entry
-   point.  A response whose media type is not that of an ARD catalog, or
-   a redirect that leads to a further redirect, means that there is no
-   entry point at this origin (Section 5.1).  A server that hosts no
-   catalog SHOULD respond with 404 (Not Found) and MAY include Problem
-   Details [RFC9457].
+   catalog carries the media type defined in [ARD], and a client SHOULD
+   send it in the Accept header field.  The client MUST follow at most
+   one redirect (301, 302, 303, 307, or 308 with a Location field,
+   Section 15.4 of [RFC9110]) and records the final URI as the entry
+   point.  A response with another media type, or a redirect to a
+   further redirect, means that there is no entry point at this origin
+   (Section 5.1).  A server that hosts no catalog SHOULD respond with
+   404 (Not Found) and MAY include Problem Details [RFC9457].
 
    Responses to the well-known URI, including redirects and 404
-   responses, are cacheable under the rules of [RFC9111].  A client MUST
-   NOT request the URI again while a stored response is fresh.  A
-   publisher sets the freshness lifetime according to how often the
-   location of the catalog changes; a lifetime of hours is appropriate
-   for a stable location.
+   responses, are cacheable under [RFC9111].  A client MUST NOT request
+   the URI again while a stored response is fresh.  A freshness lifetime
+   of hours suits a stable catalog location.
 
    The scope of a well-known URI is its origin (Section 3 of [RFC8615]);
    a catalog at "https://example.com/.well-known/ard.json" provides no
@@ -295,9 +293,11 @@ Table of Contents
    Content-Length: 1532
    Link: <https://agents.example.com/catalog>; rel="ard"
 
-   Links in a response from the publisher's own origin have that origin
-   as their source.  Links in third-party documents are hints with the
-   third party as their source.  The registration of the relation is in
+   The client reads the Link field of the root response whatever its
+   status code and does not follow a redirect of the root.  Links in a
+   response from the publisher's own origin have that origin as their
+   source.  Links in third-party documents are hints with the third
+   party as their source.  The registration of the relation is in
    Section 8.2.
 
 4.4.  DNS-Based Mechanisms
@@ -334,22 +334,20 @@ Table of Contents
    *  The path is "/.well-known/ard.json".  When the record carries the
       "well-known" SvcParamKey [I-D.mk-dnsop-svcb-well-known] with a
       value that includes "ard.json", the client can conclude that the
-      catalog is served at that path.  Otherwise the client determines
-      this from the response.  The key has no registered number at the
-      time of writing; implementations testing it use a number from the
-      Private Use range (Section 14.3.2 of [RFC9460]) agreed out of
-      band.
+      catalog is served at that path.  Otherwise the client learns this
+      from the response.  The key has no registered number yet; tests
+      use a Private Use number (Section 14.3.2 of [RFC9460]).
 
-   *  The address records of the TargetName are taken from the
-      Additional section when present (Section 4.1 of [RFC9460]) and
-      resolved by the client otherwise.
+   *  Address records of the TargetName absent from the Additional
+      section (Section 4.1 of [RFC9460]) are resolved by the client.
 
    *  The "alpn", "port", "ipv4hint", "ipv6hint", and "ech" keys apply
       with their [RFC9460] semantics.  The "mandatory" key is processed
       as in Section 8 of [RFC9460].  Other keys are ignored.
 
    *  One AliasMode indirection is followed (Section 2.4.2 of
-      [RFC9460]); a second ends the attempt (Section 5.1).
+      [RFC9460]); a second ends the attempt (Section 5.1).  An AliasMode
+      record whose TargetName is "." yields no entry point.
 
    In the example, the entry point is
    "https://catalog.example.net/.well-known/ard.json".  The client
@@ -375,9 +373,10 @@ Table of Contents
 
    A client that resolves HTTPS records when connecting to an origin can
    determine from the key that the well-known fetch of Section 4.2 will
-   succeed, and MAY skip the other mechanisms.  The certificate is
-   validated for "example.com" (Section 9 of [RFC9460]).  A record
-   without the key carries no information about the catalog.
+   succeed, and MAY skip the other mechanisms.  The record yields no
+   entry point by itself and does not affect ranking (Section 5).  The
+   certificate is validated for "example.com" (Section 9 of [RFC9460]).
+   A record without the key carries no information about the catalog.
 
 4.4.3.  DNS-SD Service Type "_ard._tcp"
 
@@ -402,14 +401,15 @@ Table of Contents
    Section 6 of [RFC6763]:
 
    txtvers:
-      The version of this key set.  This document defines version 1.  A
-      client MUST ignore records with a version it does not support.
+      The version of this key set.  This document defines version 1.
+      Absent, version 1 is assumed.  A client MUST ignore records with a
+      version it does not support.
 
    path:
       The path and optional query component of the entry point, as an
       absolute path [RFC3986].  When the key is absent, the path is
-      "/.well-known/ard.json".  The catalog at this path need not be the
-      catalog served at the well-known URI of the same host.
+      "/.well-known/ard.json".  This catalog need not be the one at the
+      well-known URI of the same host.
 
    The client forms the entry point URI from the scheme "https", the SRV
    target as the host, the SRV port (omitted when it is 443), and the
@@ -417,9 +417,9 @@ Table of Contents
    name "ard" is registered in Section 8.3.
 
    Service instance names such as "Travel" are human-readable labels
-   that [RFC6763] allows to change, and a unicast DNS server need not
-   preserve their case ([RFC4343]).  A client SHOULD NOT use an instance
-   name as a persistent identifier of a catalog.
+   that [RFC6763] allows to change and whose case a server need not
+   preserve ([RFC4343]).  A client SHOULD NOT use an instance name as a
+   persistent identifier of a catalog.
 
 4.5.  Local Network Mechanisms
 
@@ -440,15 +440,15 @@ Table of Contents
    issued by public CAs.  A publisher that advertises over Multicast DNS
    SHOULD set the SRV target to a unicast DNS name for which it holds a
    certificate, so that the entry point URI names a host the client can
-   authenticate.  A responder includes address records for the SRV
-   target in its response (Section 12.2 of [RFC6763]); a client MUST NOT
-   use an address record received over Multicast DNS for a name outside
-   "local." and resolves such a target through unicast DNS.  A responder
-   that accepts only targets under "local." yields entry points that the
-   client cannot authenticate (Section 6.2).  Where a Discovery Proxy
-   [RFC8766] is deployed, the client can use Section 4.4.3 instead.
-   Entry points learned over Multicast DNS carry the network interface
-   as their source (Section 6.2).
+   authenticate.  A client MAY use the address records in the multicast
+   answer (Section 12.2 of [RFC6763]) to reach the target; TLS
+   authenticates the host either way (Section 6.1).  A responder that
+   accepts only "local." targets yields entry points the client cannot
+   authenticate (Section 6.2).  A browse runs for a bounded time; later
+   answers are new hints.  Where a Discovery Proxy [RFC8766] is
+   deployed, the client can use Section 4.4.3 instead.  Entry points
+   learned over Multicast DNS carry the network interface as their
+   source (Section 6.2).
 
    [I-D.jakab-dawn-agent-discovery-mdns] describes browsing for
    individual agents under "_agent._tcp".  The two service types
@@ -486,31 +486,40 @@ Table of Contents
    A client without a domain name browses "_ard._tcp.local." over
    Multicast DNS (Section 4.5.2).
 
+   The procedure ends when every step has returned.  A client attempts
+   each distinct URI once per run and records all its sources.
+
    The default order of preference is: configuration, then DNS answers
    validated with DNSSEC [RFC4033], then responses from the publisher's
    own origin (steps 4 and 5), then unvalidated DNS answers, then
-   Multicast DNS responses.  A DNS answer is validated when the client
-   has validated it itself or has received it with the AD bit set from a
+   Multicast DNS responses.  An answer is validated when the client
+   validated it or received it with the AD bit set from a trusted
    validating resolver over a secure channel (Section 4.9.3 of
-   [RFC4035]); all other answers are unvalidated.  Within a source,
-   SvcPriority and SRV priority order the candidates.  A client MAY
-   apply local policy.
+   [RFC4035]); Insecure and Indeterminate answers (Section 4.3 of
+   [RFC4035]) are unvalidated, and Bogus answers are discarded.  An
+   entry point is validated when every answer used to form its URI was;
+   address records do not count, since TLS authenticates the host.
+   Within a tier, step order applies; within a source, SvcPriority and
+   SRV priority.  A client MAY apply local policy.
 
    An entry point fails if the URI does not respond, if the response is
    not a catalog, or if the checks of Section 6 fail.  A client MUST NOT
    retry a failed entry point from the same source before a back-off
-   interval.  A client MUST NOT issue the DNS queries of steps 2 and 3
-   for the same D more often than the TTLs of the answers allow.  A
-   client MUST NOT repeat the requests of steps 4 and 5 while a stored
-   response is fresh ([RFC9111]).
+   interval of at least 30 seconds.  A client MUST NOT issue the DNS
+   queries of steps 2 and 3 for the same D more often than the TTLs of
+   the answers allow, including negative answers ([RFC2308]) and the
+   DNSKEY and DS queries of validation.  A client MUST NOT repeat the
+   requests of steps 4 and 5 while a stored response is fresh
+   ([RFC9111]).
 
 5.1.  Indirection Depth and Outcomes
 
    A client follows at most one AliasMode indirection in the DNS and at
-   most one HTTP redirect per entry point.  A second indirection of
-   either kind ends the attempt.  This bounds the number of round trips
-   and prevents an attacker who controls one record or one response from
-   leading the client through a chain of indirections.
+   most one HTTP redirect per entry point, from any mechanism; the two
+   limits are independent.  A second indirection of either kind ends the
+   attempt.  This bounds the number of round trips and prevents an
+   attacker who controls one record or one response from leading the
+   client through a chain of indirections.
 
    Each attempt to resolve a hint has one of three outcomes:
 
@@ -523,9 +532,10 @@ Table of Contents
       failure counts against the source.
 
    Not permitted:
-      The client's own policy did not allow the fetch, for instance
-      because the host is not on an allow-list.  The hint is kept with
-      its source and does not count as a failure of the source.
+      The client's own policy did not allow the fetch, for instance a
+      host under "local." that no certificate can authenticate
+      (Section 6.2), or a host not on an allow-list.  The hint is kept
+      with its source and does not count as a failure of the source.
 
 6.  Security Considerations
 
@@ -592,7 +602,9 @@ Table of Contents
    client is looking for the agents of example.com.  Encrypted DNS
    transports, discovered as described in [RFC9462], limit the observers
    to the resolver.  The well-known fetch is indistinguishable from an
-   ordinary connection to the domain.
+   ordinary connection to the domain.  The TLS Server Name Indication
+   reveals the TargetName host unless the "ech" key is used, and DNSSEC
+   validation adds DNSKEY and DS queries to the parent zones.
 
    Browsing over Multicast DNS reveals to all hosts on the link that the
    client is looking for agent catalogs, and a responding host reveals
@@ -861,6 +873,10 @@ Table of Contents
               Extensions", RFC 2132, DOI 10.17487/RFC2132, March 1997,
               <https://www.rfc-editor.org/rfc/rfc2132>.
 
+   [RFC2308]  Andrews, M., "Negative Caching of DNS Queries (DNS
+              NCACHE)", RFC 2308, DOI 10.17487/RFC2308, March 1998,
+              <https://www.rfc-editor.org/rfc/rfc2308>.
+
    [RFC3646]  Droms, R., Ed., "DNS Configuration options for Dynamic
               Host Configuration Protocol for IPv6 (DHCPv6)", RFC 3646,
               DOI 10.17487/RFC3646, December 2003,
@@ -996,11 +1012,9 @@ Appendix B.  Open Issues
        normative reference when the companion documents are adopted
        together.
 
-   6.  SvcParamKey number.  The "well-known" key of
-       [I-D.mk-dnsop-svcb-well-known] has no registered number, so the
-       examples in Section 4.4.1 and Section 4.4.2 cannot be loaded into
-       a zone as written.  Interoperability testing uses a Private Use
-       number until the key is registered.
+   6.  SvcParamKey number.  The "well-known" key has no registered
+       number; the examples in Section 4.4.1 and Section 4.4.2 cannot be
+       loaded into a zone until it does.
 
 Acknowledgments
 
