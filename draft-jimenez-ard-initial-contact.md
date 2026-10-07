@@ -347,19 +347,21 @@ Not permitted:
 
 # Security Considerations {#security}
 
-Initial contact runs before any authenticated relationship exists between the client and the publisher. Each mechanism gives an attacker who controls the channel a way to point the client at a catalog of their choosing. The design response is the same in every case: the client treats the result as a hint, retrieves the catalog from the URI, authenticates the origin, and then applies the publisher checks defined in {{ARD}} to the catalog's content.
+Initial contact runs before any authenticated relationship exists between the client and the publisher. Each mechanism gives an attacker who controls the channel a way to point the client at a catalog of their choosing. The response of this document is the same in every case: the client treats the result as a hint, retrieves the catalog from the URI, authenticates the origin, and leaves the question of which publisher the catalog speaks for to the catalog content as specified in {{ARD}}.
 
 ## Hints and Authority {#sec-hints}
 
-A client MUST authenticate the TLS server for the host named in the entry point URI, following {{Section 4.3.3 of RFC9110}}. For the HTTPS record ({{https-rr}}) and for the well-known URI and link relation ({{http-mechanisms}}), that host is the publisher's own domain, and a successful connection shows that the catalog is served by whoever controls the domain's certificate.
+A client MUST authenticate the TLS server for the host named in the entry point URI, following {{Section 4.3.3 of RFC9110}}. For the well-known URI, the link relation, and the HTTPS record ({{http-mechanisms}}, {{https-rr}}), that host is the publisher's own domain, and a successful connection shows that the catalog is served by whoever controls the domain's certificate.
 
-For the SVCB record ({{svcb-rr}}), DNS-SD ({{dns-sd}}), and the CoRE link ({{core}}), the host in the URI is whatever the DNS or the multicast responder said it was. A spoofed answer can direct the client to a host for which the attacker holds a valid certificate. TLS then authenticates the wrong party correctly. Two measures limit this. First, a client SHOULD validate DNS answers with DNSSEC {{RFC4033}} where the zone is signed and SHOULD rank unvalidated answers below validated ones ({{procedure}}). Second, the catalog format in {{ARD}} binds entries to the publisher's domain through the publisher identity carried in each entry; a catalog reached through "_ard.example.com" that does not carry entries for "example.com", or whose publisher binding fails verification, is discarded. Initial contact never establishes which publisher a catalog speaks for; it only finds candidates.
+For the index record ({{index-rr}}) and for DNS-SD ({{dns-sd}}), the host in the URI is whatever the DNS said it was. A spoofed answer can direct the client to a host for which the attacker holds a valid certificate, and TLS then authenticates the wrong party correctly. A client SHOULD validate DNS answers with DNSSEC {{RFC4033}} where the zone is signed and SHOULD rank unvalidated answers below validated ones ({{procedure}}). Beyond that, this document does not establish that a catalog reached through `_index._agents.example.com` speaks for "example.com"; the source the client recorded is the input to the publisher check that {{ARD}} defines, and a catalog that fails that check is discarded there. Initial contact finds candidates.
+
+Carrying a digest or a public key for the catalog in the DNS record, as {{I-D.nemethi-dawn-aid}} and {{I-D.besleaga-agentic-knowledge-wellknown}} do for their objects, was considered and not adopted: a catalog changes with every published entry, and a digest in a record with a TTL of hours would fail on each change.
 
 ## Local Network Discovery {#sec-local}
 
-Any host on the link can answer a Multicast DNS or multicast CoAP query, and link-local names carry no certificates. A client MUST treat entry points learned over multicast as the least trusted source. It SHOULD prefer entry points whose URI names a host it can authenticate with a certificate, as {{mdns}} recommends publishers to advertise, and MAY apply local policy such as a pinned key or an allow-list of hosts for networks it manages. A catalog found over multicast is a list of candidates to be verified, not evidence that the agents in it are present on the network or operated by the network's owner.
+Any host on the link can answer a Multicast DNS query, and link-local names carry no certificates. A client MUST treat entry points learned over multicast as the least trusted source. It SHOULD prefer entry points whose URI names a host it can authenticate with a certificate, as {{mdns}} recommends publishers to advertise, and MAY apply local policy such as a pinned key or an allow-list of hosts for networks it manages. A catalog found over multicast is a list of candidates to be verified, not evidence that the agents in it are present on the network or operated by the network's owner.
 
-Multicast queries are also an amplification vector: one request produces a response from every host that matches. Clients follow the rate limits of {{I-D.ietf-core-groupcomm-bis}} and {{RFC6762}}, and publishers in constrained networks keep the "/.well-known/core" response for "rt=ard" small.
+Multicast queries are an amplification vector: one request produces a response from every host that matches. Clients follow the query rate limits of {{RFC6762}}.
 
 ## Downgrade {#sec-downgrade}
 
@@ -367,13 +369,15 @@ A client MUST NOT fall back to "http" when an "https" entry point fails. A clien
 
 ## Well-Known URI Squatting {#sec-well-known}
 
-The well-known URI is served by whoever controls the origin, which on shared hosting may be a tenant rather than the domain owner. {{Section 4 of RFC8615}} describes the risk. The publisher checks of {{ARD}} apply to catalogs found this way as to any other; a tenant can serve a catalog but cannot make its entries verify as the domain owner's.
+The well-known URI is served by whoever controls the origin, which on shared hosting may be a tenant rather than the domain owner. {{Section 4 of RFC8615}} describes the risk. The publisher check of {{ARD}} applies to catalogs found this way as to any other; a tenant can serve a catalog but cannot make its entries verify as the domain owner's.
 
 # Privacy Considerations {#privacy}
 
-A DNS query for "_ard.example.com" or "_ard._tcp.example.com" tells the resolver and anyone observing the path that the client is looking for the agents of example.com. Encrypted DNS transports, discovered as in {{RFC9462}}, limit the observers to the resolver. A client MAY issue the HTTPS query of step 2 alone, since it is indistinguishable from an ordinary connection attempt to the domain.
+A DNS query for `_index._agents.example.com` or `_ard._tcp.example.com` tells the resolver and anyone observing the path that the client is looking for the agents of example.com. Encrypted DNS transports, discovered as in {{RFC9462}}, limit the observers to the resolver. The HTTPS query of step 2 and the well-known fetch of step 4 are indistinguishable from an ordinary connection to the domain.
 
 Browsing over Multicast DNS announces to the whole link that the client is looking for agent catalogs, and a host that answers announces that it offers one. Deployments where that is sensitive use unicast DNS-SD through a Discovery Proxy {{RFC8766}} with access control on the zone, or configuration.
+
+The service instance names under `_ard._tcp.<domain>` can be enumerated by anyone. That is intended: they name catalogs a publisher chose to make discoverable, not people or individual agents.
 
 Retrieving the catalog reveals the client's address to the publisher. The catalog itself and anything the client does with it are outside this document.
 
