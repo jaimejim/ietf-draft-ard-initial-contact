@@ -16,9 +16,9 @@ endif
 
 ## Additional checks, run as part of the default build.
 ## http-lint validates the http-message examples (as in httpwg/http-extensions),
-## spellcheck runs codespell with .ignore-words, idnits runs the Datatracker
+## codespell-lint runs codespell with .ignore-words, idnits runs the Datatracker
 ## checks on the next submission version.
-lint:: http-lint spellcheck
+lint:: http-lint codespell-lint
 all:: idnits
 
 rfc-http-validate ?= rfc-http-validate
@@ -29,6 +29,13 @@ http-lint: $(addsuffix .http-lint.txt,$(addprefix .,$(drafts)))
 .%.http-lint.txt: %.xml $(DEPS_FILES)
 	$(trace) $< -s http-lint $(rfc-http-validate) -q -m sf.json $<
 	@touch $@
+
+# The template's own spellcheck target assumes a venv, which CI does not have;
+# codespell comes from requirements.txt instead.
+codespell ?= codespell
+.PHONY: codespell-lint
+codespell-lint: $(drafts_source) $(DEPS_FILES)
+	$(trace) spellcheck -s codespell $(codespell) -I .ignore-words $(drafts_source)
 
 clean::
 	-rm -f .*.http-lint.txt
