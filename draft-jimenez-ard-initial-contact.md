@@ -87,6 +87,18 @@ informative:
   I-D.king-dawn-requirements:
   I-D.cui-dawn-mdi-model:
   I-D.jimenez-agent-directory:
+  ARD-SPEC:
+    title: "Agentic Resource Discovery Specification, v0.91"
+    author:
+      - org: ARD Project
+    date: 2026-10
+    target: https://agenticresourcediscovery.org/spec/
+  DNS-AID-IMPL:
+    title: "dns-aid-core: DNS-based Agent Identification and Discovery, reference implementation"
+    author:
+      - org: DNS-AID Project
+    date: 2026-09
+    target: https://github.com/dns-aid/dns-aid-core
   DAWN-CHARTER:
     title: "Discovery of Agents With Names (DAWN) - Proposed Charter"
     author:
@@ -108,7 +120,7 @@ informative:
 
 --- abstract
 
-This document specifies how a client finds an entry point to Agent Resource Discovery (ARD): the URI of an ARD catalog from which agent resources can be enumerated and looked up. It defines a well-known URI, an HTTP link relation, the use of DNS Service Binding records at the organization index name defined by DNS for AI Discovery, and a DNS-Based Service Discovery (DNS-SD) service type usable over unicast DNS and Multicast DNS. The mechanisms share one output, a set of catalog URIs with their sources, and one trust rule: everything learned during initial contact is a hint that the client verifies when it retrieves the catalog from its origin. The catalog format, the lookup interface, and the binding of a catalog to its publisher are specified in the companion ARD documents.
+This document specifies how a client finds an entry point to Agent Resource Discovery (ARD): the URI of an ARD catalog from which agent resources can be enumerated and looked up. It defines a well-known URI, an HTTP link relation, the use of DNS Service Binding records under the "_agents" label defined by DNS for AI Discovery, and a DNS-Based Service Discovery (DNS-SD) service type usable over unicast DNS and Multicast DNS. The mechanisms share one output, a set of catalog URIs with their sources, and one trust rule: everything learned during initial contact is a hint that the client verifies when it retrieves the catalog from its origin. The catalog format, the lookup interface, and the binding of a catalog to its publisher are specified in the companion ARD documents.
 
 --- middle
 
@@ -182,17 +194,17 @@ Both mechanisms in this section start from an "https" origin, which the client h
 
 ### Well-Known URI {#well-known}
 
-A publisher makes its catalog available at the well-known URI {{RFC8615}} with the suffix "ard":
+A publisher makes its catalog available at the well-known URI {{RFC8615}} with the suffix "ard.json":
 
 ~~~
-https://example.com/.well-known/ard
+https://example.com/.well-known/ard.json
 ~~~
 
 A GET request to this URI returns an ARD catalog, or a redirect to one. A publisher whose catalog is hosted on another host, for instance at a service provider, serves a redirect at this URI; the client follows one redirect as in {{Section 15.4 of RFC9110}} and records the final URI as the entry point. A response that is neither a catalog nor a redirect, or a redirect that leads to another redirect, means there is no entry point at this origin ({{depth}}). A server that hosts no catalog answers 404 (Not Found) and MAY describe the condition with Problem Details {{RFC9457}}; the client needs no body to reach its conclusion.
 
 Responses to the well-known URI, including redirects, are cacheable under the ordinary rules of {{RFC9111}}. A client stores them and does not request the URI again while the stored response is fresh; a publisher sets the freshness lifetime to the rate at which it expects the catalog location to change.
 
-A client that holds only a domain name forms the well-known URI with that name as the authority and the default "https" port. The scope of a well-known URI is its origin: a catalog at "https://example.com/.well-known/ard" says nothing about "https://agents.example.com/". A publisher that spreads catalogs over several hosts serves one catalog at the apex that links to the others, or enumerates them with DNS-SD as in {{dns-sd}}.
+A client that holds only a domain name forms the well-known URI with that name as the authority and the default "https" port. The scope of a well-known URI is its origin: a catalog at "https://example.com/.well-known/ard.json" says nothing about "https://agents.example.com/". A publisher that spreads catalogs over several hosts serves one catalog at the apex that links to the others, or enumerates them with DNS-SD as in {{dns-sd}}.
 
 This document requests the registration of the suffix in {{iana-well-known}}. {{ARD}} defines the representation returned.
 
@@ -226,12 +238,12 @@ This document requests the registration of the relation in {{iana-link-relation}
 
 The DNS lets a publisher advertise an entry point before the client opens a connection, and lets it place the catalog on a host other than the domain apex without a redirect. Two record forms apply: a Service Binding record at the organization index name defined by DNS for AI Discovery, and DNS-SD records under the service type defined here. The HTTPS record of the domain apex can carry the same information as an optimisation.
 
-### Organization Index Record {#index-rr}
+### Catalog Pointer Record {#pointer-rr}
 
-DNS for AI Discovery {{I-D.mozleywilliams-dnsop-dnsaid}} defines the name `_index._agents.<domain>` as the place where an organization publishes a Service Binding (SVCB) record {{RFC9460}} pointing at an index of its agents. DNS-AID leaves the format of what is served at the index out of its scope. This document specifies that an ARD catalog is one such index: a client that follows the record and finds an ARD catalog at the well-known URI of the TargetName has an entry point.
+DNS for AI Discovery {{I-D.mozleywilliams-dnsop-dnsaid}} places an organization's agent-related DNS records under the underscored label "_agents", with `_index._agents.<domain>` as the name of a Service Binding (SVCB) record {{RFC9460}} that points at an index of the organization's agents; the format served at the index is out of its scope. Its reference implementation {{DNS-AID-IMPL}} publishes a second name under the same label for ARD catalogs, `_catalog._agents.<domain>`, and the ARD specification {{ARD-SPEC}} names `_entries._agents.<domain>` for a static entry source. This document uses `_catalog._agents.<domain>` as the catalog pointer: a client that follows the record and finds an ARD catalog at the well-known URI of the TargetName has an entry point.
 
 ~~~
-_index._agents.example.com. 3600 IN SVCB 1 catalog.example.net. (
+_catalog._agents.example.com. 3600 IN SVCB 1 catalog.example.net. (
     alpn="h2"
 )
 ~~~
@@ -240,32 +252,34 @@ Parentheses continue a record across lines in zone file presentation format ({{S
 
 * The scheme is "https".
 * The authority is the TargetName, with the port from the "port" key or 443. The TargetName MUST be a host name without underscore labels, so that a publicly issued certificate can name it; the client connects to it and authenticates it. This matches the rule in {{Section 3.2 of I-D.mozleywilliams-dnsop-dnsaid}}. A record whose TargetName is "." yields no entry point, since the owner name carries underscore labels.
-* The path is "/.well-known/ard". When the record carries the "well-known" SvcParamKey {{I-D.mk-dnsop-svcb-well-known}} and its value includes "ard", the client has confirmation that the catalog is there; when the key is absent, the client requests the path and learns from the response.
+* The path is "/.well-known/ard.json". When the record carries the "well-known" SvcParamKey {{I-D.mk-dnsop-svcb-well-known}} and its value includes "ard.json", the client has confirmation that the catalog is there; when the key is absent, the client requests the path and learns from the response.
 * The "alpn", "port", "ipv4hint", "ipv6hint", and "ech" keys are applicable with their {{RFC9460}} semantics. The "mandatory" key is processed as in {{Section 8 of RFC9460}}. Other keys are ignored.
 * One AliasMode indirection is followed as in {{Section 2.4.2 of RFC9460}}; a second ends the attempt ({{depth}}).
 
-In the example, the entry point is "https://catalog.example.net/.well-known/ard". The TLS certificate is validated for "catalog.example.net", the host named in the URI. The client records `_index._agents.example.com` as the source, so that the publisher check of {{ARD}} can later compare the catalog against "example.com".
+In the example, the entry point is "https://catalog.example.net/.well-known/ard.json". The TLS certificate is validated for "catalog.example.net", the host named in the URI. The client records `_catalog._agents.example.com` as the source, so that the publisher check of {{ARD}} can later compare the catalog against "example.com".
 
-An RRset MAY carry several ServiceMode records with different TargetNames. Each yields one entry point; SvcPriority orders them. An index TargetName may also serve other index formats; a client that finds no catalog at the well-known path treats the record as yielding no entry point.
+An RRset MAY carry several ServiceMode records with different TargetNames. Each yields one entry point; SvcPriority orders them. A TargetName may also serve other things; a client that finds no catalog at the well-known path treats the record as yielding no entry point.
 
-Note to readers of this version: the use of `_index._agents` for ARD catalogs depends on the DNS-AID authors agreeing that an ARD catalog is one of the things an index TargetName may serve. If that agreement is not reached, this document will register its own label; see {{open-issues}}.
+A publisher that also publishes the DNS-AID organization index MAY point `_index._agents.<domain>` at the same TargetName, and a client MAY query that name as well; an ARD catalog found at its TargetName is an entry point with that name as its source. {{DNS-AID-IMPL}} publishes both names by default.
+
+Note to readers of this version: "_agents" is the underscored node name that {{I-D.mozleywilliams-dnsop-dnsaid}} registers in the "Underscored and Globally Scoped DNS Node Names" registry {{RFC8552}}, and names beneath it are governed by that specification. This document therefore asks the DNS-AID authors to list `_catalog` among the names under "_agents", and to reconcile it with the `_entries` name in {{ARD-SPEC}}. If neither happens, this document registers a top-level label of its own; see {{open-issues}}.
 
 ### HTTPS Record at the Apex {#https-rr}
 
-A publisher whose catalog is served at the origin of a domain name MAY list the suffix "ard" in the "well-known" SvcParamKey {{I-D.mk-dnsop-svcb-well-known}} of the HTTPS record {{RFC9460}} of that name:
+A publisher whose catalog is served at the origin of a domain name MAY list the suffix "ard.json" in the "well-known" SvcParamKey {{I-D.mk-dnsop-svcb-well-known}} of the HTTPS record {{RFC9460}} of that name:
 
 ~~~
 example.com. 3600 IN HTTPS 1 . (
     alpn="h2,h3"
-    well-known="ard"
+    well-known="ard.json"
 )
 ~~~
 
-A client that already resolves HTTPS records when connecting to an origin learns from the key that the well-known fetch of {{well-known}} will succeed, and may skip other mechanisms. The HTTPS record changes connection parameters, not the origin: the certificate is validated for "example.com" ({{Section 9 of RFC9460}}). A record without the key carries no information about the catalog, and a client proceeds as if the record were absent. The key MAY list other suffixes alongside "ard", for instance "api-catalog" {{RFC9727}} or "agent-card.json" {{A2A}}.
+A client that already resolves HTTPS records when connecting to an origin learns from the key that the well-known fetch of {{well-known}} will succeed, and may skip other mechanisms. The HTTPS record changes connection parameters, not the origin: the certificate is validated for "example.com" ({{Section 9 of RFC9460}}). A record without the key carries no information about the catalog, and a client proceeds as if the record were absent. The key MAY list other suffixes alongside "ard.json", for instance "api-catalog" {{RFC9727}} or "agent-card.json" {{A2A}}.
 
 ### DNS-SD Service Type "_ard._tcp" {#dns-sd}
 
-A publisher MAY advertise catalogs as DNS-SD service instances {{RFC6763}} of the service type "_ard._tcp". DNS-SD suits two cases that the index record does not cover: a domain with several catalogs that an administrator wants to name and enumerate, and networks that already run DNS-SD, with or without Multicast DNS ({{mdns}}).
+A publisher MAY advertise catalogs as DNS-SD service instances {{RFC6763}} of the service type "_ard._tcp". DNS-SD suits two cases that the pointer record does not cover: a domain with several catalogs that an administrator wants to name and enumerate, and networks that already run DNS-SD, with or without Multicast DNS ({{mdns}}).
 
 A client browses by querying PTR records at `_ard._tcp.<domain>`, then resolves each service instance name to its SRV and TXT records:
 
@@ -277,7 +291,7 @@ Travel._ard._tcp.example.com. 3600 IN SRV 0 0 443 (
     catalog.example.net. )
 Travel._ard._tcp.example.com. 3600 IN TXT (
     "txtvers=1"
-    "path=/.well-known/ard"
+    "path=/.well-known/ard.json"
 )
 ~~~
 
@@ -288,7 +302,7 @@ txtvers:
 : The version of this key set. This document defines version 1. A client ignores records with a version it does not understand.
 
 path:
-: The path and optional query component of the entry point, as an absolute path {{RFC3986}}. Absent, the path is "/.well-known/ard". This follows the convention established for "_http._tcp" in {{Section 6.4 of RFC6763}}.
+: The path and optional query component of the entry point, as an absolute path {{RFC3986}}. Absent, the path is "/.well-known/ard.json". This follows the convention established for "_http._tcp" in {{Section 6.4 of RFC6763}}.
 
 These keys are specific to the "_ard._tcp" service type, as {{RFC6763}} permits; they do not describe agents and do not use the agent-protocol and transport keys that other DAWN proposals are aligning for agent records ({{related}}).
 
@@ -325,9 +339,9 @@ The procedure in this section is a RECOMMENDED default. Three parts of it are re
 A client that holds a domain name D, from configuration, from the user, or from the network ({{provided-domain}}), and wants the entry points of the publisher controlling D proceeds as follows. Steps that return entry points do not stop the procedure; the client collects the results and orders them by source.
 
 1. Configured entry points for D ({{static}}) are taken first.
-2. The client queries the SVCB record for `_index._agents.D` ({{index-rr}}) and, if it resolves HTTPS records anyway, the HTTPS record for D ({{https-rr}}). The queries are independent and MAY be issued in parallel.
+2. The client queries the SVCB record for `_catalog._agents.D` ({{pointer-rr}}) and, if it resolves HTTPS records anyway, the HTTPS record for D ({{https-rr}}). It MAY also query `_index._agents.D`. The queries are independent and MAY be issued in parallel.
 3. The client browses `_ard._tcp.D` ({{dns-sd}}) and resolves each service instance it finds.
-4. The client requests "https://D/.well-known/ard" ({{well-known}}). This step MAY start in parallel with steps 2 and 3; a client already connecting to the origin pays nothing for it.
+4. The client requests "https://D/.well-known/ard.json" ({{well-known}}). This step MAY start in parallel with steps 2 and 3; a client already connecting to the origin pays nothing for it.
 5. If steps 2 to 4 returned nothing, the client sends a HEAD request to "https://D/" and examines the Link header field for the "ard" relation ({{link-relation}}).
 
 A client attached to a local network with no domain name browses "_ard._tcp.local." over Multicast DNS ({{mdns}}). It MAY also query the domain enumeration names of {{Section 11 of RFC6763}} over Multicast DNS to learn a unicast DNS-SD domain for the network and then continue with step 3 for that domain.
@@ -360,7 +374,7 @@ Initial contact runs before any authenticated relationship exists between the cl
 
 A client MUST authenticate the TLS server for the host named in the entry point URI, following {{Section 4.3.3 of RFC9110}}. For the well-known URI, the link relation, and the HTTPS record ({{http-mechanisms}}, {{https-rr}}), that host is the publisher's own domain, and a successful connection shows that the catalog is served by whoever controls the domain's certificate.
 
-For the index record ({{index-rr}}) and for DNS-SD ({{dns-sd}}), the host in the URI is whatever the DNS said it was. A spoofed answer can direct the client to a host for which the attacker holds a valid certificate, and TLS then authenticates the wrong party correctly. A client SHOULD validate DNS answers with DNSSEC {{RFC4033}} where the zone is signed and SHOULD rank unvalidated answers below validated ones ({{procedure}}). Beyond that, this document does not establish that a catalog reached through `_index._agents.example.com` speaks for "example.com"; the source the client recorded is the input to the publisher check that {{ARD}} defines, and a catalog that fails that check is discarded there. Initial contact finds candidates.
+For the pointer record ({{pointer-rr}}) and for DNS-SD ({{dns-sd}}), the host in the URI is whatever the DNS said it was. A spoofed answer can direct the client to a host for which the attacker holds a valid certificate, and TLS then authenticates the wrong party correctly. A client SHOULD validate DNS answers with DNSSEC {{RFC4033}} where the zone is signed and SHOULD rank unvalidated answers below validated ones ({{procedure}}). Beyond that, this document does not establish that a catalog reached through `_catalog._agents.example.com` speaks for "example.com"; the source the client recorded is the input to the publisher check that {{ARD}} defines, and a catalog that fails that check is discarded there. Initial contact finds candidates.
 
 Carrying a digest or a public key for the catalog in the DNS record, as {{I-D.nemethi-dawn-aid}} and {{I-D.besleaga-agentic-knowledge-wellknown}} do for their objects, was considered and not adopted: a catalog changes with every published entry, and a digest in a record with a TTL of hours would fail on each change.
 
@@ -380,7 +394,7 @@ The well-known URI is served by whoever controls the origin, which on shared hos
 
 # Privacy Considerations {#privacy}
 
-A DNS query for `_index._agents.example.com` or `_ard._tcp.example.com` tells the resolver and anyone observing the path that the client is looking for the agents of example.com. Encrypted DNS transports, discovered as in {{RFC9462}}, limit the observers to the resolver. The HTTPS query of step 2 and the well-known fetch of step 4 are indistinguishable from an ordinary connection to the domain.
+A DNS query for `_catalog._agents.example.com` or `_ard._tcp.example.com` tells the resolver and anyone observing the path that the client is looking for the agents of example.com. Encrypted DNS transports, discovered as in {{RFC9462}}, limit the observers to the resolver. The HTTPS query of step 2 and the well-known fetch of step 4 are indistinguishable from an ordinary connection to the domain.
 
 Browsing over Multicast DNS announces to the whole link that the client is looking for agent catalogs, and a host that answers announces that it offers one. Deployments where that is sensitive use unicast DNS-SD through a Discovery Proxy {{RFC8766}} with access control on the zone, or configuration.
 
@@ -396,7 +410,7 @@ IANA is asked to register the following entry in the "Well-Known URIs" registry 
 
 {:vspace}
 URI suffix:
-: ard
+: ard.json
 
 Change controller:
 : IETF
@@ -453,7 +467,9 @@ Reference:
 
 {{I-D.jimenez-dawn-discovery-landscape}} surveys agent discovery mechanisms and separates lookup, name, description, trust, and interaction. Initial contact as defined here is the lookup component for the case where the result is a catalog rather than an agent. The mechanisms below address the same step.
 
-DNS for AI Discovery {{I-D.mozleywilliams-dnsop-dnsaid}} publishes agents as SVCB records under their own names and an organization index under `_index._agents.<domain>`, whose TargetName points at a host that serves an index; the index format is out of its scope, and {{index-rr}} fills that slot with an ARD catalog. DNS-AID also keeps a TXT fallback from SVCB for resolvers that do not yet support the newer type; this document defines no TXT form, since the DNS-SD records of {{dns-sd}} already give a path on such resolvers.
+DNS for AI Discovery {{I-D.mozleywilliams-dnsop-dnsaid}} publishes agents as SVCB records under their own names and an organization index under `_index._agents.<domain>`, whose TargetName points at a host that serves an index; the index format is out of its scope. Its reference implementation {{DNS-AID-IMPL}} already dereferences ARD catalogs: it publishes `_catalog._agents` next to `_index._agents`, follows an off-domain pointer only when the record is DNSSEC-validated or the catalog records are signed against the domain's key set, ignores the pointer otherwise and falls back to the on-domain well-known path, and refuses redirects. {{pointer-rr}} adopts its label; {{depth}} allows one redirect where it allows none; and the trust rule for off-domain pointers is the publisher check this document hands to {{ARD}}. DNS-AID also keeps a TXT fallback from SVCB for resolvers that do not yet support the newer type; this document defines no TXT form, since the DNS-SD records of {{dns-sd}} already give a path on such resolvers.
+
+The ARD specification {{ARD-SPEC}}, from which {{ARD}} derives, makes the well-known fetch of "/.well-known/ard.json" a consumer requirement, names "/.well-known/ai-catalog.json" as its predecessor path, and lists `_entries._agents` and `_search._agents` as DNS names for a static entry source and a search endpoint. Its conformance tool resolves a publisher the way {{procedure}} does, from the well-known path.
 
 Agent Identity and Discovery {{I-D.nemethi-dawn-aid}} answers the single-agent question with a TXT record at `_agent.<domain>` carrying the endpoint URI, protocol token, and a public key, and resolves in one hop with a fixed set of failure outcomes; {{depth}} follows that shape. {{I-D.morrison-mcp-dns-discovery}} does the same for MCP servers with a TXT record at `_mcp.<domain>` next to a well-known server card. DNS-Based Agent Naming {{I-D.seethiraju-dawn-dan}} defines two new resource record types, AIDISCA for an agent's connection and certificate data and AIINDEX for an index of agent names. All three locate agents directly; none defines a catalog entry point, and this document defines no new record types.
 
@@ -463,16 +479,17 @@ Agent Identity and Discovery {{I-D.nemethi-dawn-aid}} answers the single-agent q
 
 {{Section 4.1 of RFC9176}} lists how a CoRE endpoint finds a Resource Directory: configuration, an IPv6 Router Advertisement option, DNS-SD under "_core-rd._udp" and related service names, and a multicast query for "rt=core.rd*". {{static}} and {{dns-sd}} are the ARD counterparts; {{provided-domain}} takes the place of the Router Advertisement option by reusing the search domain the network already provides. Discovery through the CoRE Link Format and multicast CoAP for constrained networks is not specified in this document.
 
-{{RFC9461}} and {{RFC9462}} are the SVCB protocol mapping and the discovery procedure for encrypted DNS resolvers; {{index-rr}} follows the form of the former, and {{procedure}} the form of the latter.
+{{RFC9461}} and {{RFC9462}} are the SVCB protocol mapping and the discovery procedure for encrypted DNS resolvers; {{pointer-rr}} follows the form of the former, and {{procedure}} the form of the latter.
 
 # Open Issues {#open-issues}
 
 This section records questions to be settled before the document is stable. It is to be removed before publication.
 
 1. API catalog profile. Issue #2 on the ARD repository proposes publishing the catalog as an API catalog {{RFC9727}} under "/.well-known/api-catalog" with an ARD profile. If that is adopted, this document registers no suffix and {{well-known}} points at RFC 9727 with the profile.
-2. Index label. {{index-rr}} depends on the DNS-AID authors agreeing that an ARD catalog is a valid index at `_index._agents`. The fallback is a label of this document's own, "_ard", registered in the "Underscored and Globally Scoped DNS Node Names" registry {{RFC8552}} with a protocol mapping equivalent to {{index-rr}}. One label in DAWN is better than two, so the fallback is taken only if the agreement is not reached.
-3. Ownership of registrations. {{ARD}} at the time of writing also requests a well-known suffix and a link relation. After the split into initial contact, lookup, and registration documents, one document carries them.
-4. Reference status. {{ARD}} and {{I-D.mozleywilliams-dnsop-dnsaid}} are individual drafts and are cited informatively in this version. The catalog representation that {{ARD}} defines is what an entry point returns, so {{ARD}} becomes a normative reference when the companion documents are adopted together; the index label of {{index-rr}} becomes normative, or is replaced by this document's own label, when the DNS-AID question is settled.
+2. Pointer label. Three names exist for the same pointer: `_index._agents` in DNS-AID, `_catalog._agents` in its reference implementation, and `_entries._agents` in {{ARD-SPEC}}. {{pointer-rr}} uses `_catalog._agents` because it is deployed, and asks DNS-AID, as owner of "_agents", to list it. The ARD authors need to agree to retire `_entries` or this document to switch to it. The fallback, if "_agents" cannot carry the name, is a top-level label of this document's own, "_ard", registered under {{RFC8552}} with a protocol mapping equivalent to {{pointer-rr}}.
+3. Suffix. "ard.json" matches {{ARD-SPEC}} and deployed code. A suffix without the extension, "ard", was considered, since registered well-known names such as "api-catalog" are not file names; it would be a third path for deployed consumers to probe next to "ard.json" and "ai-catalog.json".
+4. Ownership of registrations. {{ARD}} at the time of writing also requests a well-known suffix and a link relation. After the split into initial contact, lookup, and registration documents, one document carries them.
+5. Reference status. {{ARD}} and {{I-D.mozleywilliams-dnsop-dnsaid}} are individual drafts and are cited informatively in this version. The catalog representation that {{ARD}} defines is what an entry point returns, so {{ARD}} becomes a normative reference when the companion documents are adopted together; the pointer label of {{pointer-rr}} becomes normative, or is replaced by this document's own label, when the DNS-AID question is settled.
 
 # Acknowledgments
 {:numbered="false"}
