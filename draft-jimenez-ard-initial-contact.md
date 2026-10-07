@@ -7,7 +7,7 @@ docname: draft-jimenez-ard-initial-contact-latest
 submissiontype: IETF
 ipr: trust200902
 v: 3
-area: "Applications and Real-Time"
+area: "Internet"
 keyword:
  - agent discovery
  - well-known URI
@@ -28,20 +28,26 @@ author:
     fullname: Jaime Jiménez
     organization: Ericsson
     email: jaime.jimenez@ericsson.com
+ -
+    fullname: Junjie Bu
+    organization: Google
+    email: jbu@google.com
+ -
+    fullname: Jari Arkko
+    organization: Ericsson
+    email: jari.arkko@ericsson.com
 
 normative:
   RFC1035:
   RFC3986:
   RFC6335:
-  RFC6690:
   RFC6762:
   RFC6763:
   RFC8288:
-  RFC8552:
   RFC8615:
   RFC9110:
   RFC9460:
-  I-D.mk-dnsop-svcb-well-known:
+  I-D.mozleywilliams-dnsop-dnsaid:
   ARD:
     title: "Agent Resource Discovery (ARD)"
     author:
@@ -54,22 +60,26 @@ normative:
       Internet-Draft: draft-bu-agent-resources-discovery
 
 informative:
+  RFC2132:
+  RFC3646:
   RFC4033:
-  RFC7252:
-  RFC8126:
+  RFC8106:
+  RFC8552:
   RFC8766:
-  RFC8801:
-  RFC8910:
   RFC9176:
+  RFC9264:
   RFC9461:
   RFC9462:
   RFC9499:
   RFC9727:
-  I-D.ietf-core-groupcomm-bis:
-  I-D.mozleywilliams-dnsop-dnsaid:
+  I-D.mk-dnsop-svcb-well-known:
   I-D.nemethi-dawn-aid:
   I-D.seethiraju-dawn-dan:
   I-D.jakab-dawn-agent-discovery-mdns:
+  I-D.morrison-mcp-dns-discovery:
+  I-D.zahed-acap:
+  I-D.pro-adp-agent-discovery:
+  I-D.besleaga-agentic-knowledge-wellknown:
   I-D.jimenez-dawn-discovery-landscape:
   I-D.farrel-dawn-terminology:
   I-D.king-dawn-requirements:
@@ -103,7 +113,7 @@ informative:
 
 --- abstract
 
-This document specifies how a client finds an entry point to Agent Resource Discovery (ARD): the URI of an ARD catalog from which agent resources can be enumerated and looked up. It defines the use of a well-known URI, an HTTP link relation, DNS Service Binding (SVCB and HTTPS) records, DNS-Based Service Discovery (DNS-SD) over unicast and Multicast DNS, and the CoRE Link Format for constrained networks. The mechanisms share one output, a set of entry point URIs with minimal metadata, and one trust rule: everything learned during initial contact is a hint that the client verifies when it retrieves the catalog from its origin. The catalog format and the lookup interface are specified in the companion ARD documents.
+This document specifies how a client finds an entry point to Agent Resource Discovery (ARD): the URI of an ARD catalog from which agent resources can be enumerated and looked up. It defines a well-known URI, an HTTP link relation, the use of DNS Service Binding records at the organization index name defined by DNS for AI Discovery, and a DNS-Based Service Discovery (DNS-SD) service type usable over unicast DNS and Multicast DNS. The mechanisms share one output, a set of catalog URIs with their sources, and one trust rule: everything learned during initial contact is a hint that the client verifies when it retrieves the catalog from its origin. The catalog format, the lookup interface, and the binding of a catalog to its publisher are specified in the companion ARD documents.
 
 --- middle
 
@@ -111,11 +121,11 @@ This document specifies how a client finds an entry point to Agent Resource Disc
 
 {{ARD}} defines a catalog of agent resources: a document, served over HTTPS, in which a publisher lists the agents, tool servers, and skills it offers, each entry pointing at the artifact that describes the resource in its native protocol, such as an Agent Card {{A2A}} or an MCP server description {{MCP}}. ARD also defines a lookup interface over that catalog. Both assume that the client already holds the URI of the catalog.
 
-Obtaining that URI is a separate problem. A client that knows an organization's domain name, or that has joined a local network, has no catalog URI yet. It can guess a well-known path, consult the DNS, listen on the local link, or follow a link from a web page. Each of these steps exists already in an IETF specification written for another purpose: well-known URIs {{RFC8615}}, web linking {{RFC8288}}, Service Binding records {{RFC9460}}, DNS-SD {{RFC6763}} with Multicast DNS {{RFC6762}}, and the CoRE Link Format {{RFC6690}}. What is missing is the binding of each to ARD: which names to query, which parameters to publish, and what the client may conclude from an answer. The same gap exists for the CoRE Resource Directory, and {{Section 4.1 of RFC9176}} closes it with a list of configured, network-provided, and heuristic ways of finding the directory.
+Obtaining that URI is a separate problem. A client that knows an organization's domain name, or that has joined a local network, has no catalog URI yet. It can request a well-known path, consult the DNS, browse the local link, or follow a link from a web resource. Each of these steps exists already in an IETF specification written for another purpose: well-known URIs {{RFC8615}}, web linking {{RFC8288}}, Service Binding records {{RFC9460}}, and DNS-SD {{RFC6763}} with Multicast DNS {{RFC6762}}. What is missing is the binding of each to ARD: which names to query, which parameters to publish, and what the client may conclude from an answer. The same gap exists for the CoRE Resource Directory, and {{Section 4.1 of RFC9176}} closes it with a list of configured, network-provided, and heuristic ways of finding the directory.
 
-The DAWN charter {{DAWN-CHARTER}} names this step "initial discovery": a client obtaining the minimum public information about an AI resource, where the resource may be "a service such as a catalog that will further the discovery process". The charter lists the deployment contexts a mechanism has to cover: the local network, an organization's own infrastructure, and cooperating parties over the public Internet. The mechanisms in this document map onto those three contexts.
+The DAWN charter {{DAWN-CHARTER}} calls this step "initial discovery": a client obtaining the minimum public information about an AI resource, where the resource may be "a service such as a catalog that will further the discovery process". This document uses the term initial contact for the same step. The charter lists the deployment contexts a mechanism has to cover: the local network, an organization's own infrastructure, and discovery between organizations over the public Internet, with or without a prior relationship between them. The mechanisms in this document map onto those three contexts.
 
-This document specifies initial contact for ARD: how a client obtains one or more ARD entry points and what it knows about each when it has them. It does not specify the catalog representation, the lookup or search interfaces, or how publishers register entries; those are the subjects of {{ARD}} and {{AGENT-DIRECTORY}}. It does not define new DNS resource record types, new SvcParamKeys, or new transport protocols.
+This document specifies initial contact for ARD: how a client obtains one or more ARD catalog URIs and what it knows about each when it has them. The output is always a catalog. It does not specify the catalog representation, the lookup or search interfaces, how publishers register entries, or how a catalog is bound to the publisher it speaks for; those are the subjects of {{ARD}} and {{AGENT-DIRECTORY}}. It produces "https" URIs only, and it does not define new DNS resource record types, new SvcParamKeys, or new transport protocols.
 
 # Conventions and Definitions {#definitions}
 
@@ -128,7 +138,7 @@ ARD catalog:
 : A document listing agent resources in the format defined in {{ARD}}. A catalog has an origin; its entries may point at resources hosted elsewhere.
 
 Entry point:
-: A URI from which an ARD catalog can be retrieved, together with the metadata about it that a client learned during initial contact ({{entry-point}}).
+: The URI of an ARD catalog, together with the source from which the client learned it ({{entry-point}}).
 
 Publisher:
 : The party that controls a domain name and publishes a catalog of agent resources under it.
@@ -144,21 +154,18 @@ Hint:
 
 # The Entry Point {#entry-point}
 
-Every mechanism in this document produces the same thing: zero or more entry points. An entry point has one mandatory element and two optional ones.
+Every mechanism in this document produces the same thing: zero or more entry points. An entry point has two elements.
 
 {:vspace}
 URI:
-: The URI of the catalog. The mechanisms in this document produce "https" URIs {{RFC9110}}. A DNS-SD or SVCB answer may carry protocol identifiers for other schemes; this document does not specify how a client uses them.
-
-Media type:
-: The media type the client can expect when it retrieves the URI. When a mechanism carries no media type, the client assumes the ARD catalog media type defined in {{ARD}}.
+: The "https" URI {{RFC9110}} of the catalog. Retrieving it returns an ARD catalog in a representation defined by {{ARD}}; a client that can handle several representations selects among them with content negotiation.
 
 Source:
-: The mechanism that produced the entry point and, where applicable, the DNS name or network interface it came from. The client keeps the source so that it can rank candidates and so that a failing entry point can be attributed to a source for rate limiting ({{procedure}}).
+: The mechanism that produced the entry point and, where applicable, the DNS name or network interface it came from. The client keeps the source so that it can rank candidates ({{procedure}}), attribute a failing entry point to a source for rate limiting, and let local policy decide what to accept.
 
-The three elements are a subset of the minimum discoverable information that DAWN is defining {{I-D.cui-dawn-mdi-model}}: the URI is an endpoint locator, the media type stands for the entity type, and the source is provenance of the discovery information rather than of the entity. The terminology of {{I-D.farrel-dawn-terminology}} and the requirements of {{I-D.king-dawn-requirements}} apply to this document as to other DAWN work.
+The two elements are a subset of the minimum discoverable information that DAWN is defining {{I-D.cui-dawn-mdi-model}}: the URI is an endpoint locator, and the source is provenance of the discovery information rather than of the entity. The terminology of {{I-D.farrel-dawn-terminology}} and the requirements of {{I-D.king-dawn-requirements}} apply to this document as to other DAWN work; in particular, the well-known URI of {{well-known}} is the predictable entry point that REQ-PROTO-4 of that document asks for.
 
-An entry point is a hint until the client has retrieved the catalog from the URI and authenticated the origin as described in {{security}}. Nothing in a DNS answer or a multicast response makes a catalog authoritative for a publisher; the catalog's own content and signatures do, as specified in {{ARD}}.
+An entry point is a hint until the client has retrieved the catalog from the URI and authenticated the origin as described in {{security}}. Nothing in a DNS answer or a multicast response makes a catalog authoritative for a publisher. Which publisher a catalog speaks for is established by the catalog's own content, as specified in {{ARD}}, and is outside this document.
 
 A domain may publish more than one catalog, for instance one per business unit or one per protocol family. Each mechanism below can return several entry points, and the client treats them as a set. A catalog may in turn link to further catalogs; following those links is part of lookup, not of initial contact.
 
