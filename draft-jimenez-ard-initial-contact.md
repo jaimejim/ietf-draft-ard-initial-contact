@@ -313,19 +313,37 @@ Multicast DNS discovers catalogs, not individual agents. {{I-D.jakab-dawn-agent-
 
 # Client Procedure {#procedure}
 
-A client that holds a domain name D and wants the entry points of the publisher controlling D proceeds as follows. Steps that return entry points do not stop the procedure; the client collects the results and orders them by source as described at the end of this section.
+The procedure in this section is a RECOMMENDED default. Three parts of it are requirements on every client: the well-known fetch of step 4, the depth limits of {{depth}}, and the rate limiting at the end of this section. A client MAY reorder or omit the other steps under local policy.
+
+A client that holds a domain name D, from configuration, from the user, or from the network ({{provided-domain}}), and wants the entry points of the publisher controlling D proceeds as follows. Steps that return entry points do not stop the procedure; the client collects the results and orders them by source.
 
 1. Configured entry points for D ({{static}}) are taken first.
-2. The client queries the HTTPS record for D ({{https-rr}}) and the SVCB record for "_ard.D" ({{svcb-rr}}). The two queries are independent and MAY be issued in parallel. Each ServiceMode record that the client can use yields an entry point.
-3. The client browses "_ard._tcp.D" ({{dns-sd}}) and resolves each service instance it finds.
-4. If steps 2 and 3 returned nothing, the client requests "https://D/.well-known/ard.json" ({{well-known}}). A 2xx response with a catalog, or a redirect chain ending in one, yields an entry point. Any other response ends this step.
-5. If step 4 returned nothing, the client sends a HEAD request to "https://D/" and examines the Link header field for the "ard" relation ({{link-relation}}). It MAY also retrieve the root resource and examine HTML link elements.
+2. The client queries the SVCB record for `_index._agents.D` ({{index-rr}}) and, if it resolves HTTPS records anyway, the HTTPS record for D ({{https-rr}}). The queries are independent and MAY be issued in parallel.
+3. The client browses `_ard._tcp.D` ({{dns-sd}}) and resolves each service instance it finds.
+4. The client requests "https://D/.well-known/ard" ({{well-known}}). This step MAY start in parallel with steps 2 and 3; a client already connecting to the origin pays nothing for it.
+5. If steps 2 to 4 returned nothing, the client sends a HEAD request to "https://D/" and examines the Link header field for the "ard" relation ({{link-relation}}).
 
-A client attached to a local network with no domain name browses "_ard._tcp.local." over Multicast DNS ({{mdns}}) and, in constrained networks, sends the multicast CoAP request of {{core}}. It MAY also query the domain enumeration names of {{Section 11 of RFC6763}} over Multicast DNS to learn a unicast DNS-SD domain for the network and then continue with step 3 for that domain.
+A client attached to a local network with no domain name browses "_ard._tcp.local." over Multicast DNS ({{mdns}}). It MAY also query the domain enumeration names of {{Section 11 of RFC6763}} over Multicast DNS to learn a unicast DNS-SD domain for the network and then continue with step 3 for that domain.
 
-The procedure yields a set of entry points with sources. The client orders them: configuration first, then DNS answers that were validated with DNSSEC {{RFC4033}}, then responses from the publisher's own origin (steps 4 and 5), then unvalidated DNS answers, then Multicast DNS and multicast CoAP responses. Within a source, SvcPriority and SRV priority order the candidates. The order is a default; a client MAY apply local policy, for instance to prefer catalogs reachable without leaving the local network.
+The procedure yields a set of entry points with sources. The default order is: configuration first, then DNS answers that were validated with DNSSEC {{RFC4033}}, then responses from the publisher's own origin (steps 4 and 5), then unvalidated DNS answers, then Multicast DNS responses. Within a source, SvcPriority and SRV priority order the candidates. A client MAY apply local policy, for instance to prefer catalogs reachable without leaving the local network.
 
-An entry point that fails, because the URI does not answer, the response is not a catalog, or the checks of {{security}} fail, is marked against its source. A client MUST NOT retry a failed entry point from the same source before a back-off interval and SHOULD NOT issue the queries of steps 2 to 5 for the same D more often than the TTLs of the answers it received allow. These rules follow {{Section 4.1 of RFC9176}}, whose candidates are "more or less educated guesses" and whose failures are therefore rate-limited.
+An entry point that fails, because the URI does not answer, the response is not a catalog, or the checks of {{security}} fail, is marked against its source. A client MUST NOT retry a failed entry point from the same source before a back-off interval and MUST NOT issue the queries of steps 2 to 5 for the same D more often than the TTLs of the answers it received allow. These rules follow {{Section 4.1 of RFC9176}}, whose candidates are "more or less educated guesses" and whose failures are therefore rate-limited.
+
+## Indirection Depth and Outcomes {#depth}
+
+A client follows at most one AliasMode indirection in the DNS and at most one HTTP redirect per entry point. A second indirection of either kind ends the attempt for that entry point. These limits keep initial contact to a bounded number of round trips and deny an attacker who controls one record or one response the ability to send the client on a chain.
+
+Each attempt to turn a hint into an entry point ends in one of three outcomes, which the client distinguishes so that local policy and the rate limiting above can act on them:
+
+{:vspace}
+Entry point:
+: The URI returned an ARD catalog from an authenticated origin.
+
+No entry point:
+: The URI did not answer, returned something other than a catalog, exceeded the depth limit, or failed the checks of {{security}}.
+
+Not permitted:
+: The client's own retrieval policy did not allow the fetch, for instance because the host is not on an allow-list the client applies to unvalidated DNS answers. The hint is kept with its source so that the policy decision can be revisited; it is not counted as a failure of the source.
 
 # Security Considerations {#security}
 
