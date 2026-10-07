@@ -389,7 +389,7 @@ IANA is asked to register the following entry in the "Well-Known URIs" registry 
 
 {:vspace}
 URI suffix:
-: ard.json
+: ard
 
 Change controller:
 : IETF
@@ -417,14 +417,6 @@ Description:
 Reference:
 : This document, {{link-relation}}.
 
-## Underscored and Globally Scoped DNS Node Name {#iana-attrleaf}
-
-IANA is asked to add the following entry to the "Underscored and Globally Scoped DNS Node Names" registry defined in {{RFC8552}}:
-
-| RR Type | _NODE NAME | Reference |
-|---|---|---|
-| SVCB | _ard | This document, {{svcb-rr}} |
-
 ## Service Name {#iana-service-name}
 
 IANA is asked to register the following service name in the "Service Name and Transport Protocol Port Number Registry" defined in {{RFC6335}}, without an associated port number:
@@ -447,22 +439,6 @@ Description:
 
 Reference:
 : This document, {{dns-sd}}.
-
-## Resource Type Link Target Attribute Value {#iana-rt}
-
-IANA is asked to register the following value in the "Resource Type (rt=) Link Target Attribute Values" sub-registry of the "Constrained RESTful Environments (CoRE) Parameters" registry defined in {{RFC6690}}:
-
-{:vspace}
-Attribute value:
-: ard
-
-Description:
-: Link target is an Agent Resource Discovery (ARD) catalog.
-
-Reference:
-: This document, {{core}}.
-
-The value does not start with "core", so the Specification Required policy {{RFC8126}} applies.
 
 --- back
 
