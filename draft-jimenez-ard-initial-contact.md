@@ -38,15 +38,20 @@ author:
     email: jari.arkko@ericsson.com
 
 normative:
-  RFC1035:
   RFC3986:
+  RFC4033:
   RFC6335:
   RFC6762:
   RFC6763:
   RFC8288:
   RFC8615:
   RFC9110:
+  RFC9111:
   RFC9460:
+
+informative:
+  RFC1035:
+  RFC9457:
   I-D.mozleywilliams-dnsop-dnsaid:
   ARD:
     title: "Agent Resource Discovery (ARD)"
@@ -58,11 +63,8 @@ normative:
     target: https://mindpower.github.io/ietf-draft-agent-resources-discovery/draft-bu-agent-resources-discovery.html
     seriesinfo:
       Internet-Draft: draft-bu-agent-resources-discovery
-
-informative:
   RFC2132:
   RFC3646:
-  RFC4033:
   RFC8106:
   RFC8552:
   RFC8766:
@@ -84,14 +86,7 @@ informative:
   I-D.farrel-dawn-terminology:
   I-D.king-dawn-requirements:
   I-D.cui-dawn-mdi-model:
-  AGENT-DIRECTORY:
-    title: "Agent Directory (AD)"
-    author:
-      - name: Jaime Jiménez
-    date: 2026-05
-    target: https://datatracker.ietf.org/doc/draft-jimenez-ad-agent-directory/
-    seriesinfo:
-      Internet-Draft: draft-jimenez-ad-agent-directory-01
+  I-D.jimenez-agent-directory:
   DAWN-CHARTER:
     title: "Discovery of Agents With Names (DAWN) - Proposed Charter"
     author:
@@ -125,7 +120,7 @@ Obtaining that URI is a separate problem. A client that knows an organization's 
 
 The DAWN charter {{DAWN-CHARTER}} calls this step "initial discovery": a client obtaining the minimum public information about an AI resource, where the resource may be "a service such as a catalog that will further the discovery process". This document uses the term initial contact for the same step. The charter lists the deployment contexts a mechanism has to cover: the local network, an organization's own infrastructure, and discovery between organizations over the public Internet, with or without a prior relationship between them. The mechanisms in this document map onto those three contexts.
 
-This document specifies initial contact for ARD: how a client obtains one or more ARD catalog URIs and what it knows about each when it has them. The output is always a catalog. It does not specify the catalog representation, the lookup or search interfaces, how publishers register entries, or how a catalog is bound to the publisher it speaks for; those are the subjects of {{ARD}} and {{AGENT-DIRECTORY}}. It produces "https" URIs only, and it does not define new DNS resource record types, new SvcParamKeys, or new transport protocols.
+This document specifies initial contact for ARD: how a client obtains one or more ARD catalog URIs and what it knows about each when it has them. The output is always a catalog. It does not specify the catalog representation, the lookup or search interfaces, how publishers register entries, or how a catalog is bound to the publisher it speaks for; those are the subjects of {{ARD}} and {{I-D.jimenez-agent-directory}}. It produces "https" URIs only, and it does not define new DNS resource record types, new SvcParamKeys, or new transport protocols.
 
 # Conventions and Definitions {#definitions}
 
@@ -193,7 +188,9 @@ A publisher makes its catalog available at the well-known URI {{RFC8615}} with t
 https://example.com/.well-known/ard
 ~~~
 
-A GET request to this URI returns an ARD catalog, or a redirect to one. A publisher whose catalog is hosted on another host, for instance at a service provider, serves a redirect at this URI; the client follows one redirect as in {{Section 15.4 of RFC9110}} and records the final URI as the entry point. A response that is neither a catalog nor a redirect, or a redirect that leads to another redirect, means there is no entry point at this origin ({{depth}}).
+A GET request to this URI returns an ARD catalog, or a redirect to one. A publisher whose catalog is hosted on another host, for instance at a service provider, serves a redirect at this URI; the client follows one redirect as in {{Section 15.4 of RFC9110}} and records the final URI as the entry point. A response that is neither a catalog nor a redirect, or a redirect that leads to another redirect, means there is no entry point at this origin ({{depth}}). A server that hosts no catalog answers 404 (Not Found) and MAY describe the condition with Problem Details {{RFC9457}}; the client needs no body to reach its conclusion.
+
+Responses to the well-known URI, including redirects, are cacheable under the ordinary rules of {{RFC9111}}. A client stores them and does not request the URI again while the stored response is fresh; a publisher sets the freshness lifetime to the rate at which it expects the catalog location to change.
 
 A client that holds only a domain name forms the well-known URI with that name as the authority and the default "https" port. The scope of a well-known URI is its origin: a catalog at "https://example.com/.well-known/ard" says nothing about "https://agents.example.com/". A publisher that spreads catalogs over several hosts serves one catalog at the apex that links to the others, or enumerates them with DNS-SD as in {{dns-sd}}.
 
@@ -203,13 +200,23 @@ This document requests the registration of the suffix in {{iana-well-known}}. {{
 
 A publisher MAY point to a catalog from any HTTP resource with the "ard" link relation {{RFC8288}} in a Link header field. The link context is the resource that carries the link; the link target is an ARD catalog.
 
-~~~
-HTTP/1.1 200 OK
-Content-Type: text/html; charset=UTF-8
-Link: <https://agents.example.com/catalog>; rel="ard"
+A publisher SHOULD answer a HEAD request to its origin's root resource with a Link header field carrying the relation, following the pattern of {{Section 2 of RFC9727}}, so that a client can find the catalog without retrieving a body:
+
+~~~ http-message
+HEAD / HTTP/1.1
+Host: example.com
+
 ~~~
 
-A client that has retrieved any representation from a publisher's origin examines the Link header field for the relation. A publisher SHOULD answer a HEAD request to its origin's root resource with a Link header field carrying the relation, following the pattern of {{Section 2 of RFC9727}}, so that a client can find the catalog without retrieving a body.
+~~~ http-message
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=UTF-8
+Content-Length: 1532
+Link: <https://agents.example.com/catalog>; rel="ard"
+
+~~~
+
+A client that has retrieved any representation from a publisher's origin, by HEAD or GET, examines the Link header field for the relation.
 
 Links found in a response from the publisher's own origin have the origin as their source. Links found in third-party documents are hints from that third party.
 
@@ -232,7 +239,7 @@ _index._agents.example.com. 3600 IN SVCB 1 catalog.example.net. (
 Parentheses continue a record across lines in zone file presentation format ({{Section 5.1 of RFC1035}}). The client forms the entry point as follows:
 
 * The scheme is "https".
-* The authority is the TargetName, with the port from the "port" key or 443. The TargetName rules of {{Section 3.2 of I-D.mozleywilliams-dnsop-dnsaid}} apply: it is a host name without underscore labels, so that a publicly issued certificate can name it.
+* The authority is the TargetName, with the port from the "port" key or 443. The TargetName MUST be a host name without underscore labels, so that a publicly issued certificate can name it; the client connects to it and authenticates it. This matches the rule in {{Section 3.2 of I-D.mozleywilliams-dnsop-dnsaid}}. A record whose TargetName is "." yields no entry point, since the owner name carries underscore labels.
 * The path is "/.well-known/ard". When the record carries the "well-known" SvcParamKey {{I-D.mk-dnsop-svcb-well-known}} and its value includes "ard", the client has confirmation that the catalog is there; when the key is absent, the client requests the path and learns from the response.
 * The "alpn", "port", "ipv4hint", "ipv6hint", and "ech" keys are applicable with their {{RFC9460}} semantics. The "mandatory" key is processed as in {{Section 8 of RFC9460}}. Other keys are ignored.
 * One AliasMode indirection is followed as in {{Section 2.4.2 of RFC9460}}; a second ends the attempt ({{depth}}).
@@ -327,7 +334,7 @@ A client attached to a local network with no domain name browses "_ard._tcp.loca
 
 The procedure yields a set of entry points with sources. The default order is: configuration first, then DNS answers that were validated with DNSSEC {{RFC4033}}, then responses from the publisher's own origin (steps 4 and 5), then unvalidated DNS answers, then Multicast DNS responses. Within a source, SvcPriority and SRV priority order the candidates. A client MAY apply local policy, for instance to prefer catalogs reachable without leaving the local network.
 
-An entry point that fails, because the URI does not answer, the response is not a catalog, or the checks of {{security}} fail, is marked against its source. A client MUST NOT retry a failed entry point from the same source before a back-off interval and MUST NOT issue the queries of steps 2 to 5 for the same D more often than the TTLs of the answers it received allow. These rules follow {{Section 4.1 of RFC9176}}, whose candidates are "more or less educated guesses" and whose failures are therefore rate-limited.
+An entry point that fails, because the URI does not answer, the response is not a catalog, or the checks of {{security}} fail, is marked against its source. A client MUST NOT retry a failed entry point from the same source before a back-off interval, MUST NOT issue the DNS queries of steps 2 and 3 for the same D more often than the TTLs of the answers it received allow, and MUST NOT repeat the requests of steps 4 and 5 while a stored response is fresh ({{RFC9111}}). These rules follow {{Section 4.1 of RFC9176}}, whose candidates are "more or less educated guesses" and whose failures are therefore rate-limited.
 
 ## Indirection Depth and Outcomes {#depth}
 
@@ -465,6 +472,7 @@ This section records questions to be settled before the document is stable. It i
 1. API catalog profile. Issue #2 on the ARD repository proposes publishing the catalog as an API catalog {{RFC9727}} under "/.well-known/api-catalog" with an ARD profile. If that is adopted, this document registers no suffix and {{well-known}} points at RFC 9727 with the profile.
 2. Index label. {{index-rr}} depends on the DNS-AID authors agreeing that an ARD catalog is a valid index at `_index._agents`. The fallback is a label of this document's own, "_ard", registered in the "Underscored and Globally Scoped DNS Node Names" registry {{RFC8552}} with a protocol mapping equivalent to {{index-rr}}. One label in DAWN is better than two, so the fallback is taken only if the agreement is not reached.
 3. Ownership of registrations. {{ARD}} at the time of writing also requests a well-known suffix and a link relation. After the split into initial contact, lookup, and registration documents, one document carries them.
+4. Reference status. {{ARD}} and {{I-D.mozleywilliams-dnsop-dnsaid}} are individual drafts and are cited informatively in this version. The catalog representation that {{ARD}} defines is what an entry point returns, so {{ARD}} becomes a normative reference when the companion documents are adopted together; the index label of {{index-rr}} becomes normative, or is replaced by this document's own label, when the DNS-AID question is settled.
 
 # Acknowledgments
 {:numbered="false"}
