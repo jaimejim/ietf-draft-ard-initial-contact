@@ -20,8 +20,8 @@ venue:
   type: "Proposed Working Group"
   mail: "dawn@ietf.org"
   arch: "https://mailarchive.ietf.org/arch/browse/dawn/"
-  github: "jaimejim/-ietf-draft-ard-initial-contact"
-  latest: "https://jaimejim.github.io/-ietf-draft-ard-initial-contact/draft-jimenez-ard-initial-contact.html"
+  github: "jaimejim/ietf-draft-ard-initial-contact"
+  latest: "https://jaimejim.github.io/ietf-draft-ard-initial-contact/draft-jimenez-ard-initial-contact.html"
 
 author:
  -
