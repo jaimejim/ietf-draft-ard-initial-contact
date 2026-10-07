@@ -35,7 +35,7 @@ About This Document
    This note is to be removed before publishing as an RFC.
 
    The latest revision of this draft can be found at
-   https://jaimejim.github.io/-ietf-draft-ard-initial-contact/draft-
+   https://jaimejim.github.io/ietf-draft-ard-initial-contact/draft-
    jimenez-ard-initial-contact.html.  Status information for this
    document may be found at https://datatracker.ietf.org/doc/draft-
    jimenez-ard-initial-contact/.
@@ -47,7 +47,7 @@ About This Document
    https://www.ietf.org/mailman/listinfo/dawn/.
 
    Source for this draft and an issue tracker can be found at
-   https://github.com/jaimejim/-ietf-draft-ard-initial-contact.
+   https://github.com/jaimejim/ietf-draft-ard-initial-contact.
 
 Status of This Memo
 
