@@ -156,6 +156,8 @@ Media type:
 Source:
 : The mechanism that produced the entry point and, where applicable, the DNS name or network interface it came from. The client keeps the source so that it can rank candidates and so that a failing entry point can be attributed to a source for rate limiting ({{procedure}}).
 
+The three elements are a subset of the minimum discoverable information that DAWN is defining {{I-D.cui-dawn-mdi-model}}: the URI is an endpoint locator, the media type stands for the entity type, and the source is provenance of the discovery information rather than of the entity. The terminology of {{I-D.farrel-dawn-terminology}} and the requirements of {{I-D.king-dawn-requirements}} apply to this document as to other DAWN work.
+
 An entry point is a hint until the client has retrieved the catalog from the URI and authenticated the origin as described in {{security}}. Nothing in a DNS answer or a multicast response makes a catalog authoritative for a publisher; the catalog's own content and signatures do, as specified in {{ARD}}.
 
 A domain may publish more than one catalog, for instance one per business unit or one per protocol family. Each mechanism below can return several entry points, and the client treats them as a set. A catalog may in turn link to further catalogs; following those links is part of lookup, not of initial contact.
@@ -227,7 +229,7 @@ example.com. 3600 IN HTTPS 1 . (
 )
 ~~~
 
-The client forms the entry point by appending "/.well-known/" and the suffix to the origin, as specified in {{Section 4 of I-D.mk-dnsop-svcb-well-known}}. The HTTPS record changes connection parameters, not the origin: the certificate is validated for "example.com" ({{Section 9 of RFC9460}}). A client that already resolves HTTPS records when connecting to an origin learns the entry point at no extra cost.
+Parentheses continue a record across lines in zone file presentation format ({{Section 5.1 of RFC1035}}). The client forms the entry point by appending "/.well-known/" and the suffix to the origin, as specified in {{Section 4 of I-D.mk-dnsop-svcb-well-known}}. The HTTPS record changes connection parameters, not the origin: the certificate is validated for "example.com" ({{Section 9 of RFC9460}}). A client that already resolves HTTPS records when connecting to an origin learns the entry point at no extra cost.
 
 The "well-known" key MAY list other suffixes alongside "ard.json", for instance "api-catalog" {{RFC9727}} or "agent-card.json" {{A2A}}. The client selects the suffixes it understands.
 
@@ -264,9 +266,10 @@ A client browses by querying PTR records at `_ard._tcp.<domain>`, then resolves 
 
 ~~~
 _ard._tcp.example.com. 3600 IN PTR Travel._ard._tcp.example.com.
-_ard._tcp.example.com. 3600 IN PTR Devtools._ard._tcp.example.com.
+_ard._tcp.example.com. 3600 IN PTR Tools._ard._tcp.example.com.
 
-Travel._ard._tcp.example.com. 3600 IN SRV 0 0 443 catalog.example.net.
+Travel._ard._tcp.example.com. 3600 IN SRV 0 0 443 (
+    catalog.example.net. )
 Travel._ard._tcp.example.com. 3600 IN TXT (
     "txtvers=1"
     "path=/.well-known/ard.json"
@@ -298,7 +301,7 @@ A client attached to a network it knows nothing about has no domain name to star
 
 On the local link, the client browses for "_ard._tcp.local." over Multicast DNS {{RFC6762}}, with the same PTR, SRV, and TXT records as in {{dns-sd}}. A catalog host that wishes to be found on the link answers for its service instance. The TXT keys are unchanged.
 
-Names under "local." do not appear in publicly issued certificates, so a client cannot authenticate the catalog origin by the usual rule. A publisher that advertises over Multicast DNS SHOULD set the SRV target to a unicast DNS name for which it holds a certificate, so that the entry point URI carries an authenticable host, and MAY additionally publish an address record for the ".local" name. Where a Discovery Proxy {{RFC8766}} is deployed, the link-local advertisements appear in the unicast DNS-SD namespace and the client can use {{dns-sd}} instead.
+Names under "local." do not appear in publicly issued certificates, so a client cannot authenticate the catalog origin by the usual rule. A publisher that advertises over Multicast DNS SHOULD set the SRV target to a unicast DNS name for which it holds a certificate, so that the entry point URI carries an authenticable host, and MAY also publish an address record for the ".local" name. Where a Discovery Proxy {{RFC8766}} is deployed, the link-local advertisements appear in the unicast DNS-SD namespace and the client can use {{dns-sd}} instead.
 
 Entry points learned over Multicast DNS carry the network interface as their source. {{sec-local}} describes what the client may conclude from them.
 
@@ -324,49 +327,161 @@ The resource type value is requested in {{iana-rt}}.
 
 # Client Procedure {#procedure}
 
-A client collects entry points from every mechanism it can use, orders them by source, and treats a failure of one entry point as a reason to rate-limit further attempts against the source that produced it. The ordered procedure is specified with the mechanisms.
+A client that holds a domain name D and wants the entry points of the publisher controlling D proceeds as follows. Steps that return entry points do not stop the procedure; the client collects the results and orders them by source as described at the end of this section.
+
+1. Configured entry points for D ({{static}}) are taken first.
+2. The client queries the HTTPS record for D ({{https-rr}}) and the SVCB record for "_ard.D" ({{svcb-rr}}). The two queries are independent and MAY be issued in parallel. Each ServiceMode record that the client can use yields an entry point.
+3. The client browses "_ard._tcp.D" ({{dns-sd}}) and resolves each service instance it finds.
+4. If steps 2 and 3 returned nothing, the client requests "https://D/.well-known/ard.json" ({{well-known}}). A 2xx response with a catalog, or a redirect chain ending in one, yields an entry point. Any other response ends this step.
+5. If step 4 returned nothing, the client sends a HEAD request to "https://D/" and examines the Link header field for the "ard" relation ({{link-relation}}). It MAY also retrieve the root resource and examine HTML link elements.
+
+A client attached to a local network with no domain name browses "_ard._tcp.local." over Multicast DNS ({{mdns}}) and, in constrained networks, sends the multicast CoAP request of {{core}}. It MAY also query the domain enumeration names of {{Section 11 of RFC6763}} over Multicast DNS to learn a unicast DNS-SD domain for the network and then continue with step 3 for that domain.
+
+The procedure yields a set of entry points with sources. The client orders them: configuration first, then DNS answers that were validated with DNSSEC {{RFC4033}}, then responses from the publisher's own origin (steps 4 and 5), then unvalidated DNS answers, then Multicast DNS and multicast CoAP responses. Within a source, SvcPriority and SRV priority order the candidates. The order is a default; a client MAY apply local policy, for instance to prefer catalogs reachable without leaving the local network.
+
+An entry point that fails, because the URI does not answer, the response is not a catalog, or the checks of {{security}} fail, is marked against its source. A client MUST NOT retry a failed entry point from the same source before a back-off interval and SHOULD NOT issue the queries of steps 2 to 5 for the same D more often than the TTLs of the answers it received allow. These rules follow {{Section 4.1 of RFC9176}}, whose candidates are "more or less educated guesses" and whose failures are therefore rate-limited.
 
 # Security Considerations {#security}
 
-Initial contact runs before any authenticated relationship exists between the client and the publisher. Every mechanism in this document hands the client a hint, and an attacker who controls the channel can hand it a wrong one. The client retrieves the catalog from the URI, authenticates the origin as in {{Section 4.3.3 of RFC9110}}, and applies the publisher checks of {{ARD}} to the content before it relies on anything it found.
+Initial contact runs before any authenticated relationship exists between the client and the publisher. Each mechanism gives an attacker who controls the channel a way to point the client at a catalog of their choosing. The design response is the same in every case: the client treats the result as a hint, retrieves the catalog from the URI, authenticates the origin, and then applies the publisher checks defined in {{ARD}} to the catalog's content.
 
 ## Hints and Authority {#sec-hints}
 
-A DNS answer or a multicast response names a host; TLS authenticates that host, not the publisher the client was looking for. The binding between a catalog and a publisher's domain is established by the catalog content as specified in {{ARD}}, never by the mechanism that found it.
+A client MUST authenticate the TLS server for the host named in the entry point URI, following {{Section 4.3.3 of RFC9110}}. For the HTTPS record ({{https-rr}}) and for the well-known URI and link relation ({{http-mechanisms}}), that host is the publisher's own domain, and a successful connection shows that the catalog is served by whoever controls the domain's certificate.
+
+For the SVCB record ({{svcb-rr}}), DNS-SD ({{dns-sd}}), and the CoRE link ({{core}}), the host in the URI is whatever the DNS or the multicast responder said it was. A spoofed answer can direct the client to a host for which the attacker holds a valid certificate. TLS then authenticates the wrong party correctly. Two measures limit this. First, a client SHOULD validate DNS answers with DNSSEC {{RFC4033}} where the zone is signed and SHOULD rank unvalidated answers below validated ones ({{procedure}}). Second, the catalog format in {{ARD}} binds entries to the publisher's domain through the publisher identity carried in each entry; a catalog reached through "_ard.example.com" that does not carry entries for "example.com", or whose publisher binding fails verification, is discarded. Initial contact never establishes which publisher a catalog speaks for; it only finds candidates.
 
 ## Local Network Discovery {#sec-local}
 
-Any host on the link can answer a multicast query. Entry points learned this way are the least trusted source and are verified like any other.
+Any host on the link can answer a Multicast DNS or multicast CoAP query, and link-local names carry no certificates. A client MUST treat entry points learned over multicast as the least trusted source. It SHOULD prefer entry points whose URI names a host it can authenticate with a certificate, as {{mdns}} recommends publishers to advertise, and MAY apply local policy such as a pinned key or an allow-list of hosts for networks it manages. A catalog found over multicast is a list of candidates to be verified, not evidence that the agents in it are present on the network or operated by the network's owner.
+
+Multicast queries are also an amplification vector: one request produces a response from every host that matches. Clients follow the rate limits of {{I-D.ietf-core-groupcomm-bis}} and {{RFC6762}}, and publishers in constrained networks keep the "/.well-known/core" response for "rt=ard" small.
+
+## Downgrade {#sec-downgrade}
+
+A client MUST NOT fall back to "http" when an "https" entry point fails. A client MUST NOT accept an entry point whose scheme is "http" from any mechanism in this document. The "alpn" key in SVCB and HTTPS records selects the HTTP version, not the presence of TLS.
+
+## Well-Known URI Squatting {#sec-well-known}
+
+The well-known URI is served by whoever controls the origin, which on shared hosting may be a tenant rather than the domain owner. {{Section 4 of RFC8615}} describes the risk. The publisher checks of {{ARD}} apply to catalogs found this way as to any other; a tenant can serve a catalog but cannot make its entries verify as the domain owner's.
 
 # Privacy Considerations {#privacy}
 
-Queries for a publisher's entry point reveal the client's interest in that publisher to the resolver and to observers on the path; multicast queries reveal it to the whole link.
+A DNS query for "_ard.example.com" or "_ard._tcp.example.com" tells the resolver and anyone observing the path that the client is looking for the agents of example.com. Encrypted DNS transports, discovered as in {{RFC9462}}, limit the observers to the resolver. A client MAY issue the HTTPS query of step 2 alone, since it is indistinguishable from an ordinary connection attempt to the domain.
+
+Browsing over Multicast DNS announces to the whole link that the client is looking for agent catalogs, and a host that answers announces that it offers one. Deployments where that is sensitive use unicast DNS-SD through a Discovery Proxy {{RFC8766}} with access control on the zone, or configuration.
+
+Retrieving the catalog reveals the client's address to the publisher. The catalog itself and anything the client does with it are outside this document.
 
 # IANA Considerations {#iana}
 
-This document requests a well-known URI suffix ({{iana-well-known}}), a link relation ({{iana-link-relation}}), an underscored DNS node name ({{iana-attrleaf}}), a DNS-SD service name ({{iana-service-name}}), and a CoRE resource type ({{iana-rt}}).
-
 ## Well-Known URI {#iana-well-known}
 
-The suffix "ard.json" in the "Well-Known URIs" registry {{RFC8615}}.
+IANA is asked to register the following entry in the "Well-Known URIs" registry defined in {{RFC8615}}:
+
+{:vspace}
+URI suffix:
+: ard.json
+
+Change controller:
+: IETF
+
+Specification document:
+: This document, {{well-known}}. The format of the resource is defined in {{ARD}}.
+
+Status:
+: permanent
+
+Related information:
+: The resource is an ARD catalog. Clients also locate it through the mechanisms of this document.
 
 ## Link Relation {#iana-link-relation}
 
-The relation "ard" in the "Link Relations" registry {{RFC8288}}.
+IANA is asked to register the following entry in the "Link Relations" registry defined in {{RFC8288}}:
+
+{:vspace}
+Relation name:
+: ard
+
+Description:
+: Refers to an Agent Resource Discovery (ARD) catalog listing agent resources offered by the publisher of the link context.
+
+Reference:
+: This document, {{link-relation}}.
 
 ## Underscored and Globally Scoped DNS Node Name {#iana-attrleaf}
 
-The node name "_ard" for the SVCB RR type in the registry defined by {{RFC8552}}.
+IANA is asked to add the following entry to the "Underscored and Globally Scoped DNS Node Names" registry defined in {{RFC8552}}:
+
+| RR Type | _NODE NAME | Reference |
+|---|---|---|
+| SVCB | _ard | This document, {{svcb-rr}} |
 
 ## Service Name {#iana-service-name}
 
-The service name "ard" over TCP, without a port, in the registry defined by {{RFC6335}}.
+IANA is asked to register the following service name in the "Service Name and Transport Protocol Port Number Registry" defined in {{RFC6335}}, without an associated port number:
+
+{:vspace}
+Service name:
+: ard
+
+Transport protocol:
+: tcp
+
+Assignee:
+: IESG
+
+Contact:
+: IETF Chair
+
+Description:
+: Agent Resource Discovery (ARD) catalog
+
+Reference:
+: This document, {{dns-sd}}.
 
 ## Resource Type Link Target Attribute Value {#iana-rt}
 
-The value "ard" in the CoRE Parameters registry defined by {{RFC6690}}.
+IANA is asked to register the following value in the "Resource Type (rt=) Link Target Attribute Values" sub-registry of the "Constrained RESTful Environments (CoRE) Parameters" registry defined in {{RFC6690}}:
+
+{:vspace}
+Attribute value:
+: ard
+
+Description:
+: Link target is an Agent Resource Discovery (ARD) catalog.
+
+Reference:
+: This document, {{core}}.
+
+The value does not start with "core", so the Specification Required policy {{RFC8126}} applies.
 
 --- back
+
+# Related Work {#related}
+
+{{I-D.jimenez-dawn-discovery-landscape}} surveys agent discovery mechanisms and separates lookup, name, description, trust, and interaction. Initial contact as defined here is the lookup component for the case where the result is a catalog rather than an agent. The mechanisms below address the same step.
+
+DNS for AI Discovery {{I-D.mozleywilliams-dnsop-dnsaid}} publishes agents as SVCB records under their own names and an organization index under `_index._agents.<domain>`, whose TargetName points at a host that serves an index document; the index format is out of its scope. The "_ard" record of {{svcb-rr}} is the same construction with the index format fixed to an ARD catalog. A publisher can publish both labels with the same TargetName.
+
+Agent Identity and Discovery {{I-D.nemethi-dawn-aid}} answers the single-agent question with a TXT record at `_agent.<domain>` carrying the endpoint URI and protocol token. DNS-Based Agent Naming {{I-D.seethiraju-dawn-dan}} defines two new resource record types, AIDISCA for an agent's connection and certificate data and AIINDEX for an index of agent names. Both locate agents directly; neither defines a catalog entry point, and this document defines no new record types.
+
+{{I-D.jakab-dawn-agent-discovery-mdns}} browses for agents on the local link under "_agent._tcp" and carries the agent protocol in a "proto" TXT key, with a pointer to the agent's full description. {{mdns}} browses for catalogs under "_ard._tcp" on the same link.
+
+{{Section 4.1 of RFC9176}} lists how a CoRE endpoint finds a Resource Directory: configuration, an IPv6 Router Advertisement option, DNS-SD under "_core-rd._udp" and related service names, and a multicast query for "rt=core.rd*". {{static}}, {{dns-sd}}, and {{core}} are the ARD counterparts. This document defines no Router Advertisement or DHCP option; {{RFC8910}} and {{RFC8801}} show how such options carry a URI to a host and could be applied to catalogs if a deployment needs it.
+
+{{RFC9727}} defines the "api-catalog" well-known URI and link relation for a publisher's APIs. {{RFC9461}} and {{RFC9462}} are the SVCB protocol mapping and the discovery procedure for encrypted DNS resolvers; {{svcb-rr}} follows the form of the former, and {{procedure}} the form of the latter.
+
+# Open Issues {#open-issues}
+
+This section records questions to be settled before the document is stable. It is to be removed before publication.
+
+1. Suffix name. The ARD catalog is at "ard.json", matching {{ARD}}. Issue #2 on the ARD repository proposes publishing the catalog as an API catalog {{RFC9727}} under "/.well-known/api-catalog" with an ARD profile. If that is adopted, this document registers no suffix and {{well-known}} points at RFC 9727 with the profile.
+2. "_ard" versus "_index._agents". {{I-D.mozleywilliams-dnsop-dnsaid}} already proposes an organization index label. One label serving both purposes would be better than two. Whether DAWN adopts either is open.
+3. Ownership of registrations. {{ARD}} at the time of writing also requests the "ard.json" suffix and the "ard" link relation. After the split, one document carries them.
+4. The CoRE resource type and multicast CoAP in {{core}} are included because constrained deployments are in the DAWN use cases. Whether anyone will implement them decides whether they stay.
+5. Network-provided configuration (Router Advertisement, DHCP, PvD Additional Information) is deferred. {{Section 4.1 of RFC9176}} found an RA option necessary for commissioning without DNS; agent deployments may not.
+6. Author and contributor list. The companion documents and this one need a consistent set of authors agreed among the ARD collaborators.
 
 # Acknowledgments
 {:numbered="false"}
