@@ -16,9 +16,10 @@ endif
 
 ## Additional checks, run as part of the default build.
 ## http-lint validates the http-message examples (as in httpwg/http-extensions),
-## codespell-lint runs codespell with .ignore-words, idnits runs the Datatracker
-## checks on the next submission version.
-lint:: http-lint codespell-lint
+## codespell-lint runs codespell with .ignore-words, prose-lint checks added
+## prose against .prose-rules.toml, idnits runs the Datatracker checks on the
+## next submission version.
+lint:: http-lint codespell-lint prose-lint
 all:: idnits
 
 rfc-http-validate ?= rfc-http-validate
@@ -36,6 +37,12 @@ codespell ?= codespell
 .PHONY: codespell-lint
 codespell-lint: $(drafts_source) $(DEPS_FILES)
 	$(trace) spellcheck -s codespell $(codespell) -I .ignore-words $(drafts_source)
+
+# prose-lint checks the lines a change adds against .prose-rules.toml
+# (banned phrases, negation-then-correction, non-ASCII punctuation, hedging).
+.PHONY: prose-lint
+prose-lint: $(drafts_source)
+	$(trace) prose -s prose-lint $(python) lint-prose.py --rules .prose-rules.toml $(drafts_source)
 
 clean::
 	-rm -f .*.http-lint.txt

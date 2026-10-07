@@ -1,0 +1,62 @@
+# Deterministic prose rules for draft text, checked on the lines a change adds.
+# Seeded from ~/code/skills/writing-rules/rules/writing.toml plus the
+# ietf-draft voice rules. No model involved: regexes and phrase lists only.
+# "error" entries fail the build; "warn" entries are printed.
+
+[negation]
+# Negation-then-correction, the fatal pattern.
+error = [
+  '\b(?:isn[\x27]t|is not|aren[\x27]t|are not|wasn[\x27]t|doesn[\x27]t|does not)\b[^.!?]{1,80}[.!?]\s+(?:It[\x27]s|It is|This is|That is|They are|These are)\b',
+  '(?m)^Not\s+[^.!?]{1,60}[.!?]\s+\S',
+  '\bForget\s+[^.]{1,40}\.\s+(?:This|It)\s+is\b',
+  '\bLess\s+\w+,\s+more\s+\w+',
+  '\bnot\s+(?:just|only|merely|simply)\s+\w+(?:\s+\w+){0,4},?\s+but\s+(?:also\s+)?\w+',
+]
+# Contrast clauses are legitimate in specification text; flag them for a look.
+warn = [
+  ',\s+not\s+(?:a|an|the|just|only|one|to|in|on|for|by|of|with|about|because|as|at|from)\b',
+]
+
+[phrases]
+# Case-insensitive, anywhere in the line.
+error = [
+  "in today's", "it's important to note", "it is important to note", "it's worth noting", "it is worth noting", "worth noting",
+  "delve", "dive into", "unpack", "leverage", "leveraging", "utilize", "utilise",
+  "landscape", "realm", "robust", "game-changer", "game changer", "cutting-edge", "cutting edge",
+  "straightforward", "in order to", "resonate", "boasts", "underscores",
+  "furthermore", "additionally", "moreover", "moving forward", "at the end of the day",
+  "in other words", "it goes without saying", "of course", "needless to say",
+  "supercharge", "unlock", "future-proof", "groundbreaking", "innovative", "synergy", "seamless", "seamlessly",
+  "in the current landscape", "in the modern", "in the era of", "we live in a world",
+  "no sdk is required", "no sdk required", "just a ", "nothing more than",
+]
+# Load-bearing vocabulary and draft-specific hedges; usually filler.
+warn = [
+  "comprehensive", "scalable", "streamlined", "streamline", "enhance", "enhanced", "enhances", "enhancement",
+  "maintainable", "extensible", "modular", "sophisticated", "foundational", "holistic", "powerful",
+  "plainly", "quietly", "genuinely", "deliberately", "outright", "merely", "faithfully",
+  "meaningfully", "notably", "crucially", "importantly", "effectively", "essentially", "fundamentally",
+  "guardrail", "guardrails", "backstop", "tripwire", "substrate", "north-star",
+  "commonly", "usually", "somewhat", "largely", "relatively", "arguably", "emerging", "evolving",
+  "natural fit", "naturally", "elegant", "elegantly", "simply",
+  "solves the", "addresses the problem", "the right choice",
+  "things", "stuff", "a lot of", "lots of", "kind of", "sort of", "basically", "and so on", "various", "a number of",
+]
+
+[patterns]
+# Regexes, case-insensitive.
+error = [
+  '[—–‘’“”…]',   # em/en dash, curly quotes, ellipsis
+  '\bsolv(?:e|es|ing)\s+the\s+\S+(?:\s+\S+){0,3}\s+problem\b',
+  '\bwhere\s+\w+(?:\s+\w+){0,3}\s+matters\b',
+]
+warn = [
+  '\?\s*$',                 # rhetorical question
+  '^\s*This section\b',     # lead with the topic, not "This section describes"
+  '\b(?:X|Y)\b[^.]*\bnot\b', # placeholder contrast
+]
+
+[density]
+# Hedging words per 100 words across all added prose; warn above the threshold.
+hedges = ["may", "might", "could", "often", "typically", "generally", "likely", "possibly", "perhaps", "somewhat", "relatively", "arguably", "commonly", "usually", "tends", "tend", "seems", "appears", "largely"]
+warn_per_100 = 1.5
