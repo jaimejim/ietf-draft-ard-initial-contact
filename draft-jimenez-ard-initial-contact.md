@@ -122,7 +122,7 @@ informative:
 
 --- abstract
 
-This document specifies how a client obtains the URI of an Agent Resource Discovery (ARD) catalog. It defines a well-known URI, an HTTP link relation, the use of DNS Service Binding records under the "_agents" label defined by DNS for AI Discovery, and a DNS-Based Service Discovery (DNS-SD) service type for use over unicast DNS and Multicast DNS. Each mechanism yields a set of catalog URIs together with the source from which each URI was learned. Information obtained during initial contact is a hint that the client verifies when it retrieves the catalog from its origin. The catalog format, the lookup interface, and the binding of a catalog to its publisher are specified in the companion ARD documents.
+This document specifies how a client obtains the URI of an Agent Resource Discovery (ARD) catalog. It defines a well-known URI, an HTTP link relation, the use of DNS Service Binding records under the "_agents" label defined by DNS for AI Discovery and at the domain apex, and a DNS-Based Service Discovery (DNS-SD) service type for use over unicast DNS and Multicast DNS. Each mechanism yields a set of catalog URIs together with the source from which each URI was learned. Information obtained during initial contact is a hint that the client verifies when it retrieves the catalog from its origin. The catalog format, the lookup interface, and the binding of a catalog to its publisher are specified in the companion ARD documents.
 
 --- middle
 
@@ -136,7 +136,7 @@ This document defines the following mechanisms for obtaining the URI of an ARD c
 
 * a well-known URI {{RFC8615}} with the suffix "ard.json" ({{well-known}});
 * a link relation {{RFC8288}}, "ard", whose target is an ARD catalog ({{link-relation}});
-* the use of SVCB and HTTPS records {{RFC9460}} under the "_agents" label defined by DNS for AI Discovery {{I-D.mozleywilliams-dnsop-dnsaid}} ({{pointer-rr}}, {{https-rr}});
+* the use of SVCB records {{RFC9460}} under the "_agents" label defined by DNS for AI Discovery {{I-D.mozleywilliams-dnsop-dnsaid}} and of the HTTPS record at the domain apex ({{pointer-rr}}, {{https-rr}});
 * a DNS-SD service type {{RFC6763}}, "_ard._tcp", for use over unicast DNS and Multicast DNS {{RFC6762}} ({{dns-sd}}, {{mdns}}).
 
 {{procedure}} specifies how a client combines these mechanisms. The DAWN charter {{DAWN-CHARTER}} refers to this step as "initial discovery"; this document uses the term "initial contact". The mechanisms cover the three deployment contexts the charter identifies: the local network, an organization's own infrastructure, and discovery between organizations over the public Internet.
@@ -201,7 +201,7 @@ https://example.com/.well-known/ard.json
 
 A publisher supporting this mechanism MUST respond to a GET request for this URI with an ARD catalog or with a redirect to one. The catalog carries the media type defined in {{ARD}}, and a client SHOULD send it in the Accept header field. The client MUST follow at most one redirect (301, 302, 303, 307, or 308 with a Location field, {{Section 15.4 of RFC9110}}) and records the final URI as the entry point. A response with another media type, or a redirect to a further redirect, means that there is no entry point at this origin ({{depth}}). A server that hosts no catalog SHOULD respond with 404 (Not Found) and MAY include Problem Details {{RFC9457}}.
 
-Responses to the well-known URI, including redirects and 404 responses, are cacheable under {{RFC9111}}. A client MUST NOT request the URI again while a stored response is fresh. A freshness lifetime of hours suits a stable catalog location.
+Responses to the well-known URI, including redirects and 404 responses, are cacheable under {{RFC9111}}. A client reuses a stored response while it is fresh ({{procedure}}). A freshness lifetime of hours suits a stable catalog location.
 
 The scope of a well-known URI is its origin ({{Section 3 of RFC8615}}); a catalog at "https://example.com/.well-known/ard.json" provides no information about "https://agents.example.com/". A publisher with catalogs on several hosts can serve a catalog at the apex that links to the others, or can enumerate them with DNS-SD ({{dns-sd}}).
 
@@ -247,7 +247,7 @@ The client forms the entry point as follows:
 * The authority is the TargetName, with the port from the "port" key or 443. The TargetName MUST be a host name without underscore labels, as in {{Section 3.2 of I-D.mozleywilliams-dnsop-dnsaid}}, so that a publicly issued certificate can name it. A record whose TargetName is "." yields no entry point.
 * The path is "/.well-known/ard.json". When the record carries the "well-known" SvcParamKey {{I-D.mk-dnsop-svcb-well-known}} with a value that includes "ard.json", the client can conclude that the catalog is served at that path. Otherwise the client learns this from the response. The key has no registered number yet; tests use a Private Use number ({{Section 14.3.2 of RFC9460}}).
 * Address records of the TargetName absent from the Additional section ({{Section 4.1 of RFC9460}}) are resolved by the client.
-* The "alpn", "port", "ipv4hint", "ipv6hint", and "ech" keys apply with their {{RFC9460}} semantics. The "mandatory" key is processed as in {{Section 8 of RFC9460}}. Other keys are ignored.
+* The "mandatory" key is processed as in {{Section 8 of RFC9460}}: a record whose mandatory list names a key the client does not implement is ignored. The "alpn", "port", "ipv4hint", "ipv6hint", and "ech" keys apply with their {{RFC9460}} semantics. Other keys are ignored.
 * One AliasMode indirection is followed ({{Section 2.4.2 of RFC9460}}); a second ends the attempt ({{depth}}). An AliasMode record whose TargetName is "." yields no entry point.
 
 In the example, the entry point is "https://catalog.example.net/.well-known/ard.json". The client validates the TLS certificate for "catalog.example.net" and records `_catalog._agents.example.com` as the source. An RRset MAY contain several ServiceMode records; each yields one entry point, and SvcPriority orders them. If no catalog is found at the well-known path of a TargetName, the record yields no entry point. A client MAY also query the DNS-AID organization index `_index._agents.<domain>` and treat an ARD catalog found at its TargetName in the same way.
