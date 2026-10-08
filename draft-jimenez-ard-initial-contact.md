@@ -122,7 +122,7 @@ informative:
 
 --- abstract
 
-This document specifies how a client obtains the URI of an Agent Resource Discovery (ARD) catalog. It defines a well-known URI, an HTTP link relation, the use of DNS Service Binding records under the "_agents" label defined by DNS for AI Discovery, and a DNS-Based Service Discovery (DNS-SD) service type for use over unicast DNS and Multicast DNS. Each mechanism yields a set of catalog URIs together with the source from which each URI was learned. Information obtained during initial contact is a hint that the client verifies when it retrieves the catalog from its origin. The catalog format, the lookup interface, and the binding of a catalog to its publisher are specified in the companion ARD documents.
+This document specifies how a client obtains the URI of an Agent Resource Discovery (ARD) catalog. It defines a well-known URI, an HTTP link relation, the use of DNS Service Binding records under the "_agents" label defined by DNS for AI Discovery and at the domain apex, and a DNS-Based Service Discovery (DNS-SD) service type for use over unicast DNS and Multicast DNS. Each mechanism yields a set of catalog URIs together with the source from which each URI was learned. Information obtained during initial contact is a hint that the client verifies when it retrieves the catalog from its origin. The catalog format, the lookup interface, and the binding of a catalog to its publisher are specified in the companion ARD documents.
 
 --- middle
 
@@ -136,7 +136,7 @@ This document defines the following mechanisms for obtaining the URI of an ARD c
 
 * a well-known URI {{RFC8615}} with the suffix "ard.json" ({{well-known}});
 * a link relation {{RFC8288}}, "ard", whose target is an ARD catalog ({{link-relation}});
-* the use of SVCB and HTTPS records {{RFC9460}} under the "_agents" label defined by DNS for AI Discovery {{I-D.mozleywilliams-dnsop-dnsaid}} ({{pointer-rr}}, {{https-rr}});
+* the use of SVCB records {{RFC9460}} under the "_agents" label defined by DNS for AI Discovery {{I-D.mozleywilliams-dnsop-dnsaid}} and of the HTTPS record at the domain apex ({{pointer-rr}}, {{https-rr}});
 * a DNS-SD service type {{RFC6763}}, "_ard._tcp", for use over unicast DNS and Multicast DNS {{RFC6762}} ({{dns-sd}}, {{mdns}}).
 
 {{procedure}} specifies how a client combines these mechanisms. The DAWN charter {{DAWN-CHARTER}} refers to this step as "initial discovery"; this document uses the term "initial contact". The mechanisms cover the three deployment contexts the charter identifies: the local network, an organization's own infrastructure, and discovery between organizations over the public Internet.
@@ -201,7 +201,7 @@ https://example.com/.well-known/ard.json
 
 A publisher supporting this mechanism MUST respond to a GET request for this URI with an ARD catalog or with a redirect to one. The catalog carries the media type defined in {{ARD}}, and a client SHOULD send it in the Accept header field. The client MUST follow at most one redirect (301, 302, 303, 307, or 308 with a Location field, {{Section 15.4 of RFC9110}}) and records the final URI as the entry point. A response with another media type, or a redirect to a further redirect, means that there is no entry point at this origin ({{depth}}). A server that hosts no catalog SHOULD respond with 404 (Not Found) and MAY include Problem Details {{RFC9457}}.
 
-Responses to the well-known URI, including redirects and 404 responses, are cacheable under {{RFC9111}}. A client MUST NOT request the URI again while a stored response is fresh. A freshness lifetime of hours suits a stable catalog location.
+Responses to the well-known URI, including redirects and 404 responses, are cacheable under {{RFC9111}}. A client reuses a stored response while it is fresh ({{procedure}}). A freshness lifetime of hours suits a stable catalog location.
 
 The scope of a well-known URI is its origin ({{Section 3 of RFC8615}}); a catalog at "https://example.com/.well-known/ard.json" provides no information about "https://agents.example.com/". A publisher with catalogs on several hosts can serve a catalog at the apex that links to the others, or can enumerate them with DNS-SD ({{dns-sd}}).
 
@@ -209,7 +209,7 @@ The registration of the suffix is in {{iana-well-known}}.
 
 ## Link Relation {#link-relation}
 
-A publisher MAY include a link to a catalog in any HTTP response using the "ard" link relation {{RFC8288}} in a Link header field. The link target is an ARD catalog. A publisher SHOULD respond to a HEAD request for the root resource of its origin with a Link header field carrying the relation, following {{Section 2 of RFC9727}}. The following is an example:
+A publisher MAY include a link to a catalog in any HTTP response using the "ard" link relation {{RFC8288}} in a Link header field. The link target is an ARD catalog. A publisher supporting this mechanism SHOULD respond to a HEAD request for the root resource of its origin with a Link header field carrying the relation, following {{Section 2 of RFC9727}}. The following is an example:
 
 ~~~ http-message
 HEAD / HTTP/1.1
@@ -247,7 +247,7 @@ The client forms the entry point as follows:
 * The authority is the TargetName, with the port from the "port" key or 443. The TargetName MUST be a host name without underscore labels, as in {{Section 3.2 of I-D.mozleywilliams-dnsop-dnsaid}}, so that a publicly issued certificate can name it. A record whose TargetName is "." yields no entry point.
 * The path is "/.well-known/ard.json". When the record carries the "well-known" SvcParamKey {{I-D.mk-dnsop-svcb-well-known}} with a value that includes "ard.json", the client can conclude that the catalog is served at that path. Otherwise the client learns this from the response. The key has no registered number yet; tests use a Private Use number ({{Section 14.3.2 of RFC9460}}).
 * Address records of the TargetName absent from the Additional section ({{Section 4.1 of RFC9460}}) are resolved by the client.
-* The "alpn", "port", "ipv4hint", "ipv6hint", and "ech" keys apply with their {{RFC9460}} semantics. The "mandatory" key is processed as in {{Section 8 of RFC9460}}. Other keys are ignored.
+* The "mandatory" key is processed as in {{Section 8 of RFC9460}}: a record whose mandatory list names a key the client does not implement is ignored. The "alpn", "port", "ipv4hint", "ipv6hint", and "ech" keys apply with their {{RFC9460}} semantics. Other keys are ignored.
 * One AliasMode indirection is followed ({{Section 2.4.2 of RFC9460}}); a second ends the attempt ({{depth}}). An AliasMode record whose TargetName is "." yields no entry point.
 
 In the example, the entry point is "https://catalog.example.net/.well-known/ard.json". The client validates the TLS certificate for "catalog.example.net" and records `_catalog._agents.example.com` as the source. An RRset MAY contain several ServiceMode records; each yields one entry point, and SvcPriority orders them. If no catalog is found at the well-known path of a TargetName, the record yields no entry point. A client MAY also query the DNS-AID organization index `_index._agents.<domain>` and treat an ARD catalog found at its TargetName in the same way.
@@ -263,7 +263,7 @@ example.com. 3600 IN HTTPS 1 . (
 )
 ~~~
 
-A client that resolves HTTPS records when connecting to an origin can determine from the key that the well-known fetch of {{well-known}} will succeed, and MAY skip the other mechanisms. The record yields no entry point by itself and does not affect ranking ({{procedure}}). The certificate is validated for "example.com" ({{Section 9 of RFC9460}}). A record without the key carries no information about the catalog.
+The key indicates that the publisher serves a catalog at the well-known URI of {{well-known}}. A client that resolves HTTPS records when connecting to an origin MAY skip the other mechanisms when the key is present. The record yields no entry point by itself and does not affect ranking ({{procedure}}). The certificate is validated for "example.com" ({{Section 9 of RFC9460}}). A record without the key carries no information about the catalog.
 
 ### DNS-SD Service Type "_ard._tcp" {#dns-sd}
 
@@ -302,7 +302,7 @@ A client without a domain name can obtain one from the network through the DHCPv
 
 ### Multicast DNS {#mdns}
 
-On the local link, a client browses for "_ard._tcp.local." over Multicast DNS {{RFC6762}}, using the same PTR, SRV, and TXT records as in {{dns-sd}}. Names under "local." do not appear in certificates issued by public CAs. A publisher that advertises over Multicast DNS SHOULD set the SRV target to a unicast DNS name for which it holds a certificate, so that the entry point URI names a host the client can authenticate. A client MAY use the address records in the multicast answer ({{Section 12.2 of RFC6763}}) to reach the target; TLS authenticates the host either way ({{sec-hints}}). A responder that accepts only "local." targets yields entry points the client cannot authenticate ({{sec-local}}). A browse runs for a bounded time; later answers are new hints. Where a Discovery Proxy {{RFC8766}} is deployed, the client can use {{dns-sd}} instead. Entry points learned over Multicast DNS carry the network interface as their source ({{sec-local}}).
+On the local link, a client browses for "_ard._tcp.local." over Multicast DNS {{RFC6762}}, using the same PTR, SRV, and TXT records as in {{dns-sd}}. Names under "local." do not appear in certificates issued by public CAs. A publisher that advertises over Multicast DNS SHOULD set the SRV target to a unicast DNS name for which it holds a certificate, so that the entry point URI names a host the client can authenticate. The client resolves such a target through unicast DNS and ignores address records for it in a multicast answer, since a Multicast DNS responder is authoritative only for names under "local." ({{Section 6 of RFC6762}}). TLS authenticates the host in either case ({{sec-hints}}). A responder that accepts only "local." targets yields entry points the client cannot authenticate ({{sec-local}}). A browse runs for a bounded time; later answers are new hints. Where a Discovery Proxy {{RFC8766}} is deployed, the client can use {{dns-sd}} instead. Entry points learned over Multicast DNS carry the network interface as their source ({{sec-local}}).
 
 {{I-D.jakab-dawn-agent-discovery-mdns}} describes browsing for individual agents under "_agent._tcp". The two service types coexist.
 
@@ -322,7 +322,7 @@ A client without a domain name browses "_ard._tcp.local." over Multicast DNS ({{
 
 The procedure ends when every step has returned. A client attempts each distinct URI once per run and records all its sources.
 
-The default order of preference is: configuration, then DNS answers validated with DNSSEC {{RFC4033}}, then responses from the publisher's own origin (steps 4 and 5), then unvalidated DNS answers, then Multicast DNS responses. An answer is validated when the client validated it or received it with the AD bit set from a trusted validating resolver over a secure channel ({{Section 4.9.3 of RFC4035}}); Insecure and Indeterminate answers ({{Section 4.3 of RFC4035}}) are unvalidated, and Bogus answers are discarded. An entry point is validated when every answer used to form its URI was; address records do not count, since TLS authenticates the host. Within a tier, step order applies; within a source, SvcPriority and SRV priority. A client MAY apply local policy.
+The default order of preference is: configuration, then DNS answers validated with DNSSEC {{RFC4033}}, then responses from the publisher's own origin (steps 4 and 5), then unvalidated DNS answers, then Multicast DNS responses. An answer is validated when the client validated it or received it with the AD bit set from a trusted validating resolver over a secure channel ({{Section 4.9.3 of RFC4035}}); Insecure and Indeterminate answers ({{Section 4.3 of RFC4035}}) are unvalidated, and Bogus answers are discarded. An entry point is validated when every answer used to form its URI was; address records do not count, since TLS authenticates the host. Within a tier, step order applies; within a source, SvcPriority and SRV priority. A client MAY reorder entry points under local policy. Configured entry points ({{static}}) are tried first. Entry points learned over Multicast DNS MUST rank last ({{sec-local}}).
 
 An entry point fails if the URI does not respond, if the response is not a catalog, or if the checks of {{security}} fail. A client MUST NOT retry a failed entry point from the same source before a back-off interval of at least 30 seconds. A client MUST NOT issue the DNS queries of steps 2 and 3 for the same domain name more often than the TTLs of the answers allow, including negative answers ({{RFC2308}}) and the DNSKEY and DS queries of validation. A client MUST NOT repeat the requests of steps 4 and 5 while a stored response is fresh ({{RFC9111}}).
 
