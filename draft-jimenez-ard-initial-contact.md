@@ -263,7 +263,7 @@ example.com. 3600 IN HTTPS 1 . (
 )
 ~~~
 
-A client that resolves HTTPS records when connecting to an origin can determine from the key that the well-known fetch of {{well-known}} will succeed, and MAY skip the other mechanisms. The record yields no entry point by itself and does not affect ranking ({{procedure}}). The certificate is validated for "example.com" ({{Section 9 of RFC9460}}). A record without the key carries no information about the catalog.
+The key indicates that the publisher serves a catalog at the well-known URI of {{well-known}}. A client that resolves HTTPS records when connecting to an origin MAY skip the other mechanisms when the key is present. The record yields no entry point by itself and does not affect ranking ({{procedure}}). The certificate is validated for "example.com" ({{Section 9 of RFC9460}}). A record without the key carries no information about the catalog.
 
 ### DNS-SD Service Type "_ard._tcp" {#dns-sd}
 
