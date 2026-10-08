@@ -122,7 +122,7 @@ informative:
 
 --- abstract
 
-This document specifies how a client obtains the URI of an Agent Resource Discovery (ARD) catalog. It defines a well-known URI, an HTTP link relation, the use of DNS Service Binding records under the "_agents" label defined by DNS for AI Discovery, and a DNS-Based Service Discovery (DNS-SD) service type for use over unicast DNS and Multicast DNS. Each mechanism yields a set of catalog URIs together with the source from which each URI was learned. Information obtained during initial contact is a hint that the client verifies when it retrieves the catalog from its origin. The catalog format, the lookup interface, and the binding of a catalog to its publisher are specified in the companion ARD documents.
+In an agent system, agents need to discover other agents, tool servers, and skills. Agent Resource Discovery (ARD) is an arrangement for such discovery. This document specifies how a client (such as an agent) initially discovers an ARD catalog. This discovery is performed through the use of DNS Service Binding records, DNS-Based Service Discovery (DNS-SD), HTTP link relations, or well-known URIs. Each mechanism yields a set of catalog URIs. The catalog format, the lookup interface, and the binding of a catalog to its publisher are specified in the companion ARD documents.
 
 --- middle
 
