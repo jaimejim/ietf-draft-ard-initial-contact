@@ -298,7 +298,7 @@ Service instance names such as "Travel" are human-readable labels that {{RFC6763
 
 ### Network-Provided Domain Name {#provided-domain}
 
-A client without a domain name can obtain one from the network through the DHCPv4 Domain Name option ({{Section 3.17 of RFC2132}}), the DHCPv6 Domain Search List option {{RFC3646}}, or the DNS Search List option in IPv6 Router Advertisements {{RFC8106}}. The client treats such a name as the domain D of {{procedure}}. The name is a hint from the network, and the client records it as such.
+A client without a domain name can obtain one from the network through the DHCPv4 Domain Name option ({{Section 3.17 of RFC2132}}), the DHCPv6 Domain Search List option {{RFC3646}}, or the DNS Search List option in IPv6 Router Advertisements {{RFC8106}}. The client uses such a name as the domain name in the procedure of {{procedure}}. The name is a hint from the network, and the client records it as such.
 
 ### Multicast DNS {#mdns}
 
@@ -310,13 +310,13 @@ On the local link, a client browses for "_ard._tcp.local." over Multicast DNS {{
 
 The procedure in this section is a RECOMMENDED default. The well-known fetch of step 4, the depth limits of {{depth}}, and the rate limiting below are requirements on every client. A client MAY reorder or omit the other steps under local policy.
 
-A client that holds a domain name D, from configuration, from the user, or from the network ({{provided-domain}}), proceeds as follows. Steps that return entry points do not stop the procedure.
+A client that holds a domain name, written `<domain>` below, from configuration, from the user, or from the network ({{provided-domain}}), proceeds as follows. Steps that return entry points do not stop the procedure.
 
-1. The client uses configured entry points for D ({{static}}) first.
-2. The client queries the SVCB record for `_catalog._agents.D` ({{pointer-rr}}) and, if it resolves HTTPS records in any case, the HTTPS record for D ({{https-rr}}). It MAY also query `_index._agents.D`. The queries MAY be issued in parallel.
-3. The client browses `_ard._tcp.D` ({{dns-sd}}).
-4. The client requests "https://D/.well-known/ard.json" ({{well-known}}). This step MAY be performed in parallel with steps 2 and 3.
-5. If steps 2 to 4 yield no entry point, the client sends a HEAD request to "https://D/" and examines the Link header field for the "ard" relation ({{link-relation}}).
+1. The client uses configured entry points for `<domain>` ({{static}}) first.
+2. The client queries the SVCB record for `_catalog._agents.<domain>` ({{pointer-rr}}) and, if it resolves HTTPS records in any case, the HTTPS record for `<domain>` ({{https-rr}}). It MAY also query `_index._agents.<domain>`. The queries MAY be issued in parallel.
+3. The client browses `_ard._tcp.<domain>` ({{dns-sd}}).
+4. The client requests `https://<domain>/.well-known/ard.json` ({{well-known}}). This step MAY be performed in parallel with steps 2 and 3.
+5. If steps 2 to 4 yield no entry point, the client sends a HEAD request to `https://<domain>/` and examines the Link header field for the "ard" relation ({{link-relation}}).
 
 A client without a domain name browses "_ard._tcp.local." over Multicast DNS ({{mdns}}).
 
@@ -324,7 +324,7 @@ The procedure ends when every step has returned. A client attempts each distinct
 
 The default order of preference is: configuration, then DNS answers validated with DNSSEC {{RFC4033}}, then responses from the publisher's own origin (steps 4 and 5), then unvalidated DNS answers, then Multicast DNS responses. An answer is validated when the client validated it or received it with the AD bit set from a trusted validating resolver over a secure channel ({{Section 4.9.3 of RFC4035}}); Insecure and Indeterminate answers ({{Section 4.3 of RFC4035}}) are unvalidated, and Bogus answers are discarded. An entry point is validated when every answer used to form its URI was; address records do not count, since TLS authenticates the host. Within a tier, step order applies; within a source, SvcPriority and SRV priority. A client MAY apply local policy.
 
-An entry point fails if the URI does not respond, if the response is not a catalog, or if the checks of {{security}} fail. A client MUST NOT retry a failed entry point from the same source before a back-off interval of at least 30 seconds. A client MUST NOT issue the DNS queries of steps 2 and 3 for the same D more often than the TTLs of the answers allow, including negative answers ({{RFC2308}}) and the DNSKEY and DS queries of validation. A client MUST NOT repeat the requests of steps 4 and 5 while a stored response is fresh ({{RFC9111}}).
+An entry point fails if the URI does not respond, if the response is not a catalog, or if the checks of {{security}} fail. A client MUST NOT retry a failed entry point from the same source before a back-off interval of at least 30 seconds. A client MUST NOT issue the DNS queries of steps 2 and 3 for the same domain name more often than the TTLs of the answers allow, including negative answers ({{RFC2308}}) and the DNSKEY and DS queries of validation. A client MUST NOT repeat the requests of steps 4 and 5 while a stored response is fresh ({{RFC9111}}).
 
 ## Indirection Depth and Outcomes {#depth}
 
