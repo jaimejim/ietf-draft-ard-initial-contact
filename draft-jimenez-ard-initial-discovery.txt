@@ -5,14 +5,14 @@
 Network Working Group                                         J. Jiménez
 Internet-Draft                                                  Ericsson
 Intended status: Standards Track                                   J. Bu
-Expires: 11 April 2027                                            Google
+Expires: 21 April 2027                                            Google
                                                                 J. Arkko
                                                                 Ericsson
-                                                          8 October 2026
+                                                         18 October 2026
 
 
-            Agent Resource Discovery (ARD): Initial Contact
-                draft-jimenez-ard-initial-contact-latest
+           Agent Resource Discovery (ARD): Initial Discovery
+               draft-jimenez-ard-initial-discovery-latest
 
 Abstract
 
@@ -33,9 +33,9 @@ About This Document
 
    The latest revision of this draft can be found at
    https://jaimejim.github.io/ietf-draft-ard-initial-contact/draft-
-   jimenez-ard-initial-contact.html.  Status information for this
+   jimenez-ard-initial-discovery.html.  Status information for this
    document may be found at https://datatracker.ietf.org/doc/draft-
-   jimenez-ard-initial-contact/.
+   jimenez-ard-initial-discovery/.
 
    Discussion of this document takes place on the Discovery of Agents
    With Names (DAWN) Proposed Working Group mailing list
@@ -61,7 +61,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 11 April 2027.
+   This Internet-Draft will expire on 21 April 2027.
 
 Copyright Notice
 
@@ -117,11 +117,11 @@ Table of Contents
 
    Agent Resource Discovery (ARD) [ARD] defines a catalog of agent
    resources, a document served over HTTPS in which a publisher lists
-   the agents, tool servers, and skills it offers.  Each entry points at
-   the artifact that describes the resource in its native protocol, such
-   as an Agent Card [A2A] or an MCP server description [MCP].  ARD also
-   defines a lookup interface over the catalog.  Both require that the
-   client holds the URI of the catalog.
+   agents, tool servers, and skills.  Each entry points at the artifact
+   that describes the resource in its native protocol, such as an Agent
+   Card [A2A] or an MCP server description [MCP].  ARD also defines a
+   lookup interface over the catalog.  Both require that the client
+   holds the URI of the catalog.
 
    ARD does not specify how a client obtains that URI.  The applicable
    IETF mechanisms, well-known URIs [RFC8615], web linking [RFC8288],
@@ -148,11 +148,10 @@ Table of Contents
       DNS and Multicast DNS [RFC6762] (Section 4.4.3, Section 4.5.2).
 
    Section 5 specifies how a client combines these mechanisms.  The DAWN
-   charter [DAWN-CHARTER] refers to this step as "initial discovery";
-   this document uses the term "initial contact".  The mechanisms cover
-   the three deployment contexts the charter identifies: the local
-   network, an organization's own infrastructure, and discovery between
-   organizations over the public Internet.
+   charter [DAWN-CHARTER] calls this step "initial discovery".  The
+   mechanisms cover the three deployment contexts the charter
+   identifies: the local network, an organization's own infrastructure,
+   and discovery between organizations over the public Internet.
 
    This document does not specify the catalog representation, the lookup
    or search interfaces, the registration of entries, or how a catalog
@@ -188,7 +187,7 @@ Table of Contents
    Client:
       Software that needs an ARD entry point.
 
-   Initial contact:
+   Initial discovery:
       The process by which a client obtains one or more entry points,
       starting from a domain name, a local network attachment, or
       configuration.
@@ -210,8 +209,8 @@ Table of Contents
    Source:
       The mechanism that produced the entry point and, where applicable,
       the DNS name or network interface it came from.  The client
-      retains the source in order to rank candidates (Section 5), to
-      rate-limit failing sources, and to apply local policy.
+      retains the source to rank candidates (Section 5), to rate-limit
+      failing sources, and to apply local policy.
 
    An entry point is a hint until the client has retrieved the catalog
    from the URI and authenticated the origin (Section 6).  A DNS answer
@@ -478,7 +477,8 @@ Table of Contents
        the HTTPS record for <domain> (Section 4.4.2).  It MAY also query
        _index._agents.<domain>.  The queries MAY be issued in parallel.
 
-   3.  The client browses _ard._tcp.<domain> (Section 4.4.3).
+   3.  The client queries the PTR records at _ard._tcp.<domain>
+       (Section 4.4.3).
 
    4.  The client requests https://<domain>/.well-known/ard.json
        (Section 4.2).  This step MAY be performed in parallel with steps
@@ -488,7 +488,7 @@ Table of Contents
        request to https://<domain>/ and examines the Link header field
        for the "ard" relation (Section 4.3).
 
-   A client without a domain name browses "_ard._tcp.local." over
+   A client without a domain name queries "_ard._tcp.local." over
    Multicast DNS (Section 4.5.2).
 
    The procedure ends when every step has returned.  A client attempts
@@ -546,7 +546,7 @@ Table of Contents
 
 6.  Security Considerations
 
-   Initial contact takes place before any authenticated relationship
+   Initial discovery takes place before any authenticated relationship
    exists between the client and the publisher.  In each mechanism, an
    attacker who controls the channel can direct the client to a catalog
    of the attacker's choosing.  The mitigation is the same for all
@@ -615,7 +615,7 @@ Table of Contents
 
    Browsing over Multicast DNS reveals to all hosts on the link that the
    client is looking for agent catalogs, and a responding host reveals
-   that it offers one.  Deployments where this is a concern can use
+   that it advertises one.  Deployments where this is a concern can use
    unicast DNS-SD through a Discovery Proxy [RFC8766] with access
    control on the zone, or configuration.  The service instance names
    under _ard._tcp.<domain> can be enumerated by any party; they
@@ -777,9 +777,9 @@ Table of Contents
               Besleaga, A. N., "The 'knowledge-linkset' Well-Known URI
               for Publishing Knowledge Artefacts", Work in Progress,
               Internet-Draft, draft-besleaga-agentic-knowledge-
-              wellknown-00, 30 September 2026,
+              wellknown-01, 14 October 2026,
               <https://datatracker.ietf.org/doc/html/draft-besleaga-
-              agentic-knowledge-wellknown-00>.
+              agentic-knowledge-wellknown-01>.
 
    [I-D.cui-dawn-mdi-model]
               Cui, Y., "An Information Model for Minimum Discoverable
@@ -834,9 +834,9 @@ Table of Contents
    [I-D.morrison-mcp-dns-discovery]
               Morrison, B., "Discovery of Model Context Protocol Servers
               via DNS TXT Records", Work in Progress, Internet-Draft,
-              draft-morrison-mcp-dns-discovery-07, 30 September 2026,
+              draft-morrison-mcp-dns-discovery-08, 8 October 2026,
               <https://datatracker.ietf.org/doc/html/draft-morrison-mcp-
-              dns-discovery-07>.
+              dns-discovery-08>.
 
    [I-D.mozleywilliams-dnsop-dnsaid]
               Mozley, J., Williams, N., Sarikaya, B., Schott, R., and J.
@@ -949,7 +949,7 @@ Appendix A.  Related Work
 
    [I-D.jimenez-dawn-discovery-landscape] surveys agent discovery
    mechanisms and separates lookup, name, description, trust, and
-   interaction.  Initial contact is the lookup component for the case
+   interaction.  Initial discovery is the lookup component for the case
    where the result is a catalog.  The entry point of Section 3 is a
    subset of the minimum discoverable information of
    [I-D.cui-dawn-mdi-model], the well-known URI is the predictable entry
@@ -1011,8 +1011,8 @@ Appendix B.  Open Issues
 
    4.  Ownership of registrations.  [ARD] also requests a well-known
        suffix and a link relation.  After the split into initial
-       contact, lookup, and registration documents, one document carries
-       them.
+       discovery, lookup, and registration documents, one document
+       carries them.
 
    5.  Reference status.  [ARD] and [I-D.mozleywilliams-dnsop-dnsaid]
        are individual drafts cited informatively.  [ARD] becomes a
@@ -1025,7 +1025,7 @@ Appendix B.  Open Issues
 
 Acknowledgments
 
-   The split of the ARD work into initial contact, lookup, and
+   The split of the ARD work into initial discovery, lookup, and
    registration documents was proposed by Jari Arkko.  R.V.  Guha co-
    wrote the ARD specification this document builds on.  Wes Hardaker
    and Sam Sharaf took part in the discussions that shaped the scope.
