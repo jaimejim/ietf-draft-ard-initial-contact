@@ -248,6 +248,12 @@ Table of Contents
    Configuration is also used for catalogs that a publisher does not
    advertise.
 
+   A configured entry point is a URI.  The client retrieves it directly;
+   the DNS queries and HTTP requests of steps 2 to 5 of Section 5 do not
+   apply to it.  A client MAY be configured to use configured entry
+   points only.  Such a client does not perform the mechanisms of
+   Section 4.2, Section 4.3, and Section 4.4.
+
 4.2.  DNS-Based Mechanisms
 
    DNS records allow a publisher to advertise an entry point before the
@@ -480,10 +486,11 @@ Table of Contents
    The procedure takes a domain name as input, written <domain> below,
    obtained from configuration, from the user, or from the network
    (Section 4.4.1).  The procedure continues after a step returns an
-   entry point.
+   entry point.  A client without a domain name performs step 1 and
+   queries "_ard._tcp.local." over Multicast DNS (Section 4.4.2); steps
+   2 to 5 do not apply.
 
-   1.  The client uses configured entry points for <domain>
-       (Section 4.1) first.
+   1.  The client uses configured entry points (Section 4.1) first.
 
    2.  The client queries the SVCB record for _catalog._agents.<domain>
        (Section 4.2.1) and, if it resolves HTTPS records when connecting
@@ -501,9 +508,6 @@ Table of Contents
    5.  If steps 2 to 4 yield no entry point, the client sends a HEAD
        request to https://<domain>/ and examines the Link header field
        for the "ard" relation (Section 4.3.2).
-
-   A client without a domain name queries "_ard._tcp.local." over
-   Multicast DNS (Section 4.4.2).
 
    The procedure ends when every step has returned.  A client attempts
    each distinct URI once per execution of the procedure and records all
