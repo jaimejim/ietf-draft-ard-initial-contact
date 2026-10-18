@@ -193,6 +193,8 @@ The mechanisms of {{dns-mechanisms}} and {{origin-mechanisms}} take a domain nam
 
 A client MAY be configured directly with one or more entry points, for instance by an operator, by a device profile, or by the application that includes the client. A configured entry point has the source "configuration", is tried before any discovered entry point, and is verified in the same way as a discovered entry point. Configuration is also used for catalogs that a publisher does not advertise.
 
+A configured entry point is a URI. The client retrieves it directly; the DNS queries and HTTP requests of steps 2 to 5 of {{procedure}} do not apply to it. A client MAY be configured to use configured entry points only. Such a client does not perform the mechanisms of {{dns-mechanisms}}, {{origin-mechanisms}}, and {{local-mechanisms}}.
+
 ## DNS-Based Mechanisms {#dns-mechanisms}
 
 DNS records allow a publisher to advertise an entry point before the client opens a connection, and to place the catalog on a host other than the domain apex without a redirect.
@@ -316,15 +318,13 @@ On the local link, a client browses for "_ard._tcp.local." over Multicast DNS {{
 
 The procedure in this section is a RECOMMENDED default. The well-known fetch of step 4, the depth limits of {{depth}}, and the rate limiting below are requirements on every client. A client MAY reorder or omit the other steps under local policy.
 
-The procedure takes a domain name as input, written `<domain>` below, obtained from configuration, from the user, or from the network ({{provided-domain}}). The procedure continues after a step returns an entry point.
+The procedure takes a domain name as input, written `<domain>` below, obtained from configuration, from the user, or from the network ({{provided-domain}}). The procedure continues after a step returns an entry point. A client without a domain name performs step 1 and queries "_ard._tcp.local." over Multicast DNS ({{mdns}}); steps 2 to 5 do not apply.
 
-1. The client uses configured entry points for `<domain>` ({{static}}) first.
+1. The client uses configured entry points ({{static}}) first.
 2. The client queries the SVCB record for `_catalog._agents.<domain>` ({{pointer-rr}}) and, if it resolves HTTPS records when connecting to origins, the HTTPS record for `<domain>` ({{https-rr}}). It MAY also query `_index._agents.<domain>`. The queries MAY be issued in parallel.
 3. The client queries the PTR records at `_ard._tcp.<domain>` ({{dns-sd}}).
 4. The client requests `https://<domain>/.well-known/ard.json` ({{well-known}}). This step MAY be performed in parallel with steps 2 and 3.
 5. If steps 2 to 4 yield no entry point, the client sends a HEAD request to `https://<domain>/` and examines the Link header field for the "ard" relation ({{link-relation}}).
-
-A client without a domain name queries "_ard._tcp.local." over Multicast DNS ({{mdns}}).
 
 The procedure ends when every step has returned. A client attempts each distinct URI once per execution of the procedure and records all its sources.
 
