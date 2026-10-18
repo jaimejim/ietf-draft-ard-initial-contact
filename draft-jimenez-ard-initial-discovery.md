@@ -1,9 +1,9 @@
 ---
-title: "Agent Resource Discovery (ARD): Initial Contact"
-abbrev: "ARD Initial Contact"
+title: "Agent Resource Discovery (ARD): Initial Discovery"
+abbrev: "ARD Initial Discovery"
 category: std
 
-docname: draft-jimenez-ard-initial-contact-latest
+docname: draft-jimenez-ard-initial-discovery-latest
 submissiontype: IETF
 ipr: trust200902
 v: 3
@@ -21,7 +21,7 @@ venue:
   mail: "dawn@ietf.org"
   arch: "https://mailarchive.ietf.org/arch/browse/dawn/"
   github: "jaimejim/ietf-draft-ard-initial-contact"
-  latest: "https://jaimejim.github.io/ietf-draft-ard-initial-contact/draft-jimenez-ard-initial-contact.html"
+  latest: "https://jaimejim.github.io/ietf-draft-ard-initial-contact/draft-jimenez-ard-initial-discovery.html"
 
 author:
  -
@@ -128,7 +128,7 @@ In an agent system, agents need to discover other agents, tool servers, and skil
 
 # Introduction {#intro}
 
-Agent Resource Discovery (ARD) {{ARD}} defines a catalog of agent resources, a document served over HTTPS in which a publisher lists the agents, tool servers, and skills it offers. Each entry points at the artifact that describes the resource in its native protocol, such as an Agent Card {{A2A}} or an MCP server description {{MCP}}. ARD also defines a lookup interface over the catalog. Both require that the client holds the URI of the catalog.
+Agent Resource Discovery (ARD) {{ARD}} defines a catalog of agent resources, a document served over HTTPS in which a publisher lists agents, tool servers, and skills. Each entry points at the artifact that describes the resource in its native protocol, such as an Agent Card {{A2A}} or an MCP server description {{MCP}}. ARD also defines a lookup interface over the catalog. Both require that the client holds the URI of the catalog.
 
 ARD does not specify how a client obtains that URI. The applicable IETF mechanisms, well-known URIs {{RFC8615}}, web linking {{RFC8288}}, Service Binding records {{RFC9460}}, and DNS-SD {{RFC6763}} with Multicast DNS {{RFC6762}}, each require an application-specific binding that defines the names to query, the parameters to publish, and the interpretation of the answer.
 
@@ -139,7 +139,7 @@ This document defines the following mechanisms for obtaining the URI of an ARD c
 * the use of SVCB records {{RFC9460}} under the "_agents" label defined by DNS for AI Discovery {{I-D.mozleywilliams-dnsop-dnsaid}} and of the HTTPS record at the domain apex ({{pointer-rr}}, {{https-rr}});
 * a DNS-SD service type {{RFC6763}}, "_ard._tcp", for use over unicast DNS and Multicast DNS {{RFC6762}} ({{dns-sd}}, {{mdns}}).
 
-{{procedure}} specifies how a client combines these mechanisms. The DAWN charter {{DAWN-CHARTER}} refers to this step as "initial discovery"; this document uses the term "initial contact". The mechanisms cover the three deployment contexts the charter identifies: the local network, an organization's own infrastructure, and discovery between organizations over the public Internet.
+{{procedure}} specifies how a client combines these mechanisms. The DAWN charter {{DAWN-CHARTER}} calls this step "initial discovery". The mechanisms cover the three deployment contexts the charter identifies: the local network, an organization's own infrastructure, and discovery between organizations over the public Internet.
 
 This document does not specify the catalog representation, the lookup or search interfaces, the registration of entries, or how a catalog is bound to its publisher; these are specified in {{ARD}} and {{I-D.jimenez-agent-directory}}. It defines no new DNS resource record types, SvcParamKeys, or transport protocols. All entry point URIs use the "https" scheme.
 
@@ -162,7 +162,7 @@ Publisher:
 Client:
 : Software that needs an ARD entry point.
 
-Initial contact:
+Initial discovery:
 : The process by which a client obtains one or more entry points, starting from a domain name, a local network attachment, or configuration.
 
 Hint:
@@ -177,7 +177,7 @@ URI:
 : The "https" URI {{RFC9110}} of the catalog. Retrieving it returns an ARD catalog in a representation defined by {{ARD}}.
 
 Source:
-: The mechanism that produced the entry point and, where applicable, the DNS name or network interface it came from. The client retains the source in order to rank candidates ({{procedure}}), to rate-limit failing sources, and to apply local policy.
+: The mechanism that produced the entry point and, where applicable, the DNS name or network interface it came from. The client retains the source to rank candidates ({{procedure}}), to rate-limit failing sources, and to apply local policy.
 
 An entry point is a hint until the client has retrieved the catalog from the URI and authenticated the origin ({{security}}). A DNS answer or a multicast response does not make a catalog authoritative for a publisher. The publisher of a catalog is established by the catalog content, as specified in {{ARD}}.
 
@@ -314,11 +314,11 @@ A client that holds a domain name, written `<domain>` below, from configuration,
 
 1. The client uses configured entry points for `<domain>` ({{static}}) first.
 2. The client queries the SVCB record for `_catalog._agents.<domain>` ({{pointer-rr}}) and, if it resolves HTTPS records in any case, the HTTPS record for `<domain>` ({{https-rr}}). It MAY also query `_index._agents.<domain>`. The queries MAY be issued in parallel.
-3. The client browses `_ard._tcp.<domain>` ({{dns-sd}}).
+3. The client queries the PTR records at `_ard._tcp.<domain>` ({{dns-sd}}).
 4. The client requests `https://<domain>/.well-known/ard.json` ({{well-known}}). This step MAY be performed in parallel with steps 2 and 3.
 5. If steps 2 to 4 yield no entry point, the client sends a HEAD request to `https://<domain>/` and examines the Link header field for the "ard" relation ({{link-relation}}).
 
-A client without a domain name browses "_ard._tcp.local." over Multicast DNS ({{mdns}}).
+A client without a domain name queries "_ard._tcp.local." over Multicast DNS ({{mdns}}).
 
 The procedure ends when every step has returned. A client attempts each distinct URI once per run and records all its sources.
 
@@ -344,7 +344,7 @@ Not permitted:
 
 # Security Considerations {#security}
 
-Initial contact takes place before any authenticated relationship exists between the client and the publisher. In each mechanism, an attacker who controls the channel can direct the client to a catalog of the attacker's choosing. The mitigation is the same for all mechanisms: the client treats the result as a hint, retrieves the catalog from the URI, authenticates the origin, and relies on the catalog content, as specified in {{ARD}}, to determine the publisher of the catalog.
+Initial discovery takes place before any authenticated relationship exists between the client and the publisher. In each mechanism, an attacker who controls the channel can direct the client to a catalog of the attacker's choosing. The mitigation is the same for all mechanisms: the client treats the result as a hint, retrieves the catalog from the URI, authenticates the origin, and relies on the catalog content, as specified in {{ARD}}, to determine the publisher of the catalog.
 
 ## Hints and Authority {#sec-hints}
 
@@ -368,7 +368,7 @@ On shared hosting, the well-known URI can be served by a tenant rather than the 
 
 A DNS query for `_catalog._agents.example.com` or `_ard._tcp.example.com` reveals to the resolver, and to any observer on the path, that the client is looking for the agents of example.com. Encrypted DNS transports, discovered as described in {{RFC9462}}, limit the observers to the resolver. The well-known fetch is indistinguishable from an ordinary connection to the domain. The TLS Server Name Indication reveals the TargetName host unless the "ech" key is used, and DNSSEC validation adds DNSKEY and DS queries to the parent zones.
 
-Browsing over Multicast DNS reveals to all hosts on the link that the client is looking for agent catalogs, and a responding host reveals that it offers one. Deployments where this is a concern can use unicast DNS-SD through a Discovery Proxy {{RFC8766}} with access control on the zone, or configuration. The service instance names under `_ard._tcp.<domain>` can be enumerated by any party; they identify catalogs that a publisher has chosen to make discoverable, and they do not identify people or individual agents.
+Browsing over Multicast DNS reveals to all hosts on the link that the client is looking for agent catalogs, and a responding host reveals that it advertises one. Deployments where this is a concern can use unicast DNS-SD through a Discovery Proxy {{RFC8766}} with access control on the zone, or configuration. The service instance names under `_ard._tcp.<domain>` can be enumerated by any party; they identify catalogs that a publisher has chosen to make discoverable, and they do not identify people or individual agents.
 
 Retrieving the catalog reveals the client's address to the publisher.
 
@@ -435,7 +435,7 @@ Reference:
 
 # Related Work {#related}
 
-{{I-D.jimenez-dawn-discovery-landscape}} surveys agent discovery mechanisms and separates lookup, name, description, trust, and interaction. Initial contact is the lookup component for the case where the result is a catalog. The entry point of {{entry-point}} is a subset of the minimum discoverable information of {{I-D.cui-dawn-mdi-model}}, the well-known URI is the predictable entry point that REQ-PROTO-4 of {{I-D.king-dawn-requirements}} asks for, and the terminology of {{I-D.farrel-dawn-terminology}} applies.
+{{I-D.jimenez-dawn-discovery-landscape}} surveys agent discovery mechanisms and separates lookup, name, description, trust, and interaction. Initial discovery is the lookup component for the case where the result is a catalog. The entry point of {{entry-point}} is a subset of the minimum discoverable information of {{I-D.cui-dawn-mdi-model}}, the well-known URI is the predictable entry point that REQ-PROTO-4 of {{I-D.king-dawn-requirements}} asks for, and the terminology of {{I-D.farrel-dawn-terminology}} applies.
 
 DNS-AID {{I-D.mozleywilliams-dnsop-dnsaid}} publishes agents as SVCB records and an organization index under `_index._agents.<domain>`. Its reference implementation {{DNS-AID-IMPL}} publishes `_catalog._agents` next to it, follows an off-domain pointer only when the record is DNSSEC-validated or the catalog is signed against the domain's key set, and refuses redirects. {{pointer-rr}} adopts its label, {{depth}} allows one redirect, and the trust decision for off-domain pointers is left to the publisher check of {{ARD}}. The ARD specification {{ARD-SPEC}}, from which {{ARD}} derives, requires the well-known fetch of "/.well-known/ard.json", lists `_entries._agents` for a static entry source, and publishes an SVCB record at `_ard._tcp.<domain>`; this document uses that name only as a DNS-SD service type.
 
@@ -450,11 +450,11 @@ The following questions are to be settled before the document is stable. This se
 1. API catalog profile. Issue #2 on the ARD repository proposes publishing the catalog as an {{RFC9727}} API catalog under "/.well-known/api-catalog" with an ARD profile. If adopted, this document registers no suffix.
 2. Pointer label. `_index._agents` (DNS-AID), `_catalog._agents` (its reference implementation), and `_entries._agents` ({{ARD-SPEC}}) name the same pointer. This document uses `_catalog._agents` because it is deployed, and asks DNS-AID, as owner of "_agents" in the {{RFC8552}} registry, to list it. The fallback is a label of this document's own, "_ard".
 3. Suffix. "ard.json" matches {{ARD-SPEC}} and deployed code. A suffix without the extension, "ard", was considered.
-4. Ownership of registrations. {{ARD}} also requests a well-known suffix and a link relation. After the split into initial contact, lookup, and registration documents, one document carries them.
+4. Ownership of registrations. {{ARD}} also requests a well-known suffix and a link relation. After the split into initial discovery, lookup, and registration documents, one document carries them.
 5. Reference status. {{ARD}} and {{I-D.mozleywilliams-dnsop-dnsaid}} are individual drafts cited informatively. {{ARD}} becomes a normative reference when the companion documents are adopted together.
 6. SvcParamKey number. The "well-known" key has no registered number; the examples in {{pointer-rr}} and {{https-rr}} cannot be loaded into a zone until it does.
 
 # Acknowledgments
 {:numbered="false"}
 
-The split of the ARD work into initial contact, lookup, and registration documents was proposed by Jari Arkko. R.V. Guha co-wrote the ARD specification this document builds on. Wes Hardaker and Sam Sharaf took part in the discussions that shaped the scope. The work of Jim Mozley and Daniel King on the organization index and on the "well-known" SvcParamKey provided the DNS bindings used here. The depth limit and the fixed outcomes follow a discussion on the DAWN list started by Enrique Somoza and carried by Francesco Marinoni Moretto and Balazs Nemethi.
+The split of the ARD work into initial discovery, lookup, and registration documents was proposed by Jari Arkko. R.V. Guha co-wrote the ARD specification this document builds on. Wes Hardaker and Sam Sharaf took part in the discussions that shaped the scope. The work of Jim Mozley and Daniel King on the organization index and on the "well-known" SvcParamKey provided the DNS bindings used here. The depth limit and the fixed outcomes follow a discussion on the DAWN list started by Enrique Somoza and carried by Francesco Marinoni Moretto and Balazs Nemethi.
