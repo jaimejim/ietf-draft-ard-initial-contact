@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-10-11T00:08:25.470158+00:00",
+  "timestamp": "2026-10-20T00:07:15.642514+00:00",
   "repo": "jaimejim/ietf-draft-ard-initial-contact",
   "labels": [
     {
@@ -86,15 +86,15 @@
       "id": "I_kwDOU_yOlM8AAAABV21u9w",
       "title": "Nature of ARD offers",
       "url": "https://github.com/jaimejim/ietf-draft-ard-initial-contact/issues/3",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "jariarkko",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Introduction says:\n\n\"Agent Resource Discovery (ARD) [[ARD](https://jaime.win/ietf-draft-ard-initial-contact/draft-jimenez-ard-initial-contact.html#ARD)] defines a catalog of agent resources, a document served over HTTPS in which a publisher lists the agents, tool servers, and skills it offers.\"\n\nI wonder if the right term would be \"knows about\". Is there an \"offer\" in this context? What if the directory server simply crawled potential resources and lists them, can we say it \"offers\" a resource?\n",
       "createdAt": "2026-10-08T12:26:59Z",
-      "updatedAt": "2026-10-08T15:17:59Z",
-      "closedAt": null,
+      "updatedAt": "2026-10-18T18:57:20Z",
+      "closedAt": "2026-10-18T18:57:20Z",
       "comments": [
         {
           "author": "jaimejim",
@@ -110,15 +110,15 @@
       "id": "I_kwDOU_yOlM8AAAABV3A4xQ",
       "title": "Ordering and type of entry discovery mechanisms",
       "url": "https://github.com/jaimejim/ietf-draft-ard-initial-contact/issues/4",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "jariarkko",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "I had several question marks here\n\n1. Order. Would it be politically better to start with the DNS discovery mechanisms to fit DAWN better?\n\n2. I can't quite put my finger on it, but I have some unease with the way we specify these different kinds of initial contacts. (This was the same when I read the original ARD docs.) For instance, a well-known URI can't be a starting point because to use one you'd have to know at least one FQDN or IP address.  Or a configured entry point requires a DNS lookup before it can be used.\n\n",
       "createdAt": "2026-10-08T12:39:35Z",
-      "updatedAt": "2026-10-08T15:20:11Z",
-      "closedAt": null,
+      "updatedAt": "2026-10-18T19:29:11Z",
+      "closedAt": "2026-10-18T19:29:06Z",
       "comments": [
         {
           "author": "jaimejim",
@@ -126,6 +126,13 @@
           "body": "1. I put well-known first since it's the one mandatory mechanism. Fine to move DNS first.\n2. Agreed. I'll group by starting point: a URI, a domain name, or the local network.",
           "createdAt": "2026-10-08T15:20:10Z",
           "updatedAt": "2026-10-08T15:20:10Z"
+        },
+        {
+          "author": "jaimejim",
+          "authorAssociation": "OWNER",
+          "body": "Done. The mechanisms are now grouped by input: DNS-based and origin-based mechanisms take a domain name, local network mechanisms do not, configuration gives a URI directly. DNS comes before the well-known URI in both the list and the section order. The well-known fetch stays mandatory to implement.",
+          "createdAt": "2026-10-18T19:29:11Z",
+          "updatedAt": "2026-10-18T19:29:11Z"
         }
       ]
     },
@@ -134,15 +141,15 @@
       "id": "I_kwDOU_yOlM8AAAABV3H9XA",
       "title": "Mechanisms vs. client process specification",
       "url": "https://github.com/jaimejim/ietf-draft-ard-initial-contact/issues/5",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "jariarkko",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "\nSome thoughts/questions on Section 5 and the five-item list there:\n\n1. If you have a configured entry point (e.g., ericsson.com/eriagents/ard.json, do you really want to combine this with current domain (e.g., Elisa.fi/eriagents/ard.json? I would think that configured entry point overrides other options\n\n2. Is a configured entry point a domain name or a URI? I.e., do you go direct to the configured one or apply the rest of the rules for using SVCB etc.?\n\n3.  Is there a \"don't look at others\" rule somewhere, eg. as with the above corporate agent server example?\n\n4. On bullet item 3, is \"browse\" the right term in \"The client browses _ard._tcp.D (Section 4.4.3).\"?\n\n5. The first paragraph after the list appears like an action, should it be on the list? \"A client without a domain name browses \"_ard._tcp.local.\" over Multicast DNS (Section 4.5.2).\"",
       "createdAt": "2026-10-08T12:47:54Z",
-      "updatedAt": "2026-10-08T15:30:10Z",
-      "closedAt": null,
+      "updatedAt": "2026-10-18T19:31:53Z",
+      "closedAt": "2026-10-18T19:31:48Z",
       "comments": [
         {
           "author": "jaimejim",
@@ -150,6 +157,13 @@
           "body": "1. Good point. In CoRE we also had configuration first and what the network suggests (DHCP domain, mDNS) as a fall-back. So maybe we could do it that way.\n2. AFAIK it is a URI. The DNS part (SVCB etc) happens before, right?\n3. Do we do the .well-known optional? I mean we could expand on the static configurations too.\n4. Maybe that's too web-like. \"queries\" a record?\n5. tbd",
           "createdAt": "2026-10-08T15:30:10Z",
           "updatedAt": "2026-10-08T15:30:10Z"
+        },
+        {
+          "author": "jaimejim",
+          "authorAssociation": "OWNER",
+          "body": "1. Done: configuration first, then DNS, origin, unvalidated DNS, mDNS last.\n2. A URI. Added: the client retrieves it directly, steps 2 to 5 do not apply.\n3. Added: a client MAY be configured to use configured entry points only, and then performs no other mechanism.\n4. Done: \"queries\".\n5. Folded into the procedure: a client without a domain name performs step 1 and the mDNS query; steps 2 to 5 do not apply.",
+          "createdAt": "2026-10-18T19:31:53Z",
+          "updatedAt": "2026-10-18T19:31:53Z"
         }
       ]
     },
@@ -165,9 +179,17 @@
       "labels": [],
       "body": "There's a lot here. Should it be simplified, e.g., for the -00 draft/ease of understanding or adopting?\n",
       "createdAt": "2026-10-08T12:48:40Z",
-      "updatedAt": "2026-10-08T12:48:40Z",
+      "updatedAt": "2026-10-18T19:35:30Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "jaimejim",
+          "authorAssociation": "OWNER",
+          "body": "Maybe we could remove the HTTPS record and the link relation but not sure if that's what you mean. I am open for suggestions.",
+          "createdAt": "2026-10-18T19:35:30Z",
+          "updatedAt": "2026-10-18T19:35:30Z"
+        }
+      ]
     },
     {
       "number": 7,
@@ -197,24 +219,32 @@
       "labels": [],
       "body": "And would they be able to provide their own description via .well-known ?\n",
       "createdAt": "2026-10-08T12:50:04Z",
-      "updatedAt": "2026-10-08T12:50:04Z",
+      "updatedAt": "2026-10-18T19:37:36Z",
       "closedAt": null,
-      "comments": []
+      "comments": [
+        {
+          "author": "jaimejim",
+          "authorAssociation": "OWNER",
+          "body": "An agent that wants to describe itself can use an agent card, or a single-entry catalog at its well-known URI.",
+          "createdAt": "2026-10-18T19:37:36Z",
+          "updatedAt": "2026-10-18T19:37:36Z"
+        }
+      ]
     },
     {
       "number": 11,
       "id": "I_kwDOU_yOlM8AAAABV5lz0g",
       "title": "Name change",
       "url": "https://github.com/jaimejim/ietf-draft-ard-initial-contact/issues/11",
-      "state": "OPEN",
+      "state": "CLOSED",
       "author": "jaimejim",
       "authorAssociation": "OWNER",
       "assignees": [],
       "labels": [],
       "body": "I used the initial-contact from the meeting, can we call it initial-discovery instead? other ideas?",
       "createdAt": "2026-10-08T15:37:26Z",
-      "updatedAt": "2026-10-08T15:37:26Z",
-      "closedAt": null,
+      "updatedAt": "2026-10-18T18:57:20Z",
+      "closedAt": "2026-10-18T18:57:20Z",
       "comments": []
     }
   ],
@@ -299,6 +329,90 @@
       "mergedBy": "jaimejim",
       "mergeCommit": {
         "oid": "93059a5e04ff9a590ae5c1ff09c38e5b22c7a841"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 12,
+      "id": "PR_kwDOU_yOlM8AAAABJMU_4A",
+      "title": "Rename to initial discovery; lists instead of offers; queries instead of browses",
+      "url": "https://github.com/jaimejim/ietf-draft-ard-initial-contact/pull/12",
+      "state": "MERGED",
+      "author": "jaimejim",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Closes #11, closes #3. Addresses point 4 of #5.\n\n- Draft, title, abbrev, docname, README, CODEOWNERS, gitignore renamed to `draft-jimenez-ard-initial-discovery`. Repo name unchanged for now.\n- Intro: a publisher lists agents, tool servers, and skills. Privacy: a responder advertises a catalog.\n- Procedure: step 3 and the no-domain case query PTR records; \"browse\" remains as the RFC 6763 term in the mechanism sections.\n- One \"in order to\" removed for prose-lint.",
+      "createdAt": "2026-10-18T18:55:55Z",
+      "updatedAt": "2026-10-18T19:03:18Z",
+      "baseRepository": "jaimejim/ietf-draft-ard-initial-contact",
+      "baseRefName": "main",
+      "baseRefOid": "cdf7cc8c274792cea0d4cca0b6b471cce2a1ad17",
+      "headRepository": "jaimejim/ietf-draft-ard-initial-contact",
+      "headRefName": "editorial/initial-discovery",
+      "headRefOid": "b7e859097763ca4758a9d15e74eeb05cc92b9160",
+      "closedAt": "2026-10-18T18:57:18Z",
+      "mergedAt": "2026-10-18T18:57:18Z",
+      "mergedBy": "jaimejim",
+      "mergeCommit": {
+        "oid": "4151e51af4c91a1f75a76000f12dd918d15646cc"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 13,
+      "id": "PR_kwDOU_yOlM8AAAABJMkb3Q",
+      "title": "Group mechanisms by input, DNS first; wording pass",
+      "url": "https://github.com/jaimejim/ietf-draft-ard-initial-contact/pull/13",
+      "state": "MERGED",
+      "author": "jaimejim",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Closes #4.\n\n- Introduction list and Discovery Mechanisms section: DNS before the well-known URI. Mechanisms grouped into DNS-Based, Origin-Based (well-known, link relation), and Local Network. One sentence states which groups take a domain name as input. Anchors unchanged.\n- Wording pass: 33 informal expressions replaced with plain technical phrasing. No normative change.",
+      "createdAt": "2026-10-18T19:27:56Z",
+      "updatedAt": "2026-10-18T19:29:09Z",
+      "baseRepository": "jaimejim/ietf-draft-ard-initial-contact",
+      "baseRefName": "main",
+      "baseRefOid": "4151e51af4c91a1f75a76000f12dd918d15646cc",
+      "headRepository": "jaimejim/ietf-draft-ard-initial-contact",
+      "headRefName": "editorial/mechanisms-by-input",
+      "headRefOid": "ccaa88ebd1e069da4133835e8a9c03b60e86c2f7",
+      "closedAt": "2026-10-18T19:29:05Z",
+      "mergedAt": "2026-10-18T19:29:05Z",
+      "mergedBy": "jaimejim",
+      "mergeCommit": {
+        "oid": "c4ae852cc38a207880ad6e8b49188ea5ee5b2bd0"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 14,
+      "id": "PR_kwDOU_yOlM8AAAABJMlgwQ",
+      "title": "Configured entry points are URIs; configuration-only mode; no-domain case in the procedure",
+      "url": "https://github.com/jaimejim/ietf-draft-ard-initial-contact/pull/14",
+      "state": "MERGED",
+      "author": "jaimejim",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Closes #5.\n\n- A configured entry point is a URI, retrieved directly; steps 2 to 5 do not apply to it. Step 1 no longer ties configuration to `<domain>`.\n- A client MAY be configured to use configured entry points only, and then performs no other mechanism.\n- The no-domain case is stated with the procedure input: step 1 plus the Multicast DNS query.",
+      "createdAt": "2026-10-18T19:30:31Z",
+      "updatedAt": "2026-10-18T19:31:51Z",
+      "baseRepository": "jaimejim/ietf-draft-ard-initial-contact",
+      "baseRefName": "main",
+      "baseRefOid": "c4ae852cc38a207880ad6e8b49188ea5ee5b2bd0",
+      "headRepository": "jaimejim/ietf-draft-ard-initial-contact",
+      "headRefName": "editorial/configured-uri",
+      "headRefOid": "355c7aa5361d4dbdb5c4f067cea2b318aad9f3a6",
+      "closedAt": "2026-10-18T19:31:47Z",
+      "mergedAt": "2026-10-18T19:31:47Z",
+      "mergedBy": "jaimejim",
+      "mergeCommit": {
+        "oid": "56bcc7c356bba6cdc5b49a80015bd86f317b14ac"
       },
       "comments": [],
       "reviews": []
