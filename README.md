@@ -1,13 +1,13 @@
 <!-- regenerate: on (set to off if you edit this file) -->
 
-# Agent Resource Discovery (ARD): Initial Discovery
+# Agent Resource Discovery (ARD): Initial Contact
 
-This is the working area for the individual Internet-Draft, "Agent Resource Discovery (ARD): Initial Discovery".
+This is the working area for the individual Internet-Draft, "Agent Resource Discovery (ARD): Initial Contact".
 
-* [Editor's Copy](https://jaimejim.github.io/ietf-draft-ard-initial-contact/#go.draft-jimenez-ard-initial-discovery.html)
-* [Datatracker Page](https://datatracker.ietf.org/doc/draft-jimenez-ard-initial-discovery)
-* [Individual Draft](https://datatracker.ietf.org/doc/html/draft-jimenez-ard-initial-discovery)
-* [Compare Editor's Copy to Individual Draft](https://jaimejim.github.io/ietf-draft-ard-initial-contact/#go.draft-jimenez-ard-initial-discovery.diff)
+* [Editor's Copy](https://jaimejim.github.io/ietf-draft-ard-initial-contact/#go.draft-jimenez-ard-initial-contact.html)
+* [Datatracker Page](https://datatracker.ietf.org/doc/draft-jimenez-ard-initial-contact)
+* [Individual Draft](https://datatracker.ietf.org/doc/html/draft-jimenez-ard-initial-contact)
+* [Compare Editor's Copy to Individual Draft](https://jaimejim.github.io/ietf-draft-ard-initial-contact/#go.draft-jimenez-ard-initial-contact.diff)
 
 
 ## Contributing
