@@ -5,14 +5,14 @@
 Network Working Group                                         J. Jiménez
 Internet-Draft                                                  Ericsson
 Intended status: Standards Track                                   J. Bu
-Expires: 21 April 2027                                            Google
+Expires: 24 April 2027                                            Google
                                                                 J. Arkko
                                                                 Ericsson
-                                                         18 October 2026
+                                                         21 October 2026
 
 
-           Agent Resource Discovery (ARD): Initial Discovery
-               draft-jimenez-ard-initial-discovery-latest
+            Agent Resource Discovery (ARD): Initial Contact
+                draft-jimenez-ard-initial-contact-latest
 
 Abstract
 
@@ -33,9 +33,9 @@ About This Document
 
    The latest revision of this draft can be found at
    https://jaimejim.github.io/ietf-draft-ard-initial-contact/draft-
-   jimenez-ard-initial-discovery.html.  Status information for this
+   jimenez-ard-initial-contact.html.  Status information for this
    document may be found at https://datatracker.ietf.org/doc/draft-
-   jimenez-ard-initial-discovery/.
+   jimenez-ard-initial-contact/.
 
    Discussion of this document takes place on the Discovery of Agents
    With Names (DAWN) Proposed Working Group mailing list
@@ -61,7 +61,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 21 April 2027.
+   This Internet-Draft will expire on 24 April 2027.
 
 Copyright Notice
 
@@ -149,7 +149,8 @@ Table of Contents
       (Section 4.3.2).
 
    Section 5 specifies how a client combines these mechanisms.  The DAWN
-   charter [DAWN-CHARTER] calls this step "initial discovery".  The
+   charter [DAWN-CHARTER] calls this step "initial discovery"; this
+   document uses the term "initial contact" for the same step.  The
    mechanisms cover the three deployment contexts the charter
    identifies: the local network, an organization's own infrastructure,
    and discovery between organizations over the public Internet.
@@ -189,7 +190,7 @@ Table of Contents
       Software that performs the procedure of this document to obtain an
       entry point.
 
-   Initial discovery:
+   Initial contact:
       The process by which a client obtains one or more entry points,
       starting from a domain name, a local network attachment, or
       configuration.
@@ -566,7 +567,7 @@ Table of Contents
 
 6.  Security Considerations
 
-   Initial discovery takes place before any authenticated relationship
+   Initial contact takes place before any authenticated relationship
    exists between the client and the publisher.  In each mechanism, an
    attacker who controls the channel can direct the client to a catalog
    of the attacker's choosing.  The mitigation is the same for all
@@ -810,11 +811,11 @@ Table of Contents
 
    [I-D.farrel-dawn-terminology]
               Farrel, A., Yao, K., Schott, R., and N. Williams,
-              "Terminology for the Discovery of Agents, Workloads, and
-              Named Entities (DAWN)", Work in Progress, Internet-Draft,
-              draft-farrel-dawn-terminology-04, 26 July 2026,
+              "Terminology for the Discovery of Agents With Names
+              (DAWN)", Work in Progress, Internet-Draft, draft-farrel-
+              dawn-terminology-05, 19 October 2026,
               <https://datatracker.ietf.org/doc/html/draft-farrel-dawn-
-              terminology-04>.
+              terminology-05>.
 
    [I-D.jakab-dawn-agent-discovery-mdns]
               Jakab, L. and F. Brockners, "Zero-Configuration Agent
@@ -839,17 +840,17 @@ Table of Contents
 
    [I-D.king-dawn-requirements]
               King, D. and A. Farrel, "Requirements for the Discovery of
-              Agents, Workloads, and Named Entities (DAWN)", Work in
-              Progress, Internet-Draft, draft-king-dawn-requirements-01,
-              28 April 2026, <https://datatracker.ietf.org/doc/html/
-              draft-king-dawn-requirements-01>.
+              Agents With Names (DAWN)", Work in Progress, Internet-
+              Draft, draft-king-dawn-requirements-02, 19 October 2026,
+              <https://datatracker.ietf.org/doc/html/draft-king-dawn-
+              requirements-02>.
 
    [I-D.mk-dnsop-svcb-well-known]
               Mozley, J. and D. King, "An SVCB Service Parameter for
               Well-Known URI Paths", Work in Progress, Internet-Draft,
-              draft-mk-dnsop-svcb-well-known-00, 16 September 2026,
+              draft-mk-dnsop-svcb-well-known-01, 19 October 2026,
               <https://datatracker.ietf.org/doc/html/draft-mk-dnsop-
-              svcb-well-known-00>.
+              svcb-well-known-01>.
 
    [I-D.morrison-mcp-dns-discovery]
               Morrison, B., "Discovery of Model Context Protocol Servers
@@ -969,7 +970,7 @@ Appendix A.  Related Work
 
    [I-D.jimenez-dawn-discovery-landscape] surveys agent discovery
    mechanisms and separates lookup, name, description, trust, and
-   interaction.  Initial discovery is the lookup component for the case
+   interaction.  Initial contact is the lookup component for the case
    where the result is a catalog.  The entry point of Section 3 is a
    subset of the minimum discoverable information of
    [I-D.cui-dawn-mdi-model], the well-known URI is the predictable entry
@@ -1031,8 +1032,8 @@ Appendix B.  Open Issues
 
    4.  Ownership of registrations.  [ARD] also requests a well-known
        suffix and a link relation.  After the split into initial
-       discovery, lookup, and registration documents, one document
-       carries them.
+       contact, lookup, and registration documents, one document carries
+       them.
 
    5.  Reference status.  [ARD] and [I-D.mozleywilliams-dnsop-dnsaid]
        are individual drafts cited informatively.  [ARD] becomes a
@@ -1045,7 +1046,7 @@ Appendix B.  Open Issues
 
 Acknowledgments
 
-   The split of the ARD work into initial discovery, lookup, and
+   The split of the ARD work into initial contact, lookup, and
    registration documents was proposed by Jari Arkko.  R.V.  Guha co-
    wrote the ARD specification this document builds on.  Wes Hardaker
    and Sam Sharaf took part in the discussions that shaped the scope.

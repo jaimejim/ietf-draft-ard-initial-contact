@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta content="Common,Latin" name="scripts">
 <meta content="initial-scale=1.0" name="viewport">
-<title>Agent Resource Discovery (ARD): Initial Discovery</title>
+<title>Agent Resource Discovery (ARD): Initial Contact</title>
 <meta content="Jaime Jiménez" name="author">
 <meta content="Junjie Bu" name="author">
 <meta content="Jari Arkko" name="author">
@@ -18,7 +18,7 @@
 <meta content="DNS-SD" name="keyword">
 <meta content="mDNS" name="keyword">
 <meta content="DAWN" name="keyword">
-<meta content="draft-jimenez-ard-initial-discovery-latest" name="ietf.draft">
+<meta content="draft-jimenez-ard-initial-contact-latest" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.34.1
     Python 3.14.8
@@ -34,7 +34,7 @@
     requests 2.33.1
     wcwidth 0.9.2
 -->
-<link href="draft-jimenez-ard-initial-discovery.xml" rel="alternate" type="application/rfc+xml">
+<link href="draft-jimenez-ard-initial-contact.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
 <style type="text/css">@font-face {
   font-family: 'Lora';
@@ -1047,12 +1047,12 @@ svg {
 <table class="ears">
 <thead><tr>
 <td class="left">Internet-Draft</td>
-<td class="center">ARD Initial Discovery</td>
+<td class="center">ARD Initial Contact</td>
 <td class="right">October 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Jiménez, et al.</td>
-<td class="center">Expires 21 April 2027</td>
+<td class="center">Expires 24 April 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1062,15 +1062,15 @@ svg {
 <dt class="label-workgroup">Workgroup:</dt>
 <dd class="workgroup">Network Working Group</dd>
 <dt class="label-internet-draft">Internet-Draft:</dt>
-<dd class="internet-draft">draft-jimenez-ard-initial-discovery-latest</dd>
+<dd class="internet-draft">draft-jimenez-ard-initial-contact-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-10-18" class="published">18 October 2026</time>
+<time datetime="2026-10-21" class="published">21 October 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-04-21">21 April 2027</time></dd>
+<dd class="expires"><time datetime="2027-04-24">24 April 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1088,7 +1088,7 @@ svg {
 </dd>
 </dl>
 </div>
-<h1 id="title">Agent Resource Discovery (ARD): Initial Discovery</h1>
+<h1 id="title">Agent Resource Discovery (ARD): Initial Contact</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
 <p id="section-abstract-1">In an agent system, agents need to discover other agents, tool servers, and skills. Agent Resource Discovery (ARD) defines a catalog of such resources and a lookup interface over it. This document specifies how a client (such as an agent) initially discovers an ARD catalog. This discovery is performed through the use of DNS Service Binding records, DNS-Based Service Discovery (DNS-SD), HTTP link relations, or well-known URIs. Each mechanism yields a set of catalog URIs. The catalog format, the lookup interface, and the binding of a catalog to its publisher are specified in the companion ARD documents.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
@@ -1099,8 +1099,8 @@ svg {
       </h2>
 <p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
 <p id="section-note.1-2">
-        The latest revision of this draft can be found at <span><a href="https://jaimejim.github.io/ietf-draft-ard-initial-contact/draft-jimenez-ard-initial-discovery.html">https://jaimejim.github.io/ietf-draft-ard-initial-contact/draft-jimenez-ard-initial-discovery.html</a></span>.
-        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-jimenez-ard-initial-discovery/">https://datatracker.ietf.org/doc/draft-jimenez-ard-initial-discovery/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+        The latest revision of this draft can be found at <span><a href="https://jaimejim.github.io/ietf-draft-ard-initial-contact/draft-jimenez-ard-initial-contact.html">https://jaimejim.github.io/ietf-draft-ard-initial-contact/draft-jimenez-ard-initial-contact.html</a></span>.
+        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-jimenez-ard-initial-contact/">https://datatracker.ietf.org/doc/draft-jimenez-ard-initial-contact/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
 <p id="section-note.1-3">
         Discussion of this document takes place on the
         Discovery of Agents With Names (DAWN) Proposed Working Group mailing list (<span><a href="mailto:dawn@ietf.org">mailto:dawn@ietf.org</a></span>),
@@ -1128,7 +1128,7 @@ svg {
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 21 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 24 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1301,7 +1301,7 @@ svg {
           <p id="section-1-4.4.1">a link relation <span>[<a href="#RFC8288" class="cite xref">RFC8288</a>]</span>, "ard", whose target is an ARD catalog (<a href="#link-relation" class="auto internal xref">Section 4.3.2</a>).<a href="#section-1-4.4.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-1-5"><a href="#procedure" class="auto internal xref">Section 5</a> specifies how a client combines these mechanisms. The DAWN charter <span>[<a href="#DAWN-CHARTER" class="cite xref">DAWN-CHARTER</a>]</span> calls this step "initial discovery". The mechanisms cover the three deployment contexts the charter identifies: the local network, an organization's own infrastructure, and discovery between organizations over the public Internet.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<p id="section-1-5"><a href="#procedure" class="auto internal xref">Section 5</a> specifies how a client combines these mechanisms. The DAWN charter <span>[<a href="#DAWN-CHARTER" class="cite xref">DAWN-CHARTER</a>]</span> calls this step "initial discovery"; this document uses the term "initial contact" for the same step. The mechanisms cover the three deployment contexts the charter identifies: the local network, an organization's own infrastructure, and discovery between organizations over the public Internet.<a href="#section-1-5" class="pilcrow">¶</a></p>
 <p id="section-1-6">This document does not specify the catalog representation, the lookup or search interfaces, the registration of entries, or how a catalog is bound to its publisher; these are specified in <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> and <span>[<a href="#I-D.jimenez-agent-directory" class="cite xref">I-D.jimenez-agent-directory</a>]</span>. It defines no new DNS resource record types, SvcParamKeys, or transport protocols. All entry point URIs use the "https" scheme.<a href="#section-1-6" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1336,7 +1336,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
           <p id="section-2-3.8.1">Software that performs the procedure of this document to obtain an entry point.<a href="#section-2-3.8.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
-<dt id="section-2-3.9">Initial discovery:</dt>
+<dt id="section-2-3.9">Initial contact:</dt>
         <dd style="margin-left: 1.5em" id="section-2-3.10">
           <p id="section-2-3.10.1">The process by which a client obtains one or more entry points, starting from a domain name, a local network attachment, or configuration.<a href="#section-2-3.10.1" class="pilcrow">¶</a></p>
 </dd>
@@ -1621,7 +1621,7 @@ Link: &lt;https://agents.example.com/catalog&gt;; rel="ard"
       <h2 id="name-security-considerations">
 <a href="#section-6" class="section-number selfRef">6. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
-<p id="section-6-1">Initial discovery takes place before any authenticated relationship exists between the client and the publisher. In each mechanism, an attacker who controls the channel can direct the client to a catalog of the attacker's choosing. The mitigation is the same for all mechanisms: the client treats the result as a hint, retrieves the catalog from the URI, authenticates the origin, and relies on the catalog content, as specified in <span>[<a href="#ARD" class="cite xref">ARD</a>]</span>, to determine the publisher of the catalog.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<p id="section-6-1">Initial contact takes place before any authenticated relationship exists between the client and the publisher. In each mechanism, an attacker who controls the channel can direct the client to a catalog of the attacker's choosing. The mitigation is the same for all mechanisms: the client treats the result as a hint, retrieves the catalog from the URI, authenticates the origin, and relies on the catalog content, as specified in <span>[<a href="#ARD" class="cite xref">ARD</a>]</span>, to determine the publisher of the catalog.<a href="#section-6-1" class="pilcrow">¶</a></p>
 <div id="sec-hints">
 <section id="section-6.1">
         <h3 id="name-hints-and-authority">
@@ -1872,7 +1872,7 @@ Link: &lt;https://agents.example.com/catalog&gt;; rel="ard"
 <dd class="break"></dd>
 <dt id="I-D.farrel-dawn-terminology">[I-D.farrel-dawn-terminology]</dt>
         <dd>
-<span class="refAuthor">Farrel, A.</span>, <span class="refAuthor">Yao, K.</span>, <span class="refAuthor">Schott, R.</span>, and <span class="refAuthor">N. Williams</span>, <span class="refTitle">"Terminology for the Discovery of Agents, Workloads, and Named Entities (DAWN)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-farrel-dawn-terminology-04</span>, <time datetime="2026-07-26" class="refDate">26 July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-farrel-dawn-terminology-04">https://datatracker.ietf.org/doc/html/draft-farrel-dawn-terminology-04</a>&gt;</span>. </dd>
+<span class="refAuthor">Farrel, A.</span>, <span class="refAuthor">Yao, K.</span>, <span class="refAuthor">Schott, R.</span>, and <span class="refAuthor">N. Williams</span>, <span class="refTitle">"Terminology for the Discovery of Agents With Names (DAWN)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-farrel-dawn-terminology-05</span>, <time datetime="2026-10-19" class="refDate">19 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-farrel-dawn-terminology-05">https://datatracker.ietf.org/doc/html/draft-farrel-dawn-terminology-05</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.jakab-dawn-agent-discovery-mdns">[I-D.jakab-dawn-agent-discovery-mdns]</dt>
         <dd>
@@ -1888,11 +1888,11 @@ Link: &lt;https://agents.example.com/catalog&gt;; rel="ard"
 <dd class="break"></dd>
 <dt id="I-D.king-dawn-requirements">[I-D.king-dawn-requirements]</dt>
         <dd>
-<span class="refAuthor">King, D.</span> and <span class="refAuthor">A. Farrel</span>, <span class="refTitle">"Requirements for the Discovery of Agents, Workloads, and Named Entities (DAWN)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-king-dawn-requirements-01</span>, <time datetime="2026-04-28" class="refDate">28 April 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-king-dawn-requirements-01">https://datatracker.ietf.org/doc/html/draft-king-dawn-requirements-01</a>&gt;</span>. </dd>
+<span class="refAuthor">King, D.</span> and <span class="refAuthor">A. Farrel</span>, <span class="refTitle">"Requirements for the Discovery of Agents With Names (DAWN)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-king-dawn-requirements-02</span>, <time datetime="2026-10-19" class="refDate">19 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-king-dawn-requirements-02">https://datatracker.ietf.org/doc/html/draft-king-dawn-requirements-02</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.mk-dnsop-svcb-well-known">[I-D.mk-dnsop-svcb-well-known]</dt>
         <dd>
-<span class="refAuthor">Mozley, J.</span> and <span class="refAuthor">D. King</span>, <span class="refTitle">"An SVCB Service Parameter for Well-Known URI Paths"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-mk-dnsop-svcb-well-known-00</span>, <time datetime="2026-09-16" class="refDate">16 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-mk-dnsop-svcb-well-known-00">https://datatracker.ietf.org/doc/html/draft-mk-dnsop-svcb-well-known-00</a>&gt;</span>. </dd>
+<span class="refAuthor">Mozley, J.</span> and <span class="refAuthor">D. King</span>, <span class="refTitle">"An SVCB Service Parameter for Well-Known URI Paths"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-mk-dnsop-svcb-well-known-01</span>, <time datetime="2026-10-19" class="refDate">19 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-mk-dnsop-svcb-well-known-01">https://datatracker.ietf.org/doc/html/draft-mk-dnsop-svcb-well-known-01</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.morrison-mcp-dns-discovery">[I-D.morrison-mcp-dns-discovery]</dt>
         <dd>
@@ -1992,7 +1992,7 @@ Link: &lt;https://agents.example.com/catalog&gt;; rel="ard"
       <h2 id="name-related-work">
 <a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-related-work" class="section-name selfRef">Related Work</a>
       </h2>
-<p id="appendix-A-1"><span>[<a href="#I-D.jimenez-dawn-discovery-landscape" class="cite xref">I-D.jimenez-dawn-discovery-landscape</a>]</span> surveys agent discovery mechanisms and separates lookup, name, description, trust, and interaction. Initial discovery is the lookup component for the case where the result is a catalog. The entry point of <a href="#entry-point" class="auto internal xref">Section 3</a> is a subset of the minimum discoverable information of <span>[<a href="#I-D.cui-dawn-mdi-model" class="cite xref">I-D.cui-dawn-mdi-model</a>]</span>, the well-known URI is the predictable entry point that REQ-PROTO-4 of <span>[<a href="#I-D.king-dawn-requirements" class="cite xref">I-D.king-dawn-requirements</a>]</span> asks for, and the terminology of <span>[<a href="#I-D.farrel-dawn-terminology" class="cite xref">I-D.farrel-dawn-terminology</a>]</span> applies.<a href="#appendix-A-1" class="pilcrow">¶</a></p>
+<p id="appendix-A-1"><span>[<a href="#I-D.jimenez-dawn-discovery-landscape" class="cite xref">I-D.jimenez-dawn-discovery-landscape</a>]</span> surveys agent discovery mechanisms and separates lookup, name, description, trust, and interaction. Initial contact is the lookup component for the case where the result is a catalog. The entry point of <a href="#entry-point" class="auto internal xref">Section 3</a> is a subset of the minimum discoverable information of <span>[<a href="#I-D.cui-dawn-mdi-model" class="cite xref">I-D.cui-dawn-mdi-model</a>]</span>, the well-known URI is the predictable entry point that REQ-PROTO-4 of <span>[<a href="#I-D.king-dawn-requirements" class="cite xref">I-D.king-dawn-requirements</a>]</span> asks for, and the terminology of <span>[<a href="#I-D.farrel-dawn-terminology" class="cite xref">I-D.farrel-dawn-terminology</a>]</span> applies.<a href="#appendix-A-1" class="pilcrow">¶</a></p>
 <p id="appendix-A-2">DNS-AID <span>[<a href="#I-D.mozleywilliams-dnsop-dnsaid" class="cite xref">I-D.mozleywilliams-dnsop-dnsaid</a>]</span> publishes agents as SVCB records and an organization index under <code>_index._agents.&lt;domain&gt;</code>. Its reference implementation <span>[<a href="#DNS-AID-IMPL" class="cite xref">DNS-AID-IMPL</a>]</span> publishes <code>_catalog._agents</code> next to it, follows an off-domain pointer only when the record is DNSSEC-validated or the catalog is signed against the domain's key set, and refuses redirects. <a href="#pointer-rr" class="auto internal xref">Section 4.2.1</a> adopts its label, <a href="#depth" class="auto internal xref">Section 5.1</a> allows one redirect, and the trust decision for off-domain pointers is left to the publisher check of <span>[<a href="#ARD" class="cite xref">ARD</a>]</span>. The ARD specification <span>[<a href="#ARD-SPEC" class="cite xref">ARD-SPEC</a>]</span>, from which <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> derives, requires the well-known fetch of "/.well-known/ard.json", lists <code>_entries._agents</code> for a static entry source, and publishes an SVCB record at <code>_ard._tcp.&lt;domain&gt;</code>; this document uses that name only as a DNS-SD service type.<a href="#appendix-A-2" class="pilcrow">¶</a></p>
 <p id="appendix-A-3"><span>[<a href="#I-D.nemethi-dawn-aid" class="cite xref">I-D.nemethi-dawn-aid</a>]</span>, <span>[<a href="#I-D.morrison-mcp-dns-discovery" class="cite xref">I-D.morrison-mcp-dns-discovery</a>]</span>, and <span>[<a href="#I-D.seethiraju-dawn-dan" class="cite xref">I-D.seethiraju-dawn-dan</a>]</span> locate individual agents or MCP servers through DNS records at <code>_agent.&lt;domain&gt;</code>, at <code>_mcp.&lt;domain&gt;</code>, or in new resource record types; none defines a catalog entry point. <span>[<a href="#I-D.jakab-dawn-agent-discovery-mdns" class="cite xref">I-D.jakab-dawn-agent-discovery-mdns</a>]</span> browses for agents on the local link under "_agent._tcp". <span>[<a href="#I-D.zahed-acap" class="cite xref">I-D.zahed-acap</a>]</span>, <span>[<a href="#I-D.pro-adp-agent-discovery" class="cite xref">I-D.pro-adp-agent-discovery</a>]</span>, and <span>[<a href="#I-D.besleaga-agentic-knowledge-wellknown" class="cite xref">I-D.besleaga-agentic-knowledge-wellknown</a>]</span> publish operator-level discovery documents at well-known URIs. The last publishes an <span>[<a href="#RFC9264" class="cite xref">RFC9264</a>]</span> link set, which is the closest existing design to publishing an ARD catalog as an <span>[<a href="#RFC9727" class="cite xref">RFC9727</a>]</span> API catalog (<a href="#open-issues" class="auto internal xref">Appendix B</a>).<a href="#appendix-A-3" class="pilcrow">¶</a></p>
 <p id="appendix-A-4"><span><a href="https://rfc-editor.org/rfc/rfc9176#section-4.1" class="relref">Section 4.1</a> of [<a href="#RFC9176" class="cite xref">RFC9176</a>]</span> lists how a CoRE endpoint finds a Resource Directory: configuration, a Router Advertisement option, DNS-SD, and multicast. <a href="#static" class="auto internal xref">Section 4.1</a>, <a href="#provided-domain" class="auto internal xref">Section 4.4.1</a>, <a href="#dns-sd" class="auto internal xref">Section 4.2.3</a>, and <a href="#mdns" class="auto internal xref">Section 4.4.2</a> are the ARD counterparts. <span>[<a href="#RFC9461" class="cite xref">RFC9461</a>]</span> and <span>[<a href="#RFC9462" class="cite xref">RFC9462</a>]</span> are the SVCB mapping and the discovery procedure for encrypted DNS resolvers; <a href="#pointer-rr" class="auto internal xref">Section 4.2.1</a> and <a href="#procedure" class="auto internal xref">Section 5</a> follow the same structure.<a href="#appendix-A-4" class="pilcrow">¶</a></p>
@@ -2015,7 +2015,7 @@ Link: &lt;https://agents.example.com/catalog&gt;; rel="ard"
           <p id="appendix-B-2.3.1">Suffix. "ard.json" matches <span>[<a href="#ARD-SPEC" class="cite xref">ARD-SPEC</a>]</span> and deployed code. A suffix without the extension, "ard", was considered.<a href="#appendix-B-2.3.1" class="pilcrow">¶</a></p>
 </li>
         <li id="appendix-B-2.4">
-          <p id="appendix-B-2.4.1">Ownership of registrations. <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> also requests a well-known suffix and a link relation. After the split into initial discovery, lookup, and registration documents, one document carries them.<a href="#appendix-B-2.4.1" class="pilcrow">¶</a></p>
+          <p id="appendix-B-2.4.1">Ownership of registrations. <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> also requests a well-known suffix and a link relation. After the split into initial contact, lookup, and registration documents, one document carries them.<a href="#appendix-B-2.4.1" class="pilcrow">¶</a></p>
 </li>
         <li id="appendix-B-2.5">
           <p id="appendix-B-2.5.1">Reference status. <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> and <span>[<a href="#I-D.mozleywilliams-dnsop-dnsaid" class="cite xref">I-D.mozleywilliams-dnsop-dnsaid</a>]</span> are individual drafts cited informatively. <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> becomes a normative reference when the companion documents are adopted together.<a href="#appendix-B-2.5.1" class="pilcrow">¶</a></p>
@@ -2031,7 +2031,7 @@ Link: &lt;https://agents.example.com/catalog&gt;; rel="ard"
       <h2 id="name-acknowledgments">
 <a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
       </h2>
-<p id="appendix-C-1">The split of the ARD work into initial discovery, lookup, and registration documents was proposed by Jari Arkko. R.V. Guha co-wrote the ARD specification this document builds on. Wes Hardaker and Sam Sharaf took part in the discussions that shaped the scope. The work of Jim Mozley and Daniel King on the organization index and on the "well-known" SvcParamKey provided the DNS bindings used here. The depth limit and the fixed outcomes follow a discussion on the DAWN list started by Enrique Somoza and continued by Francesco Marinoni Moretto and Balazs Nemethi.<a href="#appendix-C-1" class="pilcrow">¶</a></p>
+<p id="appendix-C-1">The split of the ARD work into initial contact, lookup, and registration documents was proposed by Jari Arkko. R.V. Guha co-wrote the ARD specification this document builds on. Wes Hardaker and Sam Sharaf took part in the discussions that shaped the scope. The work of Jim Mozley and Daniel King on the organization index and on the "well-known" SvcParamKey provided the DNS bindings used here. The depth limit and the fixed outcomes follow a discussion on the DAWN list started by Enrique Somoza and continued by Francesco Marinoni Moretto and Balazs Nemethi.<a href="#appendix-C-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="authors-addresses">
