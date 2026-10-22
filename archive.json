@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-10-20T00:07:15.642514+00:00",
+  "timestamp": "2026-10-22T00:06:36.577647+00:00",
   "repo": "jaimejim/ietf-draft-ard-initial-contact",
   "labels": [
     {
@@ -246,6 +246,22 @@
       "updatedAt": "2026-10-18T18:57:20Z",
       "closedAt": "2026-10-18T18:57:20Z",
       "comments": []
+    },
+    {
+      "number": 15,
+      "id": "I_kwDOU_yOlM8AAAABYmqvjA",
+      "title": "Decide name \"initial contact\" or otherwise based on discussion on call Oct 20th",
+      "url": "https://github.com/jaimejim/ietf-draft-ard-initial-contact/issues/15",
+      "state": "CLOSED",
+      "author": "jariarkko",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-10-20T17:10:58Z",
+      "updatedAt": "2026-10-21T11:35:52Z",
+      "closedAt": "2026-10-21T11:35:52Z",
+      "comments": []
     }
   ],
   "pulls": [
@@ -413,6 +429,34 @@
       "mergedBy": "jaimejim",
       "mergeCommit": {
         "oid": "56bcc7c356bba6cdc5b49a80015bd86f317b14ac"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 16,
+      "id": "PR_kwDOU_yOlM8AAAABJxhoCQ",
+      "title": "Name back to initial contact, per the October 20 call",
+      "url": "https://github.com/jaimejim/ietf-draft-ard-initial-contact/pull/16",
+      "state": "MERGED",
+      "author": "jaimejim",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Closes #15.\n\nReverses PR #12. The call on October 20 settled on \"initial contact\" for the first step, with ARD kept in every draft name. File, docname, title, abbrev, README, CODEOWNERS, and gitignore return to `draft-jimenez-ard-initial-contact`. The Introduction keeps the sentence that the DAWN charter calls the step \"initial discovery\".",
+      "createdAt": "2026-10-21T11:34:50Z",
+      "updatedAt": "2026-10-21T11:35:55Z",
+      "baseRepository": "jaimejim/ietf-draft-ard-initial-contact",
+      "baseRefName": "main",
+      "baseRefOid": "56bcc7c356bba6cdc5b49a80015bd86f317b14ac",
+      "headRepository": "jaimejim/ietf-draft-ard-initial-contact",
+      "headRefName": "editorial/initial-contact-name",
+      "headRefOid": "bc2b568e606e195e2143b63757e4be18880d53c3",
+      "closedAt": "2026-10-21T11:35:50Z",
+      "mergedAt": "2026-10-21T11:35:50Z",
+      "mergedBy": "jaimejim",
+      "mergeCommit": {
+        "oid": "8917601300f0876153605e10adf581c1e5f90ee8"
       },
       "comments": [],
       "reviews": []
