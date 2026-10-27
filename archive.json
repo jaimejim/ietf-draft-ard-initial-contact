@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-10-22T00:06:36.577647+00:00",
+  "timestamp": "2026-10-27T00:06:10.046733+00:00",
   "repo": "jaimejim/ietf-draft-ard-initial-contact",
   "labels": [
     {
@@ -261,6 +261,54 @@
       "createdAt": "2026-10-20T17:10:58Z",
       "updatedAt": "2026-10-21T11:35:52Z",
       "closedAt": "2026-10-21T11:35:52Z",
+      "comments": []
+    },
+    {
+      "number": 17,
+      "id": "I_kwDOU_yOlM8AAAABZ06W3Q",
+      "title": "Support both static entry sources (_entries._agents) and dynamic registry endpoints (_search._agents)",
+      "url": "https://github.com/jaimejim/ietf-draft-ard-initial-contact/issues/17",
+      "state": "OPEN",
+      "author": "mindpower",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Currently the draft assumes that initial discovery always resolves to a static catalog document (`/.well-known/ard.json`), and that the lookup API is always discovered through a static catalog first:\n\n- **Section 1 (line 131):** *\"Agent Resource Discovery (ARD) {{ARD}} defines a catalog of agent resources, a document served over HTTPS... ARD also defines a lookup interface over the catalog. Both require the URI of the catalog.\"*\n- **Section 3 (lines 176\u2013177):** *\"URI: The \"https\" URI {{RFC9110}} of the catalog. Retrieving it returns an ARD catalog in a representation defined by {{ARD}}.\"*\n- **Section 4.2.1 (lines 204\u2013221):** Only defines `_catalog._agents.<domain>` pointing to `/.well-known/ard.json`.\n- **Section 5 (line 333):** *\"An entry point fails if the server does not respond, if the response is not a catalog, or if the checks of {{security}} fail.\"*\n\nIn ARD (`ard-spec` Section 5.1 and `draft-bu-agent-resources-discovery` Section 3), a domain or registry operator does not have to host a static `ard.json` file in order to run a dynamic ARD Registry (`POST /search`, `POST /explore`, `GET /entries`). A client can be configured with or discover a dynamic registry endpoint directly, or a crawler/client can discover a static manifest (`ard.json` or `ai-catalog.json`).\n\n### Suggested updates\n\n1. **Two DNS pointer labels in Section 4.2.1 (matching `ard-spec` Section 5.1):**\n   - **Static entry source (`_entries._agents.<domain>`):** Points to a static entries document (`/.well-known/ard.json` or `/.well-known/ai-catalog.json`). Using `_entries._agents.<domain>` (also mentioned in Open Issue #2, line 457) works cleanly across both `ard.json` and `ai-catalog.json` since both formats use a top-level `entries` array.\n   - **Dynamic registry endpoint (`_search._agents.<domain>`):** Points directly to an ARD Registry base URL (where the client invokes `/search`, `/explore`, or `/entries`).\n\n2. **Entry point definition (Section 3 & Section 5):**\n   - Update Section 3 (line 177), Section 4.1 (Configured Entry Points, line 194), and Section 5 (line 333) so an entry point can identify either:\n     - a static manifest/catalog document (`application/ard+json`), or\n     - a dynamic ARD Registry API endpoint.",
+      "createdAt": "2026-10-25T19:06:29Z",
+      "updatedAt": "2026-10-25T19:06:29Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 18,
+      "id": "I_kwDOU_yOlM8AAAABZ06Xuw",
+      "title": "Align draft name, per-entry publisher check, and ard spec",
+      "url": "https://github.com/jaimejim/ietf-draft-ard-initial-contact/issues/18",
+      "state": "OPEN",
+      "author": "mindpower",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "A few smaller alignment items from reviewing `draft-jimenez-ard-initial-discovery.md` alongside `draft-bu-agent-resources-discovery` (PR #31) and `ard-spec`:\n\n1. **Keep draft filename / `docname` as `draft-jimenez-ard-initial-contact` (lines 6, 24):**\n   - Per our discussion, let's keep the draft name as `draft-jimenez-ard-initial-contact` (matching the repo name and the `-00` submission on Datatracker) rather than renaming the file/`docname` to `draft-jimenez-ard-initial-discovery`. (Keeping the title *\"Agent Resource Discovery (ARD): Initial Discovery\"* is fine.)\n\n2. **Update `ARD` reference author list (lines 58\u201367):**\n   - Add Jari Arkko (Ericsson) and Jeffrey Damick (Amazon) to the author list for `draft-bu-agent-resources-discovery`.\n\n3. **Distinguish domain owner (container level) vs. entry publisher (Section 3 line 182, Section 6.1 line 357, Section 6.4 line 371):**\n   - Line 182 says *\"The publisher of a catalog is established by the catalog content, as specified in {{ARD}}\"* and line 357 says *\"the recorded source is the input to the publisher check that {{ARD}} defines.\"*\n   - In `{{ARD}}`, a catalog or registry can contain entries from multiple publishers, and publisher verification is performed **per entry** against the `<publisher>` domain in `urn:air:<publisher>:...` (via the entry's `trustManifest` signature or same-origin HTTPS when fetched from `https://<publisher>/.well-known/ard.json`), optionally alongside any container-level signature from the `<domain>` owner (such as when a catalog is served from an off-domain target via DNS).\n\n4. **Appendix A `ARD-SPEC` description (line 446):**\n   - Line 446 states that `{{ARD-SPEC}}` *\"publishes an SVCB record at `_ard._tcp.<domain>`\"*. `ard-spec` Section 5.1 only lists `_entries._agents` and `_search._agents` (the `_ard._tcp` SVCB example was only in an earlier version of `draft-bu`).\n\n5. **Open Issue #4 (line 459 \u2014 Ownership of registrations):**\n   - We removed the duplicate `ard.json` Well-Known URI and `ard` Link Relation IANA registrations from `draft-bu-agent-resources-discovery` (PR #31) and deferred them to this draft, so Open Issue #4 can be closed/removed.",
+      "createdAt": "2026-10-25T19:06:30Z",
+      "updatedAt": "2026-10-25T19:09:00Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 19,
+      "id": "I_kwDOU_yOlM8AAAABZ0_Q9g",
+      "title": "Web crawler discovery mechanisms and ai-catalog fallback",
+      "url": "https://github.com/jaimejim/ietf-draft-ard-initial-contact/issues/19",
+      "state": "OPEN",
+      "author": "mindpower",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "In `ard-spec` Section 5.1 (and AI Catalog), initial discovery is used not only by runtime clients resolving a domain, but also by registry web crawlers ingesting published manifests. A few mechanisms from `ard-spec` Section 5.1 are currently missing or only partially covered in `draft-jimenez-ard-initial-discovery.md`:\n\n1. **HTML `<link rel=\"ard\">` in Section 4.3.2 (`#link-relation`, lines 285\u2013303):**\n   - Currently Section 4.3.2 only describes the HTTP `Link` response header on `HEAD /`.\n   - Since RFC 8288 link relations also apply to HTML `<link>` elements, `ard-spec` Section 5.1 includes `<link rel=\"ard\" href=\"...\">` in the HTML `<head>` so web crawlers and publishers who cannot set custom HTTP headers (e.g., on static hosting) can still link to their manifest.\n\n2. **`robots.txt` `Agentmap:` directive (`ard-spec` Section 5.1):**\n   - `ard-spec` Section 5.1 defines an `Agentmap:` directive in `robots.txt` (e.g., `Agentmap: https://example.com/entries.json`, analogous to `Sitemap:`) so web crawlers can locate the manifest when a publisher cannot serve it at `/.well-known/ard.json`.\n\n3. **Optional compatibility fallback for `/.well-known/ai-catalog.json` and `rel=\"ai-catalog\"` (`ard-spec` Section 5.1):**\n   - `ard-spec` Section 5.1 notes that while `/.well-known/ard.json` and `rel=\"ard\"` are the normative requirements, a consumer or crawler MAY additionally consult `/.well-known/ai-catalog.json` and `rel=\"ai-catalog\"` as compatible entry sources (with `ard.json` taking precedence if both exist). Mentioning this in Section 4.3 (or Appendix A) keeps the draft aligned with `ard-spec`.",
+      "createdAt": "2026-10-25T19:14:41Z",
+      "updatedAt": "2026-10-25T19:35:42Z",
+      "closedAt": null,
       "comments": []
     }
   ],
