@@ -185,11 +185,11 @@ Source:
 
 An entry point is a hint until the client has retrieved the catalog from the URI and authenticated the origin ({{security}}). A DNS answer or a multicast response does not make a catalog authoritative for a publisher. The publisher of each entry is established from the entry itself, as specified in {{ARD}}; the host that serves the catalog establishes no publisher authority.
 
-A domain can publish more than one catalog. Each mechanism can return several entry points, and the client treats them as a set. A catalog can link to further catalogs; following those links is part of lookup and is outside the scope of this document.
+A domain can publish more than one catalog. Each mechanism can return several entry points, and the client treats them as a set. A catalog can link to further catalogs, and can consist of a single entry that points at a registry endpoint {{ARD}}; following those links is part of lookup and is outside the scope of this document. Initial contact ends at the catalog.
 
 # Discovery Mechanisms {#mechanisms}
 
-The well-known URI of {{well-known}} is mandatory to implement. A publisher that makes its catalog discoverable MUST serve it at the well-known URI, directly or through one redirect, and every client MUST implement the well-known fetch. The other mechanisms are OPTIONAL for publishers. A client that supports discovery of catalogs on the local network MUST implement the Multicast DNS browse of {{mdns}}.
+The well-known URI of {{well-known}} is mandatory to implement. A publisher that makes its catalog discoverable MUST serve it at the well-known URI, directly or through one redirect, and every client MUST implement the well-known fetch. The other mechanisms are OPTIONAL for publishers and supplement the well-known URI: they let a client learn an entry point before it connects, enumerate several catalogs, or find a catalog without a domain name. A client that supports discovery of catalogs on the local network MUST implement the Multicast DNS browse of {{mdns}}.
 
 The mechanisms of {{dns-mechanisms}} and {{origin-mechanisms}} take a domain name as input. The mechanisms of {{local-mechanisms}} require no domain name.
 
@@ -201,7 +201,7 @@ A configured entry point is a URI. The client retrieves it directly; the DNS que
 
 ## DNS-Based Mechanisms {#dns-mechanisms}
 
-DNS records allow a publisher to advertise an entry point before the client opens a connection, and to place the catalog on a host other than the domain apex without a redirect.
+DNS records allow a publisher to advertise an entry point before the client opens a connection, to send the client to a catalog host other than the domain apex without the redirect at the apex, and to enumerate several catalogs. The well-known URI of {{well-known}} remains in place: the apex serves the catalog or redirects to it ({{mechanisms}}).
 
 ### Organization Index Record {#pointer-rr}
 
