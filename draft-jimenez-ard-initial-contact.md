@@ -458,9 +458,8 @@ The following questions are to be settled before the document is stable. This se
 1. API catalog profile. Issue #2 on the ARD repository proposes publishing the catalog as an {{RFC9727}} API catalog under "/.well-known/api-catalog" with an ARD profile. If adopted, this document registers no suffix.
 2. Pointer label. `_index._agents` (DNS-AID), `_catalog._agents` (its reference implementation), and `_entries._agents` ({{ARD-SPEC}}) name the same pointer. This document uses `_catalog._agents` because it is deployed, and asks DNS-AID, as owner of "_agents" in the {{RFC8552}} registry, to list it. The fallback is a label defined in this document, "_ard".
 3. Suffix. "ard.json" matches {{ARD-SPEC}} and deployed code. A suffix without the extension, "ard", was considered.
-4. Ownership of registrations. {{ARD}} also requests a well-known suffix and a link relation. After the split into initial contact, lookup, and registration documents, one document carries them.
-5. Reference status. {{ARD}} and {{I-D.mozleywilliams-dnsop-dnsaid}} are individual drafts cited informatively. {{ARD}} becomes a normative reference when the companion documents are adopted together.
-6. SvcParamKey number. The "well-known" key has no registered number; the examples in {{pointer-rr}} and {{https-rr}} cannot be loaded into a zone until it does.
+4. Reference status. {{ARD}} and {{I-D.mozleywilliams-dnsop-dnsaid}} are individual drafts cited informatively. {{ARD}} becomes a normative reference when the companion documents are adopted together.
+5. SvcParamKey number. The "well-known" key has no registered number; the examples in {{pointer-rr}} and {{https-rr}} cannot be loaded into a zone until it does.
 
 # Acknowledgments
 {:numbered="false"}
