@@ -36,8 +36,10 @@ author:
     email: jari.arkko@ericsson.com
 
 normative:
+  RFC2308:
   RFC3986:
   RFC4033:
+  RFC4035:
   RFC6335:
   RFC6762:
   RFC6763:
@@ -46,6 +48,7 @@ normative:
   RFC9110:
   RFC9111:
   RFC9460:
+  RFC9848:
   I-D.mozleywilliams-dnsop-dnsaid:
   ARD:
     title: "Agent Resource Discovery (ARD)"
@@ -71,8 +74,6 @@ normative:
       Internet-Draft: draft-bu-dawn-ard-architecture
 
 informative:
-  RFC2308:
-  RFC4035:
   RFC4343:
   RFC9457:
   RFC2132:
@@ -216,7 +217,7 @@ The client forms the entry point as follows:
 * The authority is the TargetName, with the port from the "port" key or 443. The TargetName MUST be a host name without underscore labels, as in {{Section 3.2 of I-D.mozleywilliams-dnsop-dnsaid}}, so that a publicly issued certificate can name it. A record whose TargetName is "." yields no entry point.
 * The path is "/.well-known/ard.json". The response determines whether a manifest is present.
 * Address records of the TargetName absent from the Additional section ({{Section 4.1 of RFC9460}}) are resolved by the client.
-* The "mandatory" key is processed as in {{Section 8 of RFC9460}}: a record whose mandatory list names a key the client does not implement is ignored. The "alpn", "port", "ipv4hint", "ipv6hint", and "ech" keys apply with their {{RFC9460}} semantics. Other keys are ignored.
+* The "mandatory" key is processed as in {{Section 8 of RFC9460}}: a record whose mandatory list names a key the client does not implement is ignored. The "alpn", "port", "ipv4hint", and "ipv6hint" keys apply with their {{RFC9460}} semantics, and the "ech" key with its {{RFC9848}} semantics. Other keys are ignored.
 * One AliasMode indirection is followed ({{Section 2.4.2 of RFC9460}}); a second ends the attempt ({{depth}}). An AliasMode record whose TargetName is "." yields no entry point.
 
 In the example, the entry point is "https://ard.example.net/.well-known/ard.json". The client validates the TLS certificate for "ard.example.net" and records `_index._agents.example.com` as the source. An RRset MAY contain several ServiceMode records; each yields one entry point, and SvcPriority orders them. If the TargetName serves no manifest at the well-known path, the outcome is "no manifest" ({{depth}}); the host can still serve an index in another format, which this document does not interpret.
@@ -262,7 +263,7 @@ A publisher makes its manifest available at the well-known URI {{RFC8615}} with 
 https://example.com/.well-known/ard.json
 ~~~
 
-A publisher supporting this mechanism MUST respond to a GET request for this URI with an ARD manifest or with a redirect to one. The manifest carries the media type defined in {{ARD}}, and a client SHOULD send it in the Accept header field. The client MUST follow at most one redirect (301, 302, 303, 307, or 308 with a Location field, {{Section 15.4 of RFC9110}}) and records the final URI as the entry point. A response with another media type, or a redirect to a further redirect, has the outcome "no manifest" ({{depth}}). A server that hosts no manifest SHOULD respond with 404 (Not Found) and MAY include Problem Details {{RFC9457}}.
+A publisher supporting this mechanism MUST respond to a GET request for this URI with an ARD manifest or with a redirect to one. The manifest carries the media type defined in {{ARD}}, and a client SHOULD send it in the Accept header field. The client MUST follow at most one redirect (301, 302, 303, 307, or 308 with a Location field, {{Section 15.4 of RFC9110}}) and records the final URI as the entry point. After a redirect, the host of the entry point is the redirect target, and the source remains the origin that issued the redirect. A response with another media type, or a redirect to a further redirect, has the outcome "no manifest" ({{depth}}). A 404 (Not Found) response has the outcome "no manifest"; it MAY include Problem Details {{RFC9457}}.
 
 Responses to the well-known URI, including redirects and 404 responses, are cacheable under {{RFC9111}}. A client reuses a stored response while it is fresh ({{procedure}}). A freshness lifetime of several hours is appropriate for a manifest whose location rarely changes.
 
@@ -272,7 +273,7 @@ The registration of the suffix is in {{iana-well-known}}.
 
 ### Link Relation {#link-relation}
 
-A publisher MAY include a link to a manifest in any HTTP response using the "ard" link relation {{RFC8288}} in a Link header field. The link target is an ARD manifest. A publisher supporting this mechanism SHOULD respond to a HEAD request for the root resource of its origin with a Link header field carrying the relation, following {{Section 2 of RFC9727}}. The following is an example:
+A publisher MAY include a link to a manifest in any HTTP response using the "ard" link relation {{RFC8288}} in a Link header field. The link target is an ARD manifest. A publisher supporting this mechanism SHOULD respond to a HEAD request for the root resource of its origin with a Link header field carrying the relation, as in the example of {{Section 3 of RFC9727}}, where the "api-catalog" relation appears in the response to the root resource. The following is an example:
 
 ~~~ http-message
 HEAD / HTTP/1.1
@@ -288,7 +289,7 @@ Link: <https://agents.example.com/manifest>; rel="ard"
 
 ~~~
 
-The client reads the Link field of the root response regardless of its status code and does not follow a redirect of the root resource. The relation MAY also appear in an HTML link element in the root resource ({{Appendix A.1 of RFC8288}}), for publishers that cannot set header fields. A client that retrieves the root resource with GET reads link elements in an HTML response in the same way as the Link header field. Links in a response from the publisher's own origin have that origin as their source. Links in third-party documents are entry points with the third party as their source. The registration of the relation is in {{iana-link-relation}}.
+The client reads the Link field of the root response regardless of its status code. If the root resource redirects, the client follows one redirect ({{depth}}) and reads the Link field of the final response. A publisher that cannot set header fields MAY place the relation in an HTML link element of the root resource ({{Appendix A.1 of RFC8288}}); a client that retrieves the root resource with GET MAY read it. The procedure of {{procedure}} sends HEAD and reads the header field only. Links in a response from the publisher's own origin have that origin as their source. Links in third-party documents are entry points with the third party as their source. The registration of the relation is in {{iana-link-relation}}.
 
 ## Local Network Mechanisms {#local-mechanisms}
 
@@ -316,7 +317,7 @@ The procedure takes a domain name as input, written `<domain>` below, obtained f
 
 The procedure ends when every step has returned. A client attempts each distinct URI once per execution of the procedure and records all its sources.
 
-The default order of preference is: configuration, then DNS answers validated with DNSSEC {{RFC4033}}, then responses from the publisher's own origin (steps 4 and 5), then unvalidated DNS answers, then Multicast DNS responses. An answer is validated when the client validated it or received it with the AD bit set from a trusted validating resolver over a secure channel ({{Section 4.9.3 of RFC4035}}); Insecure and Indeterminate answers ({{Section 4.3 of RFC4035}}) are unvalidated, and Bogus answers are discarded. An entry point is validated when every answer used to form its URI was; address records do not count, since TLS authenticates the host. Within a level, entry points are ordered by step; within a source, by SvcPriority or SRV priority. A client MAY reorder entry points under local policy. Configured entry points ({{static}}) are tried first. Entry points learned over Multicast DNS MUST rank last ({{sec-local}}).
+The default order of preference is: configuration, then DNS answers validated with DNSSEC {{RFC4033}}, then responses from the publisher's own origin (steps 4 and 5), then unvalidated DNS answers, then Multicast DNS responses. An answer is validated when the client validated it or received it with the AD bit set from a trusted validating resolver over a secure channel ({{Section 4.9.3 of RFC4035}}); Insecure and Indeterminate answers ({{Section 4.3 of RFC4035}}) are unvalidated, and Bogus answers are discarded. An entry point is validated when every answer used to form its URI was; address records do not count, since TLS authenticates the host. Within a level, entry points are ordered by step; within a source, by SvcPriority or SRV priority. A client MAY reorder entry points under local policy. Configured entry points ({{static}}) are tried first. Entry points learned over Multicast DNS MUST rank last ({{sec-local}}). The order determines which entry point the client retrieves first and which sources it rate-limits; it confers no trust on the entries of a manifest ({{security}}).
 
 An entry point fails when the outcome of its retrieval is "no manifest" ({{depth}}). A client MUST NOT retry a failed entry point from the same source before a back-off interval of at least 30 seconds. A client MUST NOT issue the DNS queries of steps 2 and 3 for the same domain name more often than the TTLs of the answers allow, including negative answers ({{RFC2308}}) and the DNSKEY and DS queries of validation. A client MUST NOT repeat the requests of steps 4 and 5 while a stored response is fresh ({{RFC9111}}).
 
@@ -338,11 +339,11 @@ Not permitted:
 
 # Security Considerations {#security}
 
-Initial contact takes place before any authenticated relationship exists between the client and the publisher. In each mechanism, an attacker who controls the channel can direct the client to a manifest of the attacker's choosing. The mitigation is the same for all mechanisms: the client treats the result as unverified, retrieves the manifest from the URI, authenticates the origin, and relies on the content of each entry, as specified in {{ARD}}, to determine its publisher.
+Initial contact takes place before any authenticated relationship exists between the client and the publisher. In each mechanism, an attacker who controls the channel can direct the client to a manifest of the attacker's choosing. The mitigation is the same for all mechanisms: the client treats the result as unverified, retrieves the manifest from the URI, and authenticates the origin. Initial contact then delivers an ARD manifest from a TLS-authenticated host, together with a record of how the URI was learned. It establishes nothing about the publisher of any entry: {{ARD}} establishes the publisher of each entry from the entry itself, through a signature bound to the publisher's domain name.
 
 ## Entry Points and Authority {#sec-hints}
 
-A client MUST authenticate the TLS server for the host named in the entry point URI ({{Section 4.3.3 of RFC9110}}). For the well-known URI, that host is the publisher's own domain. For the index record, for DNS-SD, and for a link whose target is on another origin, the host is taken from the answer or the link, and a spoofed answer can direct the client to a host for which the attacker holds a valid certificate. A client SHOULD validate DNS answers with DNSSEC {{RFC4033}} where the zone is signed and SHOULD rank unvalidated answers below validated ones ({{procedure}}). This document does not establish that a manifest reached through `_index._agents.example.com` is published by "example.com"; the recorded source is an input to the per-entry publisher check that {{ARD}} defines.
+A client MUST authenticate the TLS server for the host named in the entry point URI ({{Section 4.3.3 of RFC9110}}). For the well-known URI, that host is the publisher's own domain. For the index record, for DNS-SD, and for a link whose target is on another origin, the host is taken from the answer or the link, and a spoofed answer can direct the client to a host for which the attacker holds a valid certificate. A client SHOULD validate DNS answers with DNSSEC {{RFC4033}} where the zone is signed and SHOULD rank unvalidated answers below validated ones ({{procedure}}). This document does not establish that a manifest reached through `_index._agents.example.com` is published by "example.com", and the per-entry check of {{ARD}} does not take the source into account. The source serves the ranking and rate limiting of {{procedure}} and local policy such as an allow-list of hosts; it lets a client tell a manifest retrieved from the publisher's own origin from one reached through a DNS answer or a third-party link.
 
 Carrying a digest or a public key for the manifest in the DNS record, as {{I-D.nemethi-dawn-aid}} does for its objects, was considered and not adopted, since a manifest changes with every published entry.
 
@@ -360,7 +361,7 @@ On shared hosting, the well-known URI can be served by a tenant rather than the 
 
 # Privacy Considerations {#privacy}
 
-A DNS query for `_index._agents.example.com` or `_ard._tcp.example.com` reveals to the resolver, and to any observer on the path, that the client is querying for agent manifests of example.com. Encrypted DNS transports, discovered as described in {{RFC9462}}, limit the observers to the resolver. The well-known fetch is indistinguishable from an ordinary connection to the domain. The TLS Server Name Indication reveals the TargetName host unless the "ech" key is used, and DNSSEC validation adds DNSKEY and DS queries to the parent zones.
+A DNS query for `_index._agents.example.com` or `_ard._tcp.example.com` reveals to the resolver, and to any observer on the path, that the client is querying for agent manifests of example.com. Encrypted DNS transports, discovered as described in {{RFC9462}}, limit the observers to the resolver. The well-known fetch is indistinguishable from an ordinary connection to the domain. The TLS Server Name Indication reveals the TargetName host unless the "ech" key {{RFC9848}} is used, and DNSSEC validation adds DNSKEY and DS queries to the parent zones.
 
 Browsing over Multicast DNS reveals to all hosts on the link that the client is looking for agent manifests, and a responding host reveals that it advertises one. Deployments where this is a concern can use unicast DNS-SD through a Discovery Proxy {{RFC8766}} with access control on the zone, or configuration. The service instance names under `_ard._tcp.<domain>` can be enumerated by any party; they identify manifests that a publisher has chosen to make discoverable, and they do not identify people or individual agents.
 
@@ -397,7 +398,7 @@ Relation name:
 : ard
 
 Description:
-: Refers to an Agent Resource Discovery (ARD) manifest of the publisher of the link context.
+: Refers to an Agent Resource Discovery (ARD) manifest, a document listing agent resources.
 
 Reference:
 : This document, {{link-relation}}.
@@ -443,7 +444,7 @@ The following questions are to be settled before the document is stable. This se
 
 1. API catalog profile. Issue #2 on the ARD repository proposes publishing the manifest as an {{RFC9727}} API catalog under "/.well-known/api-catalog" with an ARD profile. If adopted, this document registers no suffix.
 2. Pointer label. This document uses the DNS-AID organization index `_index._agents`, whose data format DNS-AID leaves out of scope. The DNS-AID reference implementation publishes `_catalog._agents` and {{ARD-SPEC}} lists `_entries._agents` for the same pointer; both are to be aligned with this document. DNS-AID, as the owner of "_agents" in the {{RFC8552}} registry, is asked to list an ARD manifest as one kind of index target.
-3. Suffix. "ard.json" matches {{ARD-SPEC}} and deployed code. A suffix without the extension, "ard", was considered.
+3. Suffix and relation name. "ard.json" matches {{ARD-SPEC}} and deployed code. A suffix without the extension, "ard", was considered. The link relation name "ard" also matches {{ARD-SPEC}}; the registry expert may ask for a descriptive name such as "ard-manifest".
 4. Reference status. {{ARD}} is a normative reference to a companion individual draft submitted together with this document. {{I-D.mozleywilliams-dnsop-dnsaid}} is an individual draft cited normatively, for the index record name and the TargetName rule of {{pointer-rr}}.
 5. HTTPS record at the apex. An earlier version let the HTTPS record of a domain announce the suffix through the "well-known" SvcParamKey of {{I-D.mk-dnsop-svcb-well-known}}. The mechanism was removed because the key has no registered number, syntax, or encoding yet; it is to be reconsidered once the key is registered.
 6. Registry endpoints. {{ARD-SPEC}} also points to a registry endpoint through `_search._agents.<domain>`. This document yields manifests only. Extending the entry point to registry endpoints is a question for DAWN.
