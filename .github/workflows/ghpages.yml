@@ -7,12 +7,9 @@ on:
     - CONTRIBUTING.md
     - LICENSE.md
     - .gitignore
+  # No paths-ignore on pull requests: the main branch ruleset requires this
+  # check, so a PR touching only README.md must still run it to be mergeable.
   pull_request:
-    paths-ignore:
-    - README.md
-    - CONTRIBUTING.md
-    - LICENSE.md
-    - .gitignore
 
 jobs:
   build:
