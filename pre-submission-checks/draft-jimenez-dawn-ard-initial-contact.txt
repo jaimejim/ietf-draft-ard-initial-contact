@@ -509,6 +509,9 @@ Table of Contents
    SvcPriority or SRV priority.  A client MAY reorder entry points under
    local policy.  Configured entry points (Section 4.1) are tried first.
    Entry points learned over Multicast DNS MUST rank last (Section 6.2).
+   The order determines which entry point the client retrieves first and
+   which sources it rate-limits; it confers no trust on the entries of a
+   manifest (Section 6).
 
    An entry point fails when the outcome of its retrieval is "no
    manifest" (Section 5.1).  A client MUST NOT retry a failed entry
@@ -552,9 +555,12 @@ Table of Contents
    attacker who controls the channel can direct the client to a manifest
    of the attacker's choosing.  The mitigation is the same for all
    mechanisms: the client treats the result as unverified, retrieves the
-   manifest from the URI, authenticates the origin, and relies on the
-   content of each entry, as specified in [ARD], to determine its
-   publisher.
+   manifest from the URI, and authenticates the origin.  Initial contact
+   then delivers an ARD manifest from a TLS-authenticated host, together
+   with a record of how the URI was learned.  It establishes nothing
+   about the publisher of any entry: [ARD] establishes the publisher of
+   each entry from the entry itself, through a signature bound to the
+   publisher's domain name.
 
 6.1.  Entry Points and Authority
 
@@ -568,8 +574,12 @@ Table of Contents
    [RFC4033] where the zone is signed and SHOULD rank unvalidated
    answers below validated ones (Section 5).  This document does not
    establish that a manifest reached through _index._agents.example.com
-   is published by "example.com"; the recorded source is an input to the
-   per-entry publisher check that [ARD] defines.
+   is published by "example.com", and the per-entry check of [ARD] does
+   not take the source into account.  The source serves the ranking and
+   rate limiting of Section 5 and local policy such as an allow-list of
+   hosts; it lets a client tell a manifest retrieved from the
+   publisher's own origin from one reached through a DNS answer or a
+   third-party link.
 
    Carrying a digest or a public key for the manifest in the DNS record,
    as [I-D.nemethi-dawn-aid] does for its objects, was considered and
