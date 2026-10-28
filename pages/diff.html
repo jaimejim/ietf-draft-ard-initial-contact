@@ -4,27 +4,33 @@
 <meta charset="utf-8">
 <title>Draft diff</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Side-by-side diff of two builds of the draft, in the layout and colours
+     of the IETF iddiff/rfcdiff tool, rendered in the browser from
+     builds/<sha>.txt. Query: ?from=<sha>[&to=<sha>]; "to" defaults to the
+     latest build. -->
 <style>
-  body { font-family: -apple-system, system-ui, sans-serif; margin: 0; color: #222; }
-  header { padding: 12px 16px; border-bottom: 1px solid #ddd; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: baseline; }
-  header h1 { font-size: 16px; margin: 0; }
-  header label { font-size: 13px; color: #555; }
-  select { font: inherit; font-size: 13px; max-width: 42vw; }
-  #status { padding: 16px; color: #555; }
-  table { width: 100%; border-collapse: collapse; table-layout: fixed; font: 12px/1.45 ui-monospace, Menlo, monospace; }
-  td { vertical-align: top; padding: 0 8px; white-space: pre-wrap; word-wrap: break-word; width: 50%; }
-  tr.ctx td { color: #666; }
-  tr.skip td { text-align: center; color: #999; background: #f6f6f6; padding: 2px; font-style: italic; }
-  tr.chg td.old { background: #fff5f5; }
-  tr.chg td.new { background: #f3fff3; }
-  del { background: #ffc9c9; text-decoration: none; }
-  ins { background: #b6f2b6; text-decoration: none; }
-  tr.sep td { border-top: 1px solid #e5e5e5; padding-top: 6px; }
+  body { font-family: monospace; margin: 0; }
+  header { font-family: system-ui, sans-serif; font-size: 13px; padding: 8px 12px; border-bottom: 1px solid #ccc;
+           display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: baseline; }
+  header b { font-size: 15px; }
+  select { font: inherit; max-width: 40vw; }
+  #status { padding: 12px; font-family: system-ui, sans-serif; color: #555; }
+  table { border-spacing: 0; width: 100%; table-layout: fixed; }
+  th { padding: 2px 0; text-align: center; font-size: 0.86em; }
+  td { padding: 0 4px; white-space: pre-wrap; word-wrap: break-word; vertical-align: top; font-size: 0.86em; }
+  td.n { width: 3.2em; color: #888; text-align: right; padding: 0 4px 0 0; white-space: nowrap; }
+  .left { background-color: #EEE; }
+  .right { background-color: #FFF; }
+  .lblock { background-color: #BFB; }
+  .rblock { background-color: #FF8; }
+  .skip td { text-align: center; color: #666; background: #ddd; font-style: italic; }
+  .w-delete { color: #F00; text-decoration: line-through; }
+  .w-insert { color: #008000; font-weight: bold; }
 </style>
 </head>
 <body>
 <header>
-  <h1>Draft diff</h1>
+  <b>Draft diff</b>
   <label>from <select id="from"></select></label>
   <label>to <select id="to"></select></label>
   <span id="summary"></span>
@@ -38,16 +44,16 @@
   const status = document.getElementById('status');
   const index = await (await fetch('builds/index.json', {cache: 'no-cache'})).json();
   const builds = index.builds; // newest first
-  const byPrefix = s => builds.find(b => s && (b.sha.startsWith(s) || s.startsWith(b.sha)));
-  const from = byPrefix(q.get('from')) || builds[1];
-  const to = q.get('to') && q.get('to') !== 'latest' ? byPrefix(q.get('to')) : builds[0];
-  if (!from || !to) { status.textContent = 'Unknown build. Known: ' + builds.map(b => b.sha).join(', '); return; }
+  const find = s => builds.find(b => s && (b.sha.startsWith(s) || s.startsWith(b.sha)));
+  const from = find(q.get('from')) || builds[1];
+  const to = q.get('to') && q.get('to') !== 'latest' ? find(q.get('to')) : builds[0];
+  if (!from || !to) { status.textContent = 'Unknown build. Known builds: ' + builds.map(b => b.sha).join(', '); return; }
 
   for (const [id, sel] of [['from', from], ['to', to]]) {
     const el = document.getElementById(id);
     for (const b of builds) {
       const o = document.createElement('option');
-      o.value = b.sha; o.textContent = `${b.sha} ${b.date} ${b.subject}`.slice(0, 90);
+      o.value = b.sha; o.textContent = `${b.sha}  ${b.date}  ${b.subject}`.slice(0, 80);
       o.selected = b.sha === sel.sha; el.appendChild(o);
     }
     el.onchange = () => {
@@ -57,28 +63,41 @@
   }
   document.title = `Draft diff ${from.sha}..${to.sha}`;
 
+  // Drop page breaks, running headers and footers, as rfcdiff does.
   const clean = t => t.replace(/\r/g, '').split('\n')
-    .filter(l => !/^\f/.test(l) && !/\[Page \d+\]\s*$/.test(l) && !/^(Internet-Draft|RFC \d+)\s{3,}\S.*\s{3,}\S+ \d{4}\s*$/.test(l))
+    .filter(l => !/^\f/.test(l) && !/\[Page \d+\]\s*$/.test(l)
+                 && !/^(Internet-Draft|RFC \d+)\s{3,}\S.*\s{3,}\S+ \d{4}\s*$/.test(l))
     .join('\n').replace(/\n{3,}/g, '\n\n');
-  const [oldText, newText] = await Promise.all([from, to].map(async b => clean(await (await fetch(`builds/${b.sha}.txt`)).text())));
+  const [oldText, newText] = await Promise.all([from, to].map(
+    async b => clean(await (await fetch(`builds/${b.sha}.txt`)).text())));
 
   const esc = s => s.replace(/[&<>]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;'}[c]));
   const table = document.getElementById('diff');
-  const row = (cls, l, r) => { const tr = document.createElement('tr'); tr.className = cls;
-    tr.innerHTML = `<td class="old">${l}</td><td class="new">${r}</td>`; table.appendChild(tr); };
+  const label = b => `${b.file.replace(/\.txt$/, '')} @ ${b.sha} (${b.date})`;
+  table.innerHTML = `<tr><th colspan="2">${esc(label(from))}</th><th colspan="2">${esc(label(to))}</th></tr>`;
+  const row = (cls, ln, l, rn, r) => {
+    const tr = document.createElement('tr'); if (cls === 'skip') tr.className = 'skip';
+    tr.innerHTML = cls === 'skip'
+      ? `<td colspan="4">${l}</td>`
+      : `<td class="n">${ln}</td><td class="${cls === 'ctx' ? 'left' : 'lblock'}">${l}</td>` +
+        `<td class="n">${rn}</td><td class="${cls === 'ctx' ? 'right' : 'rblock'}">${r}</td>`;
+    table.appendChild(tr);
+  };
   const CTX = 3;
   const parts = Diff.diffLines(oldText, newText);
-  let changes = 0, first = true;
+  let ln = 1, rn = 1, changes = 0, first = true;
+  const lines = v => v.replace(/\n$/, '').split('\n');
   for (let i = 0; i < parts.length; i++) {
     const p = parts[i];
     if (!p.added && !p.removed) {
-      const lines = p.value.replace(/\n$/, '').split('\n');
-      const head = first ? [] : lines.slice(0, CTX);
-      const tail = i === parts.length - 1 ? [] : lines.slice(Math.max(head.length, lines.length - CTX));
-      const skipped = lines.length - head.length - tail.length;
-      head.forEach(l => row('ctx', esc(l), esc(l)));
-      if (skipped > 0) row('skip', `… ${skipped} unchanged lines …`, `… ${skipped} unchanged lines …`);
-      tail.forEach(l => row('ctx', esc(l), esc(l)));
+      const ls = lines(p.value);
+      const head = first ? [] : ls.slice(0, CTX);
+      const last = i === parts.length - 1;
+      const tail = last ? [] : ls.slice(Math.max(head.length, ls.length - CTX));
+      const skipped = ls.length - head.length - tail.length;
+      head.forEach(l => row('ctx', ln++, esc(l), rn++, esc(l)));
+      if (skipped > 0) { row('skip', 0, `skipping to change at line ${ln + skipped}`); ln += skipped; rn += skipped; }
+      tail.forEach(l => row('ctx', ln++, esc(l), rn++, esc(l)));
       first = false; continue;
     }
     let oldV = '', newV = '';
@@ -86,15 +105,17 @@
     else newV = p.value;
     let l = '', r = '';
     for (const w of Diff.diffWordsWithSpace(oldV, newV)) {
-      if (w.removed) l += `<del>${esc(w.value)}</del>`;
-      else if (w.added) r += `<ins>${esc(w.value)}</ins>`;
+      if (w.removed) l += `<span class="w-delete">${esc(w.value)}</span>`;
+      else if (w.added) r += `<span class="w-insert">${esc(w.value)}</span>`;
       else { l += esc(w.value); r += esc(w.value); }
     }
-    row('chg sep', l, r); changes++; first = false;
+    const lc = oldV ? lines(oldV).length : 0, rc = newV ? lines(newV).length : 0;
+    row('chg', lc ? ln : '', l.replace(/\n$/, ''), rc ? rn : '', r.replace(/\n$/, ''));
+    ln += lc; rn += rc; changes++; first = false;
   }
   status.remove();
   document.getElementById('summary').textContent =
-    changes ? `${changes} changed block${changes > 1 ? 's' : ''}; page headers and footers ignored` : 'No differences';
+    changes ? `${changes} change${changes > 1 ? 's' : ''}` : 'No differences';
 })().catch(e => { document.getElementById('status').textContent = 'Error: ' + e.message; });
 </script>
 </body>

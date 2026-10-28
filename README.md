@@ -8,12 +8,7 @@ This is the working area for the individual Internet-Draft, "Agent Resource Disc
 * [Datatracker Page](https://datatracker.ietf.org/doc/draft-jimenez-dawn-ard-initial-contact)
 * [Individual Draft](https://datatracker.ietf.org/doc/html/draft-jimenez-dawn-ard-initial-contact)
 * [Compare Editor's Copy to Individual Draft](https://jaimejim.github.io/ietf-draft-ard-initial-contact/#go.draft-jimenez-dawn-ard-initial-contact.diff)
-
-## Diff Against Any Commit
-
-<https://jaime.win/ietf-draft-ard-initial-contact/diff.html?from=56bcc7c>
-
-Replace the commit; add `&to=<commit>` to compare two builds. Every build is kept on gh-pages.
+* [Compare any two builds](https://jaime.win/ietf-draft-ard-initial-contact/diff.html)
 
 
 ## Contributing
