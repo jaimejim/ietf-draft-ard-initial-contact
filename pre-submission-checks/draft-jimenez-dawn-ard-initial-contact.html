@@ -1362,7 +1362,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
       <dd class="break"></dd>
 </dl>
 <p id="section-3-3">An entry point is a hint until the client has retrieved the catalog from the URI and authenticated the origin (<a href="#security" class="auto internal xref">Section 6</a>). A DNS answer or a multicast response does not make a catalog authoritative for a publisher. The publisher of each entry is established from the entry itself, as specified in <span>[<a href="#ARD" class="cite xref">ARD</a>]</span>; the host that serves the catalog establishes no publisher authority.<a href="#section-3-3" class="pilcrow">¶</a></p>
-<p id="section-3-4">A domain can publish more than one catalog. Each mechanism can return several entry points, and the client treats them as a set. A catalog can link to further catalogs; following those links is part of lookup and is outside the scope of this document.<a href="#section-3-4" class="pilcrow">¶</a></p>
+<p id="section-3-4">A domain can publish more than one catalog. Each mechanism can return several entry points, and the client treats them as a set. A catalog can link to further catalogs, and can consist of a single entry that points at a registry endpoint <span>[<a href="#ARD" class="cite xref">ARD</a>]</span>; following those links is part of lookup and is outside the scope of this document. Initial contact ends at the catalog.<a href="#section-3-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="mechanisms">
@@ -1370,7 +1370,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
       <h2 id="name-discovery-mechanisms">
 <a href="#section-4" class="section-number selfRef">4. </a><a href="#name-discovery-mechanisms" class="section-name selfRef">Discovery Mechanisms</a>
       </h2>
-<p id="section-4-1">The well-known URI of <a href="#well-known" class="auto internal xref">Section 4.3.1</a> is mandatory to implement. A publisher that makes its catalog discoverable <span class="bcp14">MUST</span> serve it at the well-known URI, directly or through one redirect, and every client <span class="bcp14">MUST</span> implement the well-known fetch. The other mechanisms are <span class="bcp14">OPTIONAL</span> for publishers. A client that supports discovery of catalogs on the local network <span class="bcp14">MUST</span> implement the Multicast DNS browse of <a href="#mdns" class="auto internal xref">Section 4.4.2</a>.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-1">The well-known URI of <a href="#well-known" class="auto internal xref">Section 4.3.1</a> is mandatory to implement. A publisher that makes its catalog discoverable <span class="bcp14">MUST</span> serve it at the well-known URI, directly or through one redirect, and every client <span class="bcp14">MUST</span> implement the well-known fetch. The other mechanisms are <span class="bcp14">OPTIONAL</span> for publishers and supplement the well-known URI: they let a client learn an entry point before it connects, enumerate several catalogs, or find a catalog without a domain name. A client that supports discovery of catalogs on the local network <span class="bcp14">MUST</span> implement the Multicast DNS browse of <a href="#mdns" class="auto internal xref">Section 4.4.2</a>.<a href="#section-4-1" class="pilcrow">¶</a></p>
 <p id="section-4-2">The mechanisms of <a href="#dns-mechanisms" class="auto internal xref">Section 4.2</a> and <a href="#origin-mechanisms" class="auto internal xref">Section 4.3</a> take a domain name as input. The mechanisms of <a href="#local-mechanisms" class="auto internal xref">Section 4.4</a> require no domain name.<a href="#section-4-2" class="pilcrow">¶</a></p>
 <div id="static">
 <section id="section-4.1">
@@ -1386,7 +1386,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
         <h3 id="name-dns-based-mechanisms">
 <a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-dns-based-mechanisms" class="section-name selfRef">DNS-Based Mechanisms</a>
         </h3>
-<p id="section-4.2-1">DNS records allow a publisher to advertise an entry point before the client opens a connection, and to place the catalog on a host other than the domain apex without a redirect.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+<p id="section-4.2-1">DNS records allow a publisher to advertise an entry point before the client opens a connection, to send the client to a catalog host other than the domain apex without the redirect at the apex, and to enumerate several catalogs. The well-known URI of <a href="#well-known" class="auto internal xref">Section 4.3.1</a> remains in place: the apex serves the catalog or redirects to it (<a href="#mechanisms" class="auto internal xref">Section 4</a>).<a href="#section-4.2-1" class="pilcrow">¶</a></p>
 <div id="pointer-rr">
 <section id="section-4.2.1">
           <h4 id="name-organization-index-record">
