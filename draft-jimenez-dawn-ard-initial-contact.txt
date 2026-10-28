@@ -12,7 +12,7 @@ Expires: 1 May 2027                                               Google
 
 
             Agent Resource Discovery (ARD): Initial Contact
-                draft-jimenez-ard-initial-contact-latest
+             draft-jimenez-dawn-ard-initial-contact-latest
 
 Abstract
 
@@ -31,20 +31,15 @@ About This Document
 
    This note is to be removed before publishing as an RFC.
 
-   The latest revision of this draft can be found at
-   https://jaimejim.github.io/ietf-draft-ard-initial-contact/draft-
-   jimenez-ard-initial-contact.html.  Status information for this
-   document may be found at https://datatracker.ietf.org/doc/draft-
-   jimenez-ard-initial-contact/.
+   Status information for this document may be found at
+   https://datatracker.ietf.org/doc/draft-jimenez-dawn-ard-initial-
+   contact/.
 
    Discussion of this document takes place on the Discovery of Agents
    With Names (DAWN) Proposed Working Group mailing list
    (mailto:dawn@ietf.org), which is archived at
    https://mailarchive.ietf.org/arch/browse/dawn/.  Subscribe at
    https://www.ietf.org/mailman/listinfo/dawn/.
-
-   Source for this draft and an issue tracker can be found at
-   https://github.com/jaimejim/ietf-draft-ard-initial-contact.
 
 Status of This Memo
 
@@ -270,10 +265,10 @@ Table of Contents
    places an organization's agent-related DNS records under the
    underscored label "_agents".  This document uses the name
    _catalog._agents.<domain>, as published by the DNS-AID reference
-   implementation [DNS-AID-IMPL], for a Service Binding (SVCB) record
-   [RFC9460] whose TargetName identifies a host that serves an ARD
-   catalog at the well-known URI.  The status of this name is discussed
-   in Appendix B.  The following is an example for example.com:
+   implementation, for a Service Binding (SVCB) record [RFC9460] whose
+   TargetName identifies a host that serves an ARD catalog at the well-
+   known URI.  The status of this name is discussed in Appendix B.  The
+   following is an example for example.com:
 
    _catalog._agents.example.com. 3600 IN SVCB 1 catalog.example.net. (
        alpn="h2"
@@ -717,6 +712,12 @@ Table of Contents
 
 9.1.  Normative References
 
+   [ARD]      Bu, J., Guha, R.V., Smith, S., Jiménez, J., and J. Damick,
+              "Agent Resource Discovery (ARD)", Work in Progress,
+              Internet-Draft, draft-bu-dawn-ard-discovery, October 2026,
+              <https://datatracker.ietf.org/doc/draft-bu-dawn-ard-
+              discovery/>.
+
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
@@ -780,12 +781,6 @@ Table of Contents
               Specification", 2025,
               <https://a2a-protocol.org/latest/specification/>.
 
-   [ARD]      Bu, J., Guha, R.V., Smith, S., Jiménez, J., and J. Damick,
-              "Agent Resource Discovery (ARD)", Work in Progress,
-              Internet-Draft, draft-bu-dawn-ard-discovery, October 2026,
-              <https://mindpower.github.io/ietf-draft-agent-resources-
-              discovery/draft-bu-dawn-ard-discovery.html>.
-
    [ARD-SPEC] ARD Project, "Agentic Resource Discovery Specification,
               v0.91", October 2026,
               <https://agenticresourcediscovery.org/spec/>.
@@ -794,11 +789,6 @@ Table of Contents
               IETF, "Discovery of Agents With Names (DAWN) - Proposed
               Charter", 2026,
               <https://datatracker.ietf.org/doc/charter-ietf-dawn/>.
-
-   [DNS-AID-IMPL]
-              DNS-AID Project, "dns-aid-core: DNS-based Agent
-              Identification and Discovery, reference implementation",
-              September 2026, <https://github.com/dns-aid/dns-aid-core>.
 
    [I-D.besleaga-agentic-knowledge-wellknown]
               Besleaga, A. N., "The 'knowledge-linkset' Well-Known URI
@@ -985,16 +975,15 @@ Appendix A.  Related Work
 
    DNS-AID [I-D.mozleywilliams-dnsop-dnsaid] publishes agents as SVCB
    records and an organization index under _index._agents.<domain>.  Its
-   reference implementation [DNS-AID-IMPL] publishes _catalog._agents
-   next to it, follows an off-domain pointer only when the record is
-   DNSSEC-validated or the catalog is signed against the domain's key
-   set, and refuses redirects.  Section 4.2.1 adopts its label,
-   Section 5.1 allows one redirect, and the trust decision for off-
-   domain pointers is left to the publisher check of [ARD].  The ARD
-   specification [ARD-SPEC], from which [ARD] derives, requires the
-   well-known fetch of "/.well-known/ard.json" and lists
-   _entries._agents for a static entry source and _search._agents for a
-   registry endpoint.
+   reference implementation publishes _catalog._agents next to it,
+   follows an off-domain pointer only when the record is DNSSEC-
+   validated or the catalog is signed against the domain's key set, and
+   refuses redirects.  Section 4.2.1 adopts its label, Section 5.1
+   allows one redirect, and the trust decision for off-domain pointers
+   is left to the publisher check of [ARD].  The ARD specification
+   [ARD-SPEC], from which [ARD] derives, requires the well-known fetch
+   of "/.well-known/ard.json" and lists _entries._agents for a static
+   entry source and _search._agents for a registry endpoint.
 
    [I-D.nemethi-dawn-aid], [I-D.morrison-mcp-dns-discovery], and
    [I-D.seethiraju-dawn-dan] locate individual agents or MCP servers
@@ -1035,10 +1024,10 @@ Appendix B.  Open Issues
    3.  Suffix. "ard.json" matches [ARD-SPEC] and deployed code.  A
        suffix without the extension, "ard", was considered.
 
-   4.  Reference status.  [ARD] and [I-D.mozleywilliams-dnsop-dnsaid]
-       are individual drafts cited informatively.  [ARD] becomes a
-       normative reference when the companion documents are adopted
-       together.
+   4.  Reference status.  [ARD] is a normative reference to a companion
+       individual draft submitted together with this document.
+       [I-D.mozleywilliams-dnsop-dnsaid] is an individual draft cited
+       informatively.
 
    5.  SvcParamKey number.  The "well-known" key has no registered
        number; the examples in Section 4.2.1 and Section 4.2.2 cannot be
