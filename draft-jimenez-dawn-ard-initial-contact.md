@@ -40,6 +40,7 @@ normative:
   RFC3986:
   RFC4033:
   RFC4035:
+  RFC5890:
   RFC6335:
   RFC6762:
   RFC6763:
@@ -135,7 +136,7 @@ In an agent system, agents need to discover other agents, tool servers, and skil
 
 Agent Resource Discovery (ARD) {{ARD}} defines the manifest, a document served over HTTPS in which a publisher lists agents, tool servers, and skills. Each entry points at the artifact that describes the resource in its native protocol, such as an Agent Card {{A2A}} or an MCP server description {{MCP}}. ARD also defines a lookup interface over the manifest. Both require the URI of the manifest. The ARD architecture is described in {{ARD-ARCH}}.
 
-ARD does not specify how a client obtains that URI. The applicable IETF mechanisms, well-known URIs {{RFC8615}}, web linking {{RFC8288}}, Service Binding records {{RFC9460}}, and DNS-SD {{RFC6763}} with Multicast DNS {{RFC6762}}, each require an application-specific binding that defines the names to query, the parameters to publish, and the interpretation of the answer.
+{{ARD}} leaves the mechanisms by which a client obtains that URI to this document. The applicable IETF mechanisms, well-known URIs {{RFC8615}}, web linking {{RFC8288}}, Service Binding records {{RFC9460}}, and DNS-SD {{RFC6763}} with Multicast DNS {{RFC6762}}, each require an application-specific binding that defines the names to query, the parameters to publish, and the interpretation of the answer.
 
 This document defines the following mechanisms for obtaining the URI of an ARD manifest:
 
@@ -242,7 +243,7 @@ The TXT record carries the following keys, with the syntax of {{Section 6 of RFC
 
 {:vspace}
 txtvers:
-: The version of this key set. This document defines version 1. When the key is absent, version 1 is assumed. A client MUST ignore records with a version it does not support.
+: The version of this key set. This document defines version 1. The key SHOULD be present and first in the record, as recommended in {{Section 6.7 of RFC6763}}; when absent, version 1 is assumed. A client MUST ignore records with a version it does not support.
 
 path:
 : The path and optional query component of the entry point, as an absolute path {{RFC3986}}. When the key is absent, the path is "/.well-known/ard.json". The manifest at this path can differ from the manifest at the well-known URI of the same host.
@@ -295,11 +296,11 @@ The client reads the Link field of the root response regardless of its status co
 
 ### Network-Provided Domain Name {#provided-domain}
 
-A client without a domain name can obtain one from the network through the DHCPv4 Domain Name option ({{Section 3.17 of RFC2132}}), the DHCPv6 Domain Search List option {{RFC3646}}, or the DNS Search List option in IPv6 Router Advertisements {{RFC8106}}. The client uses such a name as the domain name in the procedure of {{procedure}}. The client records the network as the source of the name.
+A client without a domain name can obtain one from the network through the DHCPv4 Domain Name option ({{Section 3.17 of RFC2132}}), the DHCPv6 Domain Search List option {{RFC3646}}, or the DNS Search List option in IPv6 Router Advertisements {{RFC8106}}. The client uses such a name as the domain name in the procedure of {{procedure}}. The client records the network as the source of the name. A client can also learn browse domains through the domain enumeration of {{Section 11 of RFC6763}} and use each of them as the domain name.
 
 ### Multicast DNS {#mdns}
 
-On the local link, a client browses for "_ard._tcp.local." over Multicast DNS {{RFC6762}}, using the same PTR, SRV, and TXT records as in {{dns-sd}}. Names under "local." do not appear in certificates issued by public CAs. A publisher that advertises over Multicast DNS SHOULD set the SRV target to a unicast DNS name for which it holds a certificate, so that the entry point URI names a host the client can authenticate. The client resolves such a target through unicast DNS and ignores address records for it in a multicast answer, since a Multicast DNS responder is authoritative only for names under "local." ({{Section 6 of RFC6762}}). TLS authenticates the host in either case ({{sec-hints}}). A responder that accepts only "local." targets yields entry points the client cannot authenticate ({{sec-local}}). The client stops collecting responses after a configured interval; responses received later are processed as new entry points. Where a Discovery Proxy {{RFC8766}} is deployed, the client can use {{dns-sd}} instead. Entry points learned over Multicast DNS carry the network interface as their source ({{sec-local}}).
+On the local link, a client browses for "_ard._tcp.local." over Multicast DNS {{RFC6762}}, using the same PTR, SRV, and TXT records as in {{dns-sd}}. Names under "local." do not appear in certificates issued by public CAs. A publisher that advertises over Multicast DNS SHOULD set the SRV target to a unicast DNS name for which it holds a certificate, so that the entry point URI names a host the client can authenticate. The client resolves such a target through unicast DNS and ignores address records for it in a multicast answer, since a Multicast DNS responder is authoritative only for names under "local." ({{Section 6 of RFC6762}}). TLS authenticates the host in either case ({{sec-hints}}). A responder that accepts only "local." targets yields entry points the client cannot authenticate ({{sec-local}}). On a network without unicast DNS names or public certificates, the outcome for such entry points is "not permitted" unless local policy, such as a pinned key, allows the fetch ({{depth}}). The client stops collecting responses after a configured interval; responses received later are processed as new entry points. Where a Discovery Proxy {{RFC8766}} is deployed, the client can use {{dns-sd}} instead. Entry points learned over Multicast DNS carry the network interface as their source ({{sec-local}}).
 
 {{I-D.jakab-dawn-agent-discovery-mdns}} describes browsing for individual agents under "_agent._tcp". The two service types are independent.
 
@@ -307,7 +308,7 @@ On the local link, a client browses for "_ard._tcp.local." over Multicast DNS {{
 
 The procedure in this section is a RECOMMENDED default. The well-known fetch of step 4, the depth limits of {{depth}}, and the rate limiting below are requirements on every client. A client MAY reorder or omit the other steps under local policy.
 
-The procedure takes a domain name as input, written `<domain>` below, obtained from configuration, from the user, or from the network ({{provided-domain}}). The procedure continues after a step returns an entry point. A client without a domain name performs step 1 and queries "_ard._tcp.local." over Multicast DNS ({{mdns}}); steps 2 to 5 do not apply.
+The procedure takes a domain name as input, written `<domain>` below, obtained from configuration, from the user, or from the network ({{provided-domain}}). An internationalized domain name is used in its A-label form {{RFC5890}} in DNS owner names and in URIs. The procedure continues after a step returns an entry point; step 5 is performed only when steps 2 to 4 produce no manifest. A client without a domain name first tries to obtain one from the network ({{provided-domain}}). If none is available, it performs step 1 and queries "_ard._tcp.local." over Multicast DNS ({{mdns}}); steps 2 to 5 do not apply.
 
 1. The client uses configured entry points ({{static}}) first.
 2. The client queries the SVCB record for `_index._agents.<domain>` ({{pointer-rr}}).
@@ -317,9 +318,9 @@ The procedure takes a domain name as input, written `<domain>` below, obtained f
 
 The procedure ends when every step has returned. A client attempts each distinct URI once per execution of the procedure and records all its sources.
 
-The default order of preference is: configuration, then DNS answers validated with DNSSEC {{RFC4033}}, then responses from the publisher's own origin (steps 4 and 5), then unvalidated DNS answers, then Multicast DNS responses. An answer is validated when the client validated it or received it with the AD bit set from a trusted validating resolver over a secure channel ({{Section 4.9.3 of RFC4035}}); Insecure and Indeterminate answers ({{Section 4.3 of RFC4035}}) are unvalidated, and Bogus answers are discarded. An entry point is validated when every answer used to form its URI was; address records do not count, since TLS authenticates the host. Within a level, entry points are ordered by step; within a source, by SvcPriority or SRV priority. A client MAY reorder entry points under local policy. Configured entry points ({{static}}) are tried first. Entry points learned over Multicast DNS MUST rank last ({{sec-local}}). The order determines which entry point the client retrieves first and which sources it rate-limits; it confers no trust on the entries of a manifest ({{security}}).
+The default order of preference is: configuration, then DNS answers validated with DNSSEC {{RFC4033}}, then responses from the publisher's own origin (steps 4 and 5), then unvalidated DNS answers, then Multicast DNS responses. An answer is validated when the client validated it or received it with the AD bit set from a trusted validating resolver over a secure channel ({{Section 4.9.3 of RFC4035}}); Insecure and Indeterminate answers ({{Section 4.3 of RFC4035}}) are unvalidated, and Bogus answers are discarded. An entry point is validated when every answer used to form its URI was; address records do not count, since TLS authenticates the host. Within a level, entry points are ordered by step; within a source, by SvcPriority, or by SRV priority with weight as the tie-breaker. A client MAY reorder entry points under local policy. Entry points learned over Multicast DNS MUST rank last ({{sec-local}}). The order determines which entry point the client retrieves first and which sources it rate-limits; it confers no trust on the entries of a manifest ({{security}}).
 
-An entry point fails when the outcome of its retrieval is "no manifest" ({{depth}}). A client MUST NOT retry a failed entry point from the same source before a back-off interval of at least 30 seconds. A client MUST NOT issue the DNS queries of steps 2 and 3 for the same domain name more often than the TTLs of the answers allow, including negative answers ({{RFC2308}}) and the DNSKEY and DS queries of validation. A client MUST NOT repeat the requests of steps 4 and 5 while a stored response is fresh ({{RFC9111}}).
+An entry point fails when the outcome of its retrieval is "no manifest" ({{depth}}). A client MUST NOT retry a failed entry point from the same source before a back-off interval of at least 30 seconds. A client MUST NOT issue the DNS queries of steps 2 and 3 for the same domain name more often than the TTLs of the answers allow, including negative answers ({{RFC2308}}); a client that validates answers itself applies the same rule to its DNSKEY and DS queries. A client MUST NOT repeat the requests of steps 4 and 5 while a stored response is fresh ({{RFC9111}}).
 
 ## Indirection Depth and Outcomes {#depth}
 
@@ -363,7 +364,7 @@ On shared hosting, the well-known URI can be served by a tenant rather than the 
 
 A DNS query for `_index._agents.example.com` or `_ard._tcp.example.com` reveals to the resolver, and to any observer on the path, that the client is querying for agent manifests of example.com. Encrypted DNS transports, discovered as described in {{RFC9462}}, limit the observers to the resolver. The well-known fetch is indistinguishable from an ordinary connection to the domain. The TLS Server Name Indication reveals the TargetName host unless the "ech" key {{RFC9848}} is used, and DNSSEC validation adds DNSKEY and DS queries to the parent zones.
 
-Browsing over Multicast DNS reveals to all hosts on the link that the client is looking for agent manifests, and a responding host reveals that it advertises one. Deployments where this is a concern can use unicast DNS-SD through a Discovery Proxy {{RFC8766}} with access control on the zone, or configuration. The service instance names under `_ard._tcp.<domain>` can be enumerated by any party; they identify manifests that a publisher has chosen to make discoverable, and they do not identify people or individual agents.
+Browsing over Multicast DNS reveals to all hosts on the link that the client is looking for agent manifests, and a responding host reveals that it advertises one. Deployments where this is a concern can use unicast DNS-SD through a Discovery Proxy {{RFC8766}} with access control on the zone, or configuration. The service instance names under `_ard._tcp.<domain>` can be enumerated by any party; they identify manifests that a publisher has chosen to make discoverable, and they need not identify people or individual agents; the publisher chooses the names.
 
 Retrieving the manifest reveals the client's address to the publisher.
 
@@ -442,7 +443,7 @@ DNS-AID {{I-D.mozleywilliams-dnsop-dnsaid}} publishes agents as SVCB records and
 
 The following questions are to be settled before the document is stable. This section is to be removed before publication.
 
-1. API catalog profile. Issue #2 on the ARD repository proposes publishing the manifest as an {{RFC9727}} API catalog under "/.well-known/api-catalog" with an ARD profile. If adopted, this document registers no suffix.
+1. API catalog profile. A proposal on the ARD side is to publish the manifest as an {{RFC9727}} API catalog under "/.well-known/api-catalog" with an ARD profile. If adopted, this document registers no suffix.
 2. Pointer label. This document uses the DNS-AID organization index `_index._agents`, whose data format DNS-AID leaves out of scope. The DNS-AID reference implementation publishes `_catalog._agents` and {{ARD-SPEC}} lists `_entries._agents` for the same pointer; both are to be aligned with this document. DNS-AID, as the owner of "_agents" in the {{RFC8552}} registry, is asked to list an ARD manifest as one kind of index target.
 3. Suffix and relation name. "ard.json" matches {{ARD-SPEC}} and deployed code. A suffix without the extension, "ard", was considered. The link relation name "ard" also matches {{ARD-SPEC}}; the registry expert may ask for a descriptive name such as "ard-manifest".
 4. Reference status. {{ARD}} is a normative reference to a companion individual draft submitted together with this document. {{I-D.mozleywilliams-dnsop-dnsaid}} is an individual draft cited normatively, for the index record name and the TargetName rule of {{pointer-rr}}.
