@@ -1,3 +1,244 @@
 {
- "builds": []
+ "builds": [
+  {
+   "sha": "27679fb",
+   "date": "2026-10-28",
+   "subject": "ci: run the Editor's Copy check on every pull request",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "e4022e5",
+   "date": "2026-10-28",
+   "subject": "Merge pull request #29 from jaimejim/pre-submission-checks",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "e38048b",
+   "date": "2026-10-28",
+   "subject": "Merge pull request #28 from jaimejim/camera-ready/2-terminology",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "766fbf4",
+   "date": "2026-10-28",
+   "subject": "Merge pull request #27 from jaimejim/camera-ready/3-origin-security",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "b61e078",
+   "date": "2026-10-28",
+   "subject": "editorial: ARD scope sentence, IDNA, privacy wording, open issue 1",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "87d667f",
+   "date": "2026-10-28",
+   "subject": "Merge pull request #25 from jaimejim/camera-ready/1-dns",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "c24ba6c",
+   "date": "2026-10-28",
+   "subject": "well-known: 404 is a client outcome; redirect keeps the issuing origin as source",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "39dc84b",
+   "date": "2026-10-28",
+   "subject": "link relation: cite the root-response example of RFC 9727 Section 3",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "60918b8",
+   "date": "2026-10-28",
+   "subject": "references: \"ech\" per RFC 9848; RFC 4035 and RFC 2308 normative",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "1ea0cd4",
+   "date": "2026-10-28",
+   "subject": "security: initial contact delivers a manifest from an authenticated host",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "cd394ec",
+   "date": "2026-10-28",
+   "subject": "entry point: one meaning, with manifest as the outcome of retrieval",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "eaa6d0b",
+   "date": "2026-10-28",
+   "subject": "terminology: the document at the entry point is the ARD manifest",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "82d6d75",
+   "date": "2026-10-28",
+   "subject": "mechanisms: DNS records supplement the mandatory well-known URI",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "b3ab52b",
+   "date": "2026-10-28",
+   "subject": "mechanisms: remove the HTTPS record at the apex and the \"well-known\" key",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "e274dd9",
+   "date": "2026-10-28",
+   "subject": "index record: use the DNS-AID organization index as the catalog pointer",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "d614811",
+   "date": "2026-10-28",
+   "subject": "Merge pull request #22 from jaimejim/editorial/dawn-chartered-arch-ref",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "1d283ae",
+   "date": "2026-10-28",
+   "subject": "DAWN is chartered; architecture draft cited normatively",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "9b8845c",
+   "date": "2026-10-28",
+   "subject": "Merge pull request #21 from jaimejim/editorial/no-github-references",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
+   "sha": "5887da3",
+   "date": "2026-10-28",
+   "subject": "references: ARD is normative",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  },
+  {
+   "sha": "e4dd224",
+   "date": "2026-10-28",
+   "subject": "Merge pull request #20 from jaimejim/review/junjie-jari-issues",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  },
+  {
+   "sha": "71bc196",
+   "date": "2026-10-28",
+   "subject": "Issue #7: Introduction states which parts are specific to ARD",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  },
+  {
+   "sha": "8917601",
+   "date": "2026-10-21",
+   "subject": "Merge pull request #16 from jaimejim/editorial/initial-contact-name",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  },
+  {
+   "sha": "bc2b568",
+   "date": "2026-10-21",
+   "subject": "name: back to \"initial contact\", as decided on the 2026-10-20 call",
+   "file": "draft-jimenez-ard-initial-discovery.txt"
+  },
+  {
+   "sha": "56bcc7c",
+   "date": "2026-10-18",
+   "subject": "Merge pull request #14 from jaimejim/editorial/configured-uri",
+   "file": "draft-jimenez-ard-initial-discovery.txt"
+  },
+  {
+   "sha": "355c7aa",
+   "date": "2026-10-18",
+   "subject": "configured entry points are URIs; configuration-only mode; no-domain case inside",
+   "file": "draft-jimenez-ard-initial-discovery.txt"
+  },
+  {
+   "sha": "c4ae852",
+   "date": "2026-10-18",
+   "subject": "Merge pull request #13 from jaimejim/editorial/mechanisms-by-input",
+   "file": "draft-jimenez-ard-initial-discovery.txt"
+  },
+  {
+   "sha": "ccaa88e",
+   "date": "2026-10-18",
+   "subject": "mechanisms: group by input (DNS, origin, local network), DNS first; wording pass",
+   "file": "draft-jimenez-ard-initial-discovery.txt"
+  },
+  {
+   "sha": "4151e51",
+   "date": "2026-10-18",
+   "subject": "Merge pull request #12 from jaimejim/editorial/initial-discovery",
+   "file": "draft-jimenez-ard-initial-discovery.txt"
+  },
+  {
+   "sha": "b7e8590",
+   "date": "2026-10-18",
+   "subject": "rename to initial discovery; publisher lists resources; procedure queries PTR re",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  },
+  {
+   "sha": "cdf7cc8",
+   "date": "2026-10-08",
+   "subject": "Merge pull request #1 from jaimejim/jariarkko-patch-1",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  },
+  {
+   "sha": "5289911",
+   "date": "2026-10-08",
+   "subject": "Merge remote-tracking branch 'origin/main' into jariarkko-patch-1",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  },
+  {
+   "sha": "20b2a7f",
+   "date": "2026-10-08",
+   "subject": "Merge pull request #9 from jaimejim/editorial/domain-placeholder",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  },
+  {
+   "sha": "93059a5",
+   "date": "2026-10-08",
+   "subject": "Merge pull request #10 from jaimejim/review/initial-contact-fixes",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  },
+  {
+   "sha": "082e6e7",
+   "date": "2026-10-08",
+   "subject": "abstract, well-known, pointer record: three small consistency fixes",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  },
+  {
+   "sha": "98745e4",
+   "date": "2026-10-08",
+   "subject": "procedure: write the domain as <domain> instead of the single letter D",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  },
+  {
+   "sha": "8e0c1e5",
+   "date": "2026-10-08",
+   "subject": "Suggested shorter abstract",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  },
+  {
+   "sha": "135b9ef",
+   "date": "2026-10-07",
+   "subject": "client lab findings: redirect codes, root link, alias \".\", mDNS addresses, valid",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  },
+  {
+   "sha": "36f1f1c",
+   "date": "2026-10-07",
+   "subject": "lab findings: media type, cacheable 404, well-known key number, mDNS address rec",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  },
+  {
+   "sha": "6c5916e",
+   "date": "2026-10-07",
+   "subject": "repo renamed to ietf-draft-ard-initial-contact: update venue, README and LICENSE",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  },
+  {
+   "sha": "8838ce4",
+   "date": "2026-10-07",
+   "subject": "editorial pass: RFC register, explicit BCP 14 keywords, shorter text",
+   "file": "draft-jimenez-ard-initial-contact.txt"
+  }
+ ]
 }

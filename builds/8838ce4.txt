@@ -1,0 +1,986 @@
+
+
+
+
+Network Working Group                                         J. Jiménez
+Internet-Draft                                                  Ericsson
+Intended status: Standards Track                                   J. Bu
+Expires: 10 April 2027                                            Google
+                                                                J. Arkko
+                                                                Ericsson
+                                                          7 October 2026
+
+
+            Agent Resource Discovery (ARD): Initial Contact
+                draft-jimenez-ard-initial-contact-latest
+
+Abstract
+
+   --- abstract
+
+   This document specifies how a client obtains the URI of an Agent
+   Resource Discovery (ARD) catalog.  It defines a well-known URI, an
+   HTTP link relation, the use of DNS Service Binding records under the
+   "_agents" label defined by DNS for AI Discovery, and a DNS-Based
+   Service Discovery (DNS-SD) service type for use over unicast DNS and
+   Multicast DNS.  Each mechanism yields a set of catalog URIs together
+   with the source from which each URI was learned.  Information
+   obtained during initial contact is a hint that the client verifies
+   when it retrieves the catalog from its origin.  The catalog format,
+   the lookup interface, and the binding of a catalog to its publisher
+   are specified in the companion ARD documents.
+
+About This Document
+
+   This note is to be removed before publishing as an RFC.
+
+   The latest revision of this draft can be found at
+   https://jaimejim.github.io/-ietf-draft-ard-initial-contact/draft-
+   jimenez-ard-initial-contact.html.  Status information for this
+   document may be found at https://datatracker.ietf.org/doc/draft-
+   jimenez-ard-initial-contact/.
+
+   Discussion of this document takes place on the Discovery of Agents
+   With Names (DAWN) Proposed Working Group mailing list
+   (mailto:dawn@ietf.org), which is archived at
+   https://mailarchive.ietf.org/arch/browse/dawn/.  Subscribe at
+   https://www.ietf.org/mailman/listinfo/dawn/.
+
+   Source for this draft and an issue tracker can be found at
+   https://github.com/jaimejim/-ietf-draft-ard-initial-contact.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 10 April 2027.
+
+Copyright Notice
+
+   Copyright (c) 2026 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Introduction
+   2.  Conventions and Definitions
+   3.  The Entry Point
+   4.  Discovery Mechanisms
+     4.1.  Configured Entry Points
+     4.2.  Well-Known URI
+     4.3.  Link Relation
+     4.4.  DNS-Based Mechanisms
+       4.4.1.  Catalog Pointer Record
+       4.4.2.  HTTPS Record at the Apex
+       4.4.3.  DNS-SD Service Type "_ard._tcp"
+     4.5.  Local Network Mechanisms
+       4.5.1.  Network-Provided Domain Name
+       4.5.2.  Multicast DNS
+   5.  Client Procedure
+     5.1.  Indirection Depth and Outcomes
+   6.  Security Considerations
+     6.1.  Hints and Authority
+     6.2.  Local Network Discovery
+     6.3.  Downgrade
+     6.4.  Well-Known URI Squatting
+   7.  Privacy Considerations
+   8.  IANA Considerations
+     8.1.  Well-Known URI
+     8.2.  Link Relation
+     8.3.  Service Name
+   9.  References
+     9.1.  Normative References
+     9.2.  Informative References
+   Appendix A.  Related Work
+   Appendix B.  Open Issues
+   Acknowledgments
+   Authors' Addresses
+
+1.  Introduction
+
+   Agent Resource Discovery (ARD) [ARD] defines a catalog of agent
+   resources, a document served over HTTPS in which a publisher lists
+   the agents, tool servers, and skills it offers.  Each entry points at
+   the artifact that describes the resource in its native protocol, such
+   as an Agent Card [A2A] or an MCP server description [MCP].  ARD also
+   defines a lookup interface over the catalog.  Both require that the
+   client holds the URI of the catalog.
+
+   ARD does not specify how a client obtains that URI.  The applicable
+   IETF mechanisms, well-known URIs [RFC8615], web linking [RFC8288],
+   Service Binding records [RFC9460], and DNS-SD [RFC6763] with
+   Multicast DNS [RFC6762], each require an application-specific binding
+   that defines the names to query, the parameters to publish, and the
+   interpretation of the answer.
+
+   This document defines the following mechanisms for obtaining the URI
+   of an ARD catalog:
+
+   *  a well-known URI [RFC8615] with the suffix "ard.json"
+      (Section 4.2);
+
+   *  a link relation [RFC8288], "ard", whose target is an ARD catalog
+      (Section 4.3);
+
+   *  the use of SVCB and HTTPS records [RFC9460] under the "_agents"
+      label defined by DNS for AI Discovery
+      [I-D.mozleywilliams-dnsop-dnsaid] (Section 4.4.1, Section 4.4.2);
+
+   *  a DNS-SD service type [RFC6763], "_ard._tcp", for use over unicast
+      DNS and Multicast DNS [RFC6762] (Section 4.4.3, Section 4.5.2).
+
+   Section 5 specifies how a client combines these mechanisms.  The DAWN
+   charter [DAWN-CHARTER] refers to this step as "initial discovery";
+   this document uses the term "initial contact".  The mechanisms cover
+   the three deployment contexts the charter identifies: the local
+   network, an organization's own infrastructure, and discovery between
+   organizations over the public Internet.
+
+   This document does not specify the catalog representation, the lookup
+   or search interfaces, the registration of entries, or how a catalog
+   is bound to its publisher; these are specified in [ARD] and
+   [I-D.jimenez-agent-directory].  It defines no new DNS resource record
+   types, SvcParamKeys, or transport protocols.  All entry point URIs
+   use the "https" scheme.
+
+2.  Conventions and Definitions
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in
+   BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+   This document uses the DNS terminology of [RFC9499], the DNS-SD terms
+   "service type", "service instance", "browse", and "resolve" from
+   [RFC6763], and the HTTP terms "origin" and "authoritative" from
+   Sections 4.3.1 and 4.3.3 of [RFC9110].
+
+   ARD catalog:
+      A document listing agent resources in the format defined in [ARD].
+
+   Entry point:
+      The URI of an ARD catalog, together with the source from which the
+      client learned it (Section 3).
+
+   Publisher:
+      The party that controls a domain name and publishes a catalog of
+      agent resources under it.
+
+   Client:
+      Software that needs an ARD entry point.
+
+   Initial contact:
+      The process by which a client obtains one or more entry points,
+      starting from a domain name, a local network attachment, or
+      configuration.
+
+   Hint:
+      Information about an entry point obtained from a source other than
+      the entry point's own origin, such as a DNS answer, a multicast
+      response, or a link in a third-party document.
+
+3.  The Entry Point
+
+   Every mechanism in this document yields zero or more entry points.
+   An entry point consists of two elements:
+
+   URI:
+      The "https" URI [RFC9110] of the catalog.  Retrieving it returns
+      an ARD catalog in a representation defined by [ARD].
+
+   Source:
+      The mechanism that produced the entry point and, where applicable,
+      the DNS name or network interface it came from.  The client
+      retains the source in order to rank candidates (Section 5), to
+      rate-limit failing sources, and to apply local policy.
+
+   An entry point is a hint until the client has retrieved the catalog
+   from the URI and authenticated the origin (Section 6).  A DNS answer
+   or a multicast response does not make a catalog authoritative for a
+   publisher.  The publisher of a catalog is established by the catalog
+   content, as specified in [ARD].
+
+   A domain can publish more than one catalog.  Each mechanism can
+   return several entry points, and the client treats them as a set.  A
+   catalog can link to further catalogs; following those links is part
+   of lookup and is outside the scope of this document.
+
+4.  Discovery Mechanisms
+
+   The well-known URI of Section 4.2 is the mandatory baseline.  A
+   publisher that makes its catalog discoverable MUST serve it at the
+   well-known URI, directly or through one redirect, and every client
+   MUST implement the well-known fetch.  The other mechanisms are
+   OPTIONAL for publishers.  A client that supports discovery of
+   catalogs on the local network MUST implement the Multicast DNS browse
+   of Section 4.5.2.
+
+4.1.  Configured Entry Points
+
+   A client MAY be configured directly with one or more entry points,
+   for instance by an operator, by a device profile, or by the
+   application that includes the client.  A configured entry point has
+   the source "configuration" and is tried before any discovered entry
+   point.  Configuration is also the means by which a client learns
+   about catalogs that a publisher does not make discoverable.
+
+4.2.  Well-Known URI
+
+   A publisher makes its catalog available at the well-known URI
+   [RFC8615] with the suffix "ard.json".  For the domain example.com,
+   the well-known URI is:
+
+   https://example.com/.well-known/ard.json
+
+   A publisher supporting this mechanism MUST respond to a GET request
+   for this URI with an ARD catalog or with a redirect to one.  The
+   client MUST follow at most one redirect (Section 15.4 of [RFC9110])
+   and records the final URI as the entry point.  If the response is
+   neither a catalog nor a redirect, or if the redirect leads to a
+   further redirect, there is no entry point at this origin
+   (Section 5.1).  A server that hosts no catalog SHOULD respond with
+   404 (Not Found).
+
+   Responses to the well-known URI, including redirects, are cacheable
+   under the rules of [RFC9111].  A client MUST NOT request the URI
+   again while a stored response is fresh.
+
+   The scope of a well-known URI is its origin (Section 3 of [RFC8615]);
+   a catalog at "https://example.com/.well-known/ard.json" provides no
+   information about "https://agents.example.com/".  A publisher with
+   catalogs on several hosts can serve a catalog at the apex that links
+   to the others, or can enumerate them with DNS-SD (Section 4.4.3).
+
+   The registration of the suffix is in Section 8.1.
+
+4.3.  Link Relation
+
+   A publisher MAY include a link to a catalog in any HTTP response
+   using the "ard" link relation [RFC8288] in a Link header field.  The
+   link target is an ARD catalog.  A publisher SHOULD respond to a HEAD
+   request for the root resource of its origin with a Link header field
+   carrying the relation, following Section 2 of [RFC9727].  The
+   following is an example:
+
+   HEAD / HTTP/1.1
+   Host: example.com
+
+   HTTP/1.1 200 OK
+   Content-Type: text/html; charset=UTF-8
+   Content-Length: 1532
+   Link: <https://agents.example.com/catalog>; rel="ard"
+
+   Links in a response from the publisher's own origin have that origin
+   as their source.  Links in third-party documents are hints with the
+   third party as their source.  The registration of the relation is in
+   Section 8.2.
+
+4.4.  DNS-Based Mechanisms
+
+   DNS records allow a publisher to advertise an entry point before the
+   client opens a connection, and to place the catalog on a host other
+   than the domain apex without a redirect.
+
+4.4.1.  Catalog Pointer Record
+
+   DNS for AI Discovery (DNS-AID) [I-D.mozleywilliams-dnsop-dnsaid]
+   places an organization's agent-related DNS records under the
+   underscored label "_agents".  This document uses the name
+   _catalog._agents.<domain>, as published by the DNS-AID reference
+   implementation [DNS-AID-IMPL], for a Service Binding (SVCB) record
+   [RFC9460] whose TargetName serves an ARD catalog at the well-known
+   URI.  The status of this name is discussed in Appendix B.  The
+   following is an example for example.com:
+
+   _catalog._agents.example.com. 3600 IN SVCB 1 catalog.example.net. (
+       alpn="h2"
+   )
+
+   The client forms the entry point as follows:
+
+   *  The scheme is "https".
+
+   *  The authority is the TargetName, with the port from the "port" key
+      or 443.  The TargetName MUST be a host name without underscore
+      labels, as in Section 3.2 of [I-D.mozleywilliams-dnsop-dnsaid], so
+      that a publicly issued certificate can name it.  A record whose
+      TargetName is "." yields no entry point.
+
+   *  The path is "/.well-known/ard.json".  When the record carries the
+      "well-known" SvcParamKey [I-D.mk-dnsop-svcb-well-known] with a
+      value that includes "ard.json", the client can conclude that the
+      catalog is served at that path.  Otherwise the client determines
+      this from the response.
+
+   *  The "alpn", "port", "ipv4hint", "ipv6hint", and "ech" keys apply
+      with their [RFC9460] semantics.  The "mandatory" key is processed
+      as in Section 8 of [RFC9460].  Other keys are ignored.
+
+   *  One AliasMode indirection is followed (Section 2.4.2 of
+      [RFC9460]); a second ends the attempt (Section 5.1).
+
+   In the example, the entry point is
+   "https://catalog.example.net/.well-known/ard.json".  The client
+   validates the TLS certificate for "catalog.example.net" and records
+   _catalog._agents.example.com as the source.  An RRset MAY contain
+   several ServiceMode records; each yields one entry point, and
+   SvcPriority orders them.  If no catalog is found at the well-known
+   path of a TargetName, the record yields no entry point.  A client MAY
+   also query the DNS-AID organization index _index._agents.<domain> and
+   treat an ARD catalog found at its TargetName in the same way.
+
+4.4.2.  HTTPS Record at the Apex
+
+   A publisher whose catalog is served at the origin of a domain name
+   MAY list the suffix "ard.json" in the "well-known" SvcParamKey
+   [I-D.mk-dnsop-svcb-well-known] of the HTTPS record [RFC9460] of that
+   name:
+
+   example.com. 3600 IN HTTPS 1 . (
+       alpn="h2,h3"
+       well-known="ard.json"
+   )
+
+   A client that resolves HTTPS records when connecting to an origin can
+   determine from the key that the well-known fetch of Section 4.2 will
+   succeed, and MAY skip the other mechanisms.  The certificate is
+   validated for "example.com" (Section 9 of [RFC9460]).  A record
+   without the key carries no information about the catalog.
+
+4.4.3.  DNS-SD Service Type "_ard._tcp"
+
+   A publisher MAY advertise catalogs as DNS-SD service instances
+   [RFC6763] of the service type "_ard._tcp", for instance to name and
+   enumerate several catalogs, or in networks that run DNS-SD.  A client
+   browses by querying PTR records at _ard._tcp.<domain> and resolves
+   each service instance name to its SRV and TXT records.  The following
+   is an example for example.com with two catalogs:
+
+   _ard._tcp.example.com. 3600 IN PTR Travel._ard._tcp.example.com.
+   _ard._tcp.example.com. 3600 IN PTR Tools._ard._tcp.example.com.
+
+   Travel._ard._tcp.example.com. 3600 IN SRV 0 0 443 (
+       catalog.example.net. )
+   Travel._ard._tcp.example.com. 3600 IN TXT (
+       "txtvers=1"
+       "path=/.well-known/ard.json"
+   )
+
+   The TXT record carries the following keys, with the syntax of
+   Section 6 of [RFC6763]:
+
+   txtvers:
+      The version of this key set.  This document defines version 1.  A
+      client MUST ignore records with a version it does not support.
+
+   path:
+      The path and optional query component of the entry point, as an
+      absolute path [RFC3986].  When the key is absent, the path is
+      "/.well-known/ard.json".
+
+   The client forms the entry point URI from the scheme "https", the SRV
+   target as the host, the SRV port (omitted when it is 443), and the
+   path.  This document defines no "_ard._udp" service.  The service
+   name "ard" is registered in Section 8.3.
+
+   Service instance names such as "Travel" are human-readable labels
+   that [RFC6763] allows to change.  A client SHOULD NOT use an instance
+   name as a persistent identifier of a catalog.
+
+4.5.  Local Network Mechanisms
+
+4.5.1.  Network-Provided Domain Name
+
+   A client without a domain name can obtain one from the network
+   through the DHCPv4 Domain Name option (Section 3.17 of [RFC2132]),
+   the DHCPv6 Domain Search List option [RFC3646], or the DNS Search
+   List option in IPv6 Router Advertisements [RFC8106].  The client
+   treats such a name as the domain D of Section 5.  The name is a hint
+   from the network, and the client records it as such.
+
+4.5.2.  Multicast DNS
+
+   On the local link, a client browses for "_ard._tcp.local." over
+   Multicast DNS [RFC6762], using the same PTR, SRV, and TXT records as
+   in Section 4.4.3.  Names under "local." do not appear in certificates
+   issued by public CAs.  A publisher that advertises over Multicast DNS
+   SHOULD set the SRV target to a unicast DNS name for which it holds a
+   certificate, so that the entry point URI names a host the client can
+   authenticate.  Where a Discovery Proxy [RFC8766] is deployed, the
+   client can use Section 4.4.3 instead.  Entry points learned over
+   Multicast DNS carry the network interface as their source
+   (Section 6.2).
+
+   [I-D.jakab-dawn-agent-discovery-mdns] describes browsing for
+   individual agents under "_agent._tcp".  The two service types
+   coexist.
+
+5.  Client Procedure
+
+   The procedure in this section is a RECOMMENDED default.  The well-
+   known fetch of step 4, the depth limits of Section 5.1, and the rate
+   limiting below are requirements on every client.  A client MAY
+   reorder or omit the other steps under local policy.
+
+   A client that holds a domain name D, from configuration, from the
+   user, or from the network (Section 4.5.1), proceeds as follows.
+   Steps that return entry points do not stop the procedure.
+
+   1.  The client uses configured entry points for D (Section 4.1)
+       first.
+
+   2.  The client queries the SVCB record for _catalog._agents.D
+       (Section 4.4.1) and, if it resolves HTTPS records in any case,
+       the HTTPS record for D (Section 4.4.2).  It MAY also query
+       _index._agents.D.  The queries MAY be issued in parallel.
+
+   3.  The client browses _ard._tcp.D (Section 4.4.3).
+
+   4.  The client requests "https://D/.well-known/ard.json"
+       (Section 4.2).  This step MAY be performed in parallel with steps
+       2 and 3.
+
+   5.  If steps 2 to 4 yield no entry point, the client sends a HEAD
+       request to "https://D/" and examines the Link header field for
+       the "ard" relation (Section 4.3).
+
+   A client without a domain name browses "_ard._tcp.local." over
+   Multicast DNS (Section 4.5.2).
+
+   The default order of preference is: configuration, then DNS answers
+   validated with DNSSEC [RFC4033], then responses from the publisher's
+   own origin (steps 4 and 5), then unvalidated DNS answers, then
+   Multicast DNS responses.  Within a source, SvcPriority and SRV
+   priority order the candidates.  A client MAY apply local policy.
+
+   An entry point fails if the URI does not respond, if the response is
+   not a catalog, or if the checks of Section 6 fail.  A client MUST NOT
+   retry a failed entry point from the same source before a back-off
+   interval.  A client MUST NOT issue the DNS queries of steps 2 and 3
+   for the same D more often than the TTLs of the answers allow.  A
+   client MUST NOT repeat the requests of steps 4 and 5 while a stored
+   response is fresh ([RFC9111]).
+
+5.1.  Indirection Depth and Outcomes
+
+   A client follows at most one AliasMode indirection in the DNS and at
+   most one HTTP redirect per entry point.  A second indirection of
+   either kind ends the attempt.  This bounds the number of round trips
+   and prevents an attacker who controls one record or one response from
+   leading the client through a chain of indirections.
+
+   Each attempt to resolve a hint has one of three outcomes:
+
+   Entry point:
+      The URI returned an ARD catalog from an authenticated origin.
+
+   No entry point:
+      The URI did not respond, returned something other than a catalog,
+      exceeded the depth limit, or failed the checks of Section 6.  The
+      failure counts against the source.
+
+   Not permitted:
+      The client's own policy did not allow the fetch, for instance
+      because the host is not on an allow-list.  The hint is kept with
+      its source and does not count as a failure of the source.
+
+6.  Security Considerations
+
+   Initial contact takes place before any authenticated relationship
+   exists between the client and the publisher.  In each mechanism, an
+   attacker who controls the channel can direct the client to a catalog
+   of the attacker's choosing.  The mitigation is the same for all
+   mechanisms: the client treats the result as a hint, retrieves the
+   catalog from the URI, authenticates the origin, and relies on the
+   catalog content, as specified in [ARD], to determine the publisher of
+   the catalog.
+
+6.1.  Hints and Authority
+
+   A client MUST authenticate the TLS server for the host named in the
+   entry point URI (Section 4.3.3 of [RFC9110]).  For the well-known
+   URI, the link relation, and the HTTPS record, that host is the
+   publisher's own domain.  For the pointer record and for DNS-SD, the
+   host comes from the DNS answer, and a spoofed answer can direct the
+   client to a host for which the attacker holds a valid certificate.  A
+   client SHOULD validate DNS answers with DNSSEC [RFC4033] where the
+   zone is signed and SHOULD rank unvalidated answers below validated
+   ones (Section 5).  This document does not establish that a catalog
+   reached through _catalog._agents.example.com is published by
+   "example.com"; the recorded source is the input to the publisher
+   check that [ARD] defines.
+
+   Carrying a digest or a public key for the catalog in the DNS record,
+   as [I-D.nemethi-dawn-aid] does for its objects, was considered and
+   not adopted, since a catalog changes with every published entry.
+
+6.2.  Local Network Discovery
+
+   Any host on the link can respond to a Multicast DNS query.  A client
+   MUST treat entry points learned over multicast as the least trusted
+   source.  It SHOULD prefer entry points whose URI names a host it can
+   authenticate with a certificate, and MAY apply local policy, such as
+   a pinned key or an allow-list of hosts.  A catalog found over
+   multicast does not establish that the agents listed in it are present
+   on the network or operated by the network's owner.  Clients MUST
+   follow the query rate limits of [RFC6762].
+
+6.3.  Downgrade
+
+   A client MUST NOT fall back to "http" when an "https" entry point
+   fails, and MUST NOT accept an entry point whose scheme is "http".
+   The "alpn" key in SVCB and HTTPS records selects the HTTP version; it
+   does not affect the requirement for TLS.
+
+6.4.  Well-Known URI Squatting
+
+   On shared hosting, the well-known URI can be served by a tenant
+   rather than the domain owner (Section 4 of [RFC8615]).  The publisher
+   check of [ARD] applies to catalogs found through the well-known URI
+   as it does to any other; a tenant can serve a catalog, but its
+   entries will not pass the publisher check as entries of the domain
+   owner.
+
+7.  Privacy Considerations
+
+   A DNS query for _catalog._agents.example.com or _ard._tcp.example.com
+   reveals to the resolver, and to any observer on the path, that the
+   client is looking for the agents of example.com.  Encrypted DNS
+   transports, discovered as described in [RFC9462], limit the observers
+   to the resolver.  The well-known fetch is indistinguishable from an
+   ordinary connection to the domain.
+
+   Browsing over Multicast DNS reveals to all hosts on the link that the
+   client is looking for agent catalogs, and a responding host reveals
+   that it offers one.  Deployments where this is a concern can use
+   unicast DNS-SD through a Discovery Proxy [RFC8766] with access
+   control on the zone, or configuration.  The service instance names
+   under _ard._tcp.<domain> can be enumerated by any party; they
+   identify catalogs that a publisher has chosen to make discoverable,
+   and they do not identify people or individual agents.
+
+   Retrieving the catalog reveals the client's address to the publisher.
+
+8.  IANA Considerations
+
+8.1.  Well-Known URI
+
+   IANA is asked to register the following entry in the "Well-Known
+   URIs" registry defined in [RFC8615]:
+
+   URI suffix:
+      ard.json
+
+   Change controller:
+      IETF
+
+   Specification document:
+      This document, Section 4.2.  The format of the resource is defined
+      in [ARD].
+
+   Status:
+      permanent
+
+   Related information:
+      The resource is an ARD catalog.
+
+8.2.  Link Relation
+
+   IANA is asked to register the following entry in the "Link Relations"
+   registry defined in [RFC8288]:
+
+   Relation name:
+      ard
+
+   Description:
+      Refers to an Agent Resource Discovery (ARD) catalog listing agent
+      resources offered by the publisher of the link context.
+
+   Reference:
+      This document, Section 4.3.
+
+8.3.  Service Name
+
+   IANA is asked to register the following service name in the "Service
+   Name and Transport Protocol Port Number Registry" defined in
+   [RFC6335], without an associated port number:
+
+   Service name:
+      ard
+
+   Transport protocol:
+      tcp
+
+   Assignee:
+      IESG
+
+   Contact:
+      IETF Chair
+
+   Description:
+      Agent Resource Discovery (ARD) catalog
+
+   Reference:
+      This document, Section 4.4.3.
+
+9.  References
+
+9.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC3986]  Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
+              Resource Identifier (URI): Generic Syntax", STD 66,
+              RFC 3986, DOI 10.17487/RFC3986, January 2005,
+              <https://www.rfc-editor.org/rfc/rfc3986>.
+
+   [RFC4033]  Arends, R., Austein, R., Larson, M., Massey, D., and S.
+              Rose, "DNS Security Introduction and Requirements",
+              RFC 4033, DOI 10.17487/RFC4033, March 2005,
+              <https://www.rfc-editor.org/rfc/rfc4033>.
+
+   [RFC6335]  Cotton, M., Eggert, L., Touch, J., Westerlund, M., and S.
+              Cheshire, "Internet Assigned Numbers Authority (IANA)
+              Procedures for the Management of the Service Name and
+              Transport Protocol Port Number Registry", BCP 165,
+              RFC 6335, DOI 10.17487/RFC6335, August 2011,
+              <https://www.rfc-editor.org/rfc/rfc6335>.
+
+   [RFC6762]  Cheshire, S. and M. Krochmal, "Multicast DNS", RFC 6762,
+              DOI 10.17487/RFC6762, February 2013,
+              <https://www.rfc-editor.org/rfc/rfc6762>.
+
+   [RFC6763]  Cheshire, S. and M. Krochmal, "DNS-Based Service
+              Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
+              <https://www.rfc-editor.org/rfc/rfc6763>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+   [RFC8288]  Nottingham, M., "Web Linking", RFC 8288,
+              DOI 10.17487/RFC8288, October 2017,
+              <https://www.rfc-editor.org/rfc/rfc8288>.
+
+   [RFC8615]  Nottingham, M., "Well-Known Uniform Resource Identifiers
+              (URIs)", RFC 8615, DOI 10.17487/RFC8615, May 2019,
+              <https://www.rfc-editor.org/rfc/rfc8615>.
+
+   [RFC9110]  Fielding, R., Ed., Nottingham, M., Ed., and J. Reschke,
+              Ed., "HTTP Semantics", STD 97, RFC 9110,
+              DOI 10.17487/RFC9110, June 2022,
+              <https://www.rfc-editor.org/rfc/rfc9110>.
+
+   [RFC9111]  Fielding, R., Ed., Nottingham, M., Ed., and J. Reschke,
+              Ed., "HTTP Caching", STD 98, RFC 9111,
+              DOI 10.17487/RFC9111, June 2022,
+              <https://www.rfc-editor.org/rfc/rfc9111>.
+
+   [RFC9460]  Schwartz, B., Bishop, M., and E. Nygren, "Service Binding
+              and Parameter Specification via the DNS (SVCB and HTTPS
+              Resource Records)", RFC 9460, DOI 10.17487/RFC9460,
+              November 2023, <https://www.rfc-editor.org/rfc/rfc9460>.
+
+9.2.  Informative References
+
+   [A2A]      Linux Foundation, "Agent2Agent (A2A) Protocol
+              Specification", 2025,
+              <https://a2a-protocol.org/latest/specification/>.
+
+   [ARD]      Bu, J., Guha, R.V., and J. Jiménez, "Agent Resource
+              Discovery (ARD)", Work in Progress, Internet-Draft, draft-
+              bu-agent-resources-discovery, October 2026,
+              <https://mindpower.github.io/ietf-draft-agent-resources-
+              discovery/draft-bu-agent-resources-discovery.html>.
+
+   [ARD-SPEC] ARD Project, "Agentic Resource Discovery Specification,
+              v0.91", October 2026,
+              <https://agenticresourcediscovery.org/spec/>.
+
+   [DAWN-CHARTER]
+              IETF, "Discovery of Agents With Names (DAWN) - Proposed
+              Charter", 2026,
+              <https://datatracker.ietf.org/doc/charter-ietf-dawn/>.
+
+   [DNS-AID-IMPL]
+              DNS-AID Project, "dns-aid-core: DNS-based Agent
+              Identification and Discovery, reference implementation",
+              September 2026, <https://github.com/dns-aid/dns-aid-core>.
+
+   [I-D.besleaga-agentic-knowledge-wellknown]
+              Besleaga, A. N., "The 'knowledge-linkset' Well-Known URI
+              for Publishing Knowledge Artefacts", Work in Progress,
+              Internet-Draft, draft-besleaga-agentic-knowledge-
+              wellknown-00, 30 September 2026,
+              <https://datatracker.ietf.org/doc/html/draft-besleaga-
+              agentic-knowledge-wellknown-00>.
+
+   [I-D.cui-dawn-mdi-model]
+              Cui, Y., "An Information Model for Minimum Discoverable
+              Information (MDI)", Work in Progress, Internet-Draft,
+              draft-cui-dawn-mdi-model-00, 3 July 2026,
+              <https://datatracker.ietf.org/doc/html/draft-cui-dawn-mdi-
+              model-00>.
+
+   [I-D.farrel-dawn-terminology]
+              Farrel, A., Yao, K., Schott, R., and N. Williams,
+              "Terminology for the Discovery of Agents, Workloads, and
+              Named Entities (DAWN)", Work in Progress, Internet-Draft,
+              draft-farrel-dawn-terminology-04, 26 July 2026,
+              <https://datatracker.ietf.org/doc/html/draft-farrel-dawn-
+              terminology-04>.
+
+   [I-D.jakab-dawn-agent-discovery-mdns]
+              Jakab, L. and F. Brockners, "Zero-Configuration Agent
+              Discovery", Work in Progress, Internet-Draft, draft-jakab-
+              dawn-agent-discovery-mdns-00, 6 July 2026,
+              <https://datatracker.ietf.org/doc/html/draft-jakab-dawn-
+              agent-discovery-mdns-00>.
+
+   [I-D.jimenez-agent-directory]
+              Jimenez, J., "Agent Directory", Work in Progress,
+              Internet-Draft, draft-jimenez-agent-directory-01, 8 May
+              2026, <https://datatracker.ietf.org/doc/html/draft-
+              jimenez-agent-directory-01>.
+
+   [I-D.jimenez-dawn-discovery-landscape]
+              Jimenez, J., Feng, J., Arkko, J., Kühlewind, M., and R.
+              Kandoi, "A Survey of AI Agent Discovery Mechanisms", Work
+              in Progress, Internet-Draft, draft-jimenez-dawn-discovery-
+              landscape-00, 3 July 2026,
+              <https://datatracker.ietf.org/doc/html/draft-jimenez-dawn-
+              discovery-landscape-00>.
+
+   [I-D.king-dawn-requirements]
+              King, D. and A. Farrel, "Requirements for the Discovery of
+              Agents, Workloads, and Named Entities (DAWN)", Work in
+              Progress, Internet-Draft, draft-king-dawn-requirements-01,
+              28 April 2026, <https://datatracker.ietf.org/doc/html/
+              draft-king-dawn-requirements-01>.
+
+   [I-D.mk-dnsop-svcb-well-known]
+              Mozley, J. and D. King, "An SVCB Service Parameter for
+              Well-Known URI Paths", Work in Progress, Internet-Draft,
+              draft-mk-dnsop-svcb-well-known-00, 16 September 2026,
+              <https://datatracker.ietf.org/doc/html/draft-mk-dnsop-
+              svcb-well-known-00>.
+
+   [I-D.morrison-mcp-dns-discovery]
+              Morrison, B., "Discovery of Model Context Protocol Servers
+              via DNS TXT Records", Work in Progress, Internet-Draft,
+              draft-morrison-mcp-dns-discovery-07, 30 September 2026,
+              <https://datatracker.ietf.org/doc/html/draft-morrison-mcp-
+              dns-discovery-07>.
+
+   [I-D.mozleywilliams-dnsop-dnsaid]
+              Mozley, J., Williams, N., Sarikaya, B., Schott, R., and J.
+              Damick, "DNS for AI Discovery", Work in Progress,
+              Internet-Draft, draft-mozleywilliams-dnsop-dnsaid-02, 27
+              May 2026, <https://datatracker.ietf.org/doc/html/draft-
+              mozleywilliams-dnsop-dnsaid-02>.
+
+   [I-D.nemethi-dawn-aid]
+              Nemethi, B., "Agent Identity and Discovery (AID)", Work in
+              Progress, Internet-Draft, draft-nemethi-dawn-aid-00, 2
+              September 2026, <https://datatracker.ietf.org/doc/html/
+              draft-nemethi-dawn-aid-00>.
+
+   [I-D.pro-adp-agent-discovery]
+              Lian, B., "Agent Discovery Protocol (ADP) v1.1 -- Well-
+              Known Metadata and Interaction Layer", Work in Progress,
+              Internet-Draft, draft-pro-adp-agent-discovery-02, 23 June
+              2026, <https://datatracker.ietf.org/doc/html/draft-pro-
+              adp-agent-discovery-02>.
+
+   [I-D.seethiraju-dawn-dan]
+              Seethiraju, R. R., Thakar, S., Shyamsunder, K., and E.
+              Osterweil, "DNS-Based Agent Naming (DAN): AIDISCA and
+              AIINDEX Resource Records for AI Agent Discovery", Work in
+              Progress, Internet-Draft, draft-seethiraju-dawn-dan-00, 5
+              June 2026, <https://datatracker.ietf.org/doc/html/draft-
+              seethiraju-dawn-dan-00>.
+
+   [I-D.zahed-acap]
+              Sarker, Z. and T. Reddy.K, "Agent Capability Advertisement
+              Protocol (ACAP)", Work in Progress, Internet-Draft, draft-
+              zahed-acap-00, 25 June 2026,
+              <https://datatracker.ietf.org/doc/html/draft-zahed-acap-
+              00>.
+
+   [MCP]      Anthropic, "Model Context Protocol Specification", 2025,
+              <https://modelcontextprotocol.io/specification/>.
+
+   [RFC2132]  Alexander, S. and R. Droms, "DHCP Options and BOOTP Vendor
+              Extensions", RFC 2132, DOI 10.17487/RFC2132, March 1997,
+              <https://www.rfc-editor.org/rfc/rfc2132>.
+
+   [RFC3646]  Droms, R., Ed., "DNS Configuration options for Dynamic
+              Host Configuration Protocol for IPv6 (DHCPv6)", RFC 3646,
+              DOI 10.17487/RFC3646, December 2003,
+              <https://www.rfc-editor.org/rfc/rfc3646>.
+
+   [RFC8106]  Jeong, J., Park, S., Beloeil, L., and S. Madanapalli,
+              "IPv6 Router Advertisement Options for DNS Configuration",
+              RFC 8106, DOI 10.17487/RFC8106, March 2017,
+              <https://www.rfc-editor.org/rfc/rfc8106>.
+
+   [RFC8552]  Crocker, D., "Scoped Interpretation of DNS Resource
+              Records through "Underscored" Naming of Attribute Leaves",
+              BCP 222, RFC 8552, DOI 10.17487/RFC8552, March 2019,
+              <https://www.rfc-editor.org/rfc/rfc8552>.
+
+   [RFC8766]  Cheshire, S., "Discovery Proxy for Multicast DNS-Based
+              Service Discovery", RFC 8766, DOI 10.17487/RFC8766, June
+              2020, <https://www.rfc-editor.org/rfc/rfc8766>.
+
+   [RFC9176]  Amsüss, C., Ed., Shelby, Z., Koster, M., Bormann, C., and
+              P. van der Stok, "Constrained RESTful Environments (CoRE)
+              Resource Directory", RFC 9176, DOI 10.17487/RFC9176, April
+              2022, <https://www.rfc-editor.org/rfc/rfc9176>.
+
+   [RFC9264]  Wilde, E. and H. Van de Sompel, "Linkset: Media Types and
+              a Link Relation Type for Link Sets", RFC 9264,
+              DOI 10.17487/RFC9264, July 2022,
+              <https://www.rfc-editor.org/rfc/rfc9264>.
+
+   [RFC9461]  Schwartz, B., "Service Binding Mapping for DNS Servers",
+              RFC 9461, DOI 10.17487/RFC9461, November 2023,
+              <https://www.rfc-editor.org/rfc/rfc9461>.
+
+   [RFC9462]  Pauly, T., Kinnear, E., Wood, C. A., McManus, P., and T.
+              Jensen, "Discovery of Designated Resolvers", RFC 9462,
+              DOI 10.17487/RFC9462, November 2023,
+              <https://www.rfc-editor.org/rfc/rfc9462>.
+
+   [RFC9499]  Hoffman, P. and K. Fujiwara, "DNS Terminology", BCP 219,
+              RFC 9499, DOI 10.17487/RFC9499, March 2024,
+              <https://www.rfc-editor.org/rfc/rfc9499>.
+
+   [RFC9727]  Smith, K., "api-catalog: A Well-Known URI and Link
+              Relation to Help Discovery of APIs", RFC 9727,
+              DOI 10.17487/RFC9727, June 2025,
+              <https://www.rfc-editor.org/rfc/rfc9727>.
+
+Appendix A.  Related Work
+
+   [I-D.jimenez-dawn-discovery-landscape] surveys agent discovery
+   mechanisms and separates lookup, name, description, trust, and
+   interaction.  Initial contact is the lookup component for the case
+   where the result is a catalog.  The entry point of Section 3 is a
+   subset of the minimum discoverable information of
+   [I-D.cui-dawn-mdi-model], the well-known URI is the predictable entry
+   point that REQ-PROTO-4 of [I-D.king-dawn-requirements] asks for, and
+   the terminology of [I-D.farrel-dawn-terminology] applies.
+
+   DNS-AID [I-D.mozleywilliams-dnsop-dnsaid] publishes agents as SVCB
+   records and an organization index under _index._agents.<domain>.  Its
+   reference implementation [DNS-AID-IMPL] publishes _catalog._agents
+   next to it, follows an off-domain pointer only when the record is
+   DNSSEC-validated or the catalog is signed against the domain's key
+   set, and refuses redirects.  Section 4.4.1 adopts its label,
+   Section 5.1 allows one redirect, and the trust decision for off-
+   domain pointers is left to the publisher check of [ARD].  The ARD
+   specification [ARD-SPEC], from which [ARD] derives, requires the
+   well-known fetch of "/.well-known/ard.json" and lists
+   _entries._agents for a static entry source.
+
+   [I-D.nemethi-dawn-aid], [I-D.morrison-mcp-dns-discovery], and
+   [I-D.seethiraju-dawn-dan] locate individual agents or MCP servers
+   through DNS records at _agent.<domain>, at _mcp.<domain>, or in new
+   resource record types; none defines a catalog entry point.
+   [I-D.jakab-dawn-agent-discovery-mdns] browses for agents on the local
+   link under "_agent._tcp".  [I-D.zahed-acap],
+   [I-D.pro-adp-agent-discovery], and
+   [I-D.besleaga-agentic-knowledge-wellknown] publish operator-level
+   discovery documents at well-known URIs.  The last publishes an
+   [RFC9264] link set, which is the closest existing design to
+   publishing an ARD catalog as an [RFC9727] API catalog (Appendix B).
+
+   Section 4.1 of [RFC9176] lists how a CoRE endpoint finds a Resource
+   Directory: configuration, a Router Advertisement option, DNS-SD, and
+   multicast.  Section 4.1, Section 4.5.1, Section 4.4.3, and
+   Section 4.5.2 are the ARD counterparts.  [RFC9461] and [RFC9462] are
+   the SVCB mapping and the discovery procedure for encrypted DNS
+   resolvers; Section 4.4.1 and Section 5 follow their form.
+
+Appendix B.  Open Issues
+
+   The following questions are to be settled before the document is
+   stable.  This section is to be removed before publication.
+
+   1.  API catalog profile.  Issue #2 on the ARD repository proposes
+       publishing the catalog as an [RFC9727] API catalog under "/.well-
+       known/api-catalog" with an ARD profile.  If adopted, this
+       document registers no suffix.
+
+   2.  Pointer label. _index._agents (DNS-AID), _catalog._agents (its
+       reference implementation), and _entries._agents ([ARD-SPEC]) name
+       the same pointer.  This document uses _catalog._agents because it
+       is deployed, and asks DNS-AID, as owner of "_agents" in the
+       [RFC8552] registry, to list it.  The fallback is a label of this
+       document's own, "_ard".
+
+   3.  Suffix. "ard.json" matches [ARD-SPEC] and deployed code.  A
+       suffix without the extension, "ard", was considered.
+
+   4.  Ownership of registrations.  [ARD] also requests a well-known
+       suffix and a link relation.  After the split into initial
+       contact, lookup, and registration documents, one document carries
+       them.
+
+   5.  Reference status.  [ARD] and [I-D.mozleywilliams-dnsop-dnsaid]
+       are individual drafts cited informatively.  [ARD] becomes a
+       normative reference when the companion documents are adopted
+       together.
+
+Acknowledgments
+
+   The split of the ARD work into initial contact, lookup, and
+   registration documents was proposed by Jari Arkko.  R.V.  Guha co-
+   wrote the ARD specification this document builds on.  Wes Hardaker
+   and Sam Sharaf took part in the discussions that shaped the scope.
+   The work of Jim Mozley and Daniel King on the organization index and
+   on the "well-known" SvcParamKey provided the DNS bindings used here.
+   The depth limit and the fixed outcomes follow a discussion on the
+   DAWN list started by Enrique Somoza and carried by Francesco Marinoni
+   Moretto and Balazs Nemethi.
+
+Authors' Addresses
+
+   Jaime Jiménez
+   Ericsson
+   Email: jaime.jimenez@ericsson.com
+
+
+   Junjie Bu
+   Google
+   Email: jbu@google.com
+
+
+   Jari Arkko
+   Ericsson
+   Email: jari.arkko@ericsson.com
