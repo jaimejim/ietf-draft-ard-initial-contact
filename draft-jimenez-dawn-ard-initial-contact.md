@@ -289,7 +289,7 @@ Link: <https://agents.example.com/manifest>; rel="ard"
 
 ~~~
 
-The client reads the Link field of the root response regardless of its status code and does not follow a redirect of the root resource. The relation MAY also appear in an HTML link element in the root resource ({{Appendix A.1 of RFC8288}}), for publishers that cannot set header fields. A client that retrieves the root resource with GET reads link elements in an HTML response in the same way as the Link header field. Links in a response from the publisher's own origin have that origin as their source. Links in third-party documents are entry points with the third party as their source. The registration of the relation is in {{iana-link-relation}}.
+The client reads the Link field of the root response regardless of its status code. If the root resource redirects, the client follows one redirect ({{depth}}) and reads the Link field of the final response. A publisher that cannot set header fields MAY place the relation in an HTML link element of the root resource ({{Appendix A.1 of RFC8288}}); a client that retrieves the root resource with GET MAY read it. The procedure of {{procedure}} sends HEAD and reads the header field only. Links in a response from the publisher's own origin have that origin as their source. Links in third-party documents are entry points with the third party as their source. The registration of the relation is in {{iana-link-relation}}.
 
 ## Local Network Mechanisms {#local-mechanisms}
 
