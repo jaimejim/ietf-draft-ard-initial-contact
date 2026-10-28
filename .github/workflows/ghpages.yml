@@ -21,6 +21,9 @@ jobs:
     steps:
     - name: "Checkout"
       uses: actions/checkout@v6
+      with:
+        # Full history: the build index on gh-pages names source commits.
+        fetch-depth: 0
 
     - name: "Setup"
       id: setup
@@ -67,6 +70,20 @@ jobs:
       with:
         make: gh-pages
         token: ${{ github.token }}
+
+    # Keeps builds/<sha>.txt for every build and the diff.html viewer on
+    # gh-pages, so https://jaime.win/<repo>/diff.html?from=<sha> works.
+    - name: "Store Build for Diffs"
+      if: ${{ github.event_name == 'push' }}
+      run: |
+        git clone -q --branch gh-pages --single-branch \
+          "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" /tmp/gh-pages
+        pages/update-builds.sh /tmp/gh-pages
+        git -C /tmp/gh-pages add -A builds diff.html diff.min.js LICENSE.jsdiff
+        git -C /tmp/gh-pages -c user.name='github-actions[bot]' \
+          -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+          commit -qm "Script storing build ${GITHUB_SHA::7} for diffs. [ci skip]" || exit 0
+        git -C /tmp/gh-pages push -q origin gh-pages
 
     - name: "Archive Built Drafts"
       uses: actions/upload-artifact@v6

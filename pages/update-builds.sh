@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Keep a copy of every build of the draft on gh-pages, keyed by source commit,
+# plus the browser-side diff page.
+#
+#   pages/update-builds.sh <gh-pages checkout>
+#
+# For each gh-pages commit "Script updating gh-pages from <sha>", the draft
+# text of that commit is stored as builds/<sha>.txt (idempotent, so a lost
+# builds/ directory is rebuilt from history). builds/index.json lists the
+# builds newest first. diff.html and diff.min.js are copied from pages/.
+# The caller commits and pushes.
+set -euo pipefail
+
+gp=${1:?usage: update-builds.sh <gh-pages checkout>}
+here=$(cd "$(dirname "$0")" && pwd)
+src=$(cd "$here/.." && pwd)
+
+mkdir -p "$gp/builds"
+cp -f "$here/diff.html" "$here/diff.min.js" "$here/LICENSE.jsdiff" "$gp/"
+
+python3 -I - "$gp" "$src" <<'EOF'
+import json, os, re, subprocess, sys, datetime as dt
+gp, src = sys.argv[1], sys.argv[2]
+def git(*a, cwd=gp): return subprocess.run(['git', '-C', cwd, *a], capture_output=True, text=True)
+builds, seen = [], set()
+for line in git('log', '--format=%H %ct %s', 'gh-pages').stdout.splitlines():
+    m = re.match(r'(\w+) (\d+) .*updating gh-pages from ([0-9a-f]{7,})', line)
+    if not m: continue
+    commit, ts, sha = m.group(1), int(m.group(2)), m.group(3)[:7]
+    if sha in seen: continue
+    names = [n for n in git('ls-tree', '--name-only', commit).stdout.split('\n') if re.match(r'draft-.*\.txt$', n)]
+    if not names: continue
+    path = os.path.join(gp, 'builds', f'{sha}.txt')
+    if not os.path.exists(path):
+        with open(path, 'w') as f: f.write(git('show', f'{commit}:{names[0]}').stdout)
+    subj = git('log', '-1', '--format=%s', sha, cwd=src).stdout.strip() or names[0]
+    builds.append({'sha': sha, 'date': dt.datetime.fromtimestamp(ts, dt.timezone.utc).strftime('%Y-%m-%d'),
+                   'subject': subj[:80], 'file': names[0]})
+    seen.add(sha)
+with open(os.path.join(gp, 'builds', 'index.json'), 'w') as f:
+    json.dump({'builds': builds}, f, indent=1)
+print(f'{len(builds)} builds indexed, newest {builds[0]["sha"]}' if builds else 'no builds')
+EOF
