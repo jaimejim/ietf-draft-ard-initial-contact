@@ -90,7 +90,7 @@ Table of Contents
    5.  Client Procedure
      5.1.  Indirection Depth and Outcomes
    6.  Security Considerations
-     6.1.  Hints and Authority
+     6.1.  Entry Points and Authority
      6.2.  Local Network Discovery
      6.3.  Downgrade
      6.4.  Well-Known URI Squatting
@@ -178,7 +178,9 @@ Table of Contents
 
    Entry point:
       The URI of an ARD manifest, together with the source from which
-      the client learned it (Section 3).
+      the client learned it (Section 3).  An entry point is unverified
+      until the client has retrieved the manifest and authenticated the
+      origin.
 
    Publisher:
       The party that controls a domain name and publishes a manifest of
@@ -193,19 +195,14 @@ Table of Contents
       starting from a domain name, a local network attachment, or
       configuration.
 
-   Hint:
-      Information about an entry point obtained from a source other than
-      the entry point's own origin, such as a DNS answer, a multicast
-      response, or a link in a third-party document.
-
 3.  The Entry Point
 
    Every mechanism in this document yields zero or more entry points.
    An entry point consists of two elements:
 
    URI:
-      The "https" URI [RFC9110] of the manifest.  Retrieving it returns
-      an ARD manifest in a representation defined by [ARD].
+      The "https" URI [RFC9110] at which, according to the source, an
+      ARD manifest is served in a representation defined by [ARD].
 
    Source:
       The mechanism that produced the entry point and, where applicable,
@@ -213,8 +210,9 @@ Table of Contents
       client retains the source to rank entry points (Section 5), to
       rate-limit failing sources, and to apply local policy.
 
-   An entry point is a hint until the client has retrieved the manifest
-   from the URI and authenticated the origin (Section 6).  A DNS answer
+   An entry point is unverified until the client has retrieved the
+   manifest from the URI and authenticated the origin (Section 6); the
+   outcomes of that retrieval are defined in Section 5.1.  A DNS answer
    or a multicast response does not make a manifest authoritative for a
    publisher.  The publisher of each entry is established from the entry
    itself, as specified in [ARD]; the host that serves the manifest
@@ -312,10 +310,10 @@ Table of Contents
    known/ard.json".  The client validates the TLS certificate for
    "ard.example.net" and records _index._agents.example.com as the
    source.  An RRset MAY contain several ServiceMode records; each
-   yields one entry point, and SvcPriority orders them.  If no manifest
-   is found at the well-known path of a TargetName, the record yields no
-   entry point; the host can still serve an index in another format,
-   which this document does not interpret.
+   yields one entry point, and SvcPriority orders them.  If the
+   TargetName serves no manifest at the well-known path, the outcome is
+   "no manifest" (Section 5.1); the host can still serve an index in
+   another format, which this document does not interpret.
 
 4.2.2.  DNS-SD Service Type "_ard._tcp"
 
@@ -380,9 +378,9 @@ Table of Contents
    one redirect (301, 302, 303, 307, or 308 with a Location field,
    Section 15.4 of [RFC9110]) and records the final URI as the entry
    point.  A response with another media type, or a redirect to a
-   further redirect, means that there is no entry point at this origin
-   (Section 5.1).  A server that hosts no manifest SHOULD respond with
-   404 (Not Found) and MAY include Problem Details [RFC9457].
+   further redirect, has the outcome "no manifest" (Section 5.1).  A
+   server that hosts no manifest SHOULD respond with 404 (Not Found) and
+   MAY include Problem Details [RFC9457].
 
    Responses to the well-known URI, including redirects and 404
    responses, are cacheable under [RFC9111].  A client reuses a stored
@@ -424,8 +422,8 @@ Table of Contents
    reads link elements in an HTML response in the same way as the Link
    header field.  Links in a response from the publisher's own origin
    have that origin as their source.  Links in third-party documents are
-   hints with the third party as their source.  The registration of the
-   relation is in Section 8.2.
+   entry points with the third party as their source.  The registration
+   of the relation is in Section 8.2.
 
 4.4.  Local Network Mechanisms
 
@@ -454,9 +452,10 @@ Table of Contents
    targets yields entry points the client cannot authenticate
    (Section 6.2).  The client stops collecting responses after a
    configured interval; responses received later are processed as new
-   hints.  Where a Discovery Proxy [RFC8766] is deployed, the client can
-   use Section 4.2.2 instead.  Entry points learned over Multicast DNS
-   carry the network interface as their source (Section 6.2).
+   entry points.  Where a Discovery Proxy [RFC8766] is deployed, the
+   client can use Section 4.2.2 instead.  Entry points learned over
+   Multicast DNS carry the network interface as their source
+   (Section 6.2).
 
    [I-D.jakab-dawn-agent-discovery-mdns] describes browsing for
    individual agents under "_agent._tcp".  The two service types are
@@ -488,7 +487,7 @@ Table of Contents
        (Section 4.3.1).  This step MAY be performed in parallel with
        steps 2 and 3.
 
-   5.  If steps 2 to 4 yield no entry point, the client sends a HEAD
+   5.  If steps 2 to 4 produce no manifest, the client sends a HEAD
        request to https://<domain>/ and examines the Link header field
        for the "ard" relation (Section 4.3.2).
 
@@ -511,15 +510,14 @@ Table of Contents
    local policy.  Configured entry points (Section 4.1) are tried first.
    Entry points learned over Multicast DNS MUST rank last (Section 6.2).
 
-   An entry point fails if the server does not respond, if the response
-   is not a manifest, or if the checks of Section 6 fail.  A client MUST
-   NOT retry a failed entry point from the same source before a back-off
-   interval of at least 30 seconds.  A client MUST NOT issue the DNS
-   queries of steps 2 and 3 for the same domain name more often than the
-   TTLs of the answers allow, including negative answers ([RFC2308]) and
-   the DNSKEY and DS queries of validation.  A client MUST NOT repeat
-   the requests of steps 4 and 5 while a stored response is fresh
-   ([RFC9111]).
+   An entry point fails when the outcome of its retrieval is "no
+   manifest" (Section 5.1).  A client MUST NOT retry a failed entry
+   point from the same source before a back-off interval of at least 30
+   seconds.  A client MUST NOT issue the DNS queries of steps 2 and 3
+   for the same domain name more often than the TTLs of the answers
+   allow, including negative answers ([RFC2308]) and the DNSKEY and DS
+   queries of validation.  A client MUST NOT repeat the requests of
+   steps 4 and 5 while a stored response is fresh ([RFC9111]).
 
 5.1.  Indirection Depth and Outcomes
 
@@ -530,12 +528,12 @@ Table of Contents
    attacker who controls one record or one response from leading the
    client through a chain of indirections.
 
-   Each attempt to resolve a hint has one of three outcomes:
+   Each attempt to retrieve an entry point has one of three outcomes:
 
-   Entry point:
+   Manifest:
       The URI returned an ARD manifest from an authenticated origin.
 
-   No entry point:
+   No manifest:
       The URI did not respond, returned a response that is not a
       manifest, exceeded the depth limit, or failed the checks of
       Section 6.  The failure is attributed to the source.
@@ -543,7 +541,7 @@ Table of Contents
    Not permitted:
       The client's own policy did not allow the fetch, for instance a
       host under "local." that no certificate can authenticate
-      (Section 6.2), or a host not on an allow-list.  The hint is
+      (Section 6.2), or a host not on an allow-list.  The entry point is
       retained with its source, and no failure is attributed to the
       source.
 
@@ -553,12 +551,12 @@ Table of Contents
    exists between the client and the publisher.  In each mechanism, an
    attacker who controls the channel can direct the client to a manifest
    of the attacker's choosing.  The mitigation is the same for all
-   mechanisms: the client treats the result as a hint, retrieves the
+   mechanisms: the client treats the result as unverified, retrieves the
    manifest from the URI, authenticates the origin, and relies on the
    content of each entry, as specified in [ARD], to determine its
    publisher.
 
-6.1.  Hints and Authority
+6.1.  Entry Points and Authority
 
    A client MUST authenticate the TLS server for the host named in the
    entry point URI (Section 4.3.3 of [RFC9110]).  For the well-known
