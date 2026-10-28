@@ -460,6 +460,7 @@ The following questions are to be settled before the document is stable. This se
 3. Suffix. "ard.json" matches {{ARD-SPEC}} and deployed code. A suffix without the extension, "ard", was considered.
 4. Reference status. {{ARD}} and {{I-D.mozleywilliams-dnsop-dnsaid}} are individual drafts cited informatively. {{ARD}} becomes a normative reference when the companion documents are adopted together.
 5. SvcParamKey number. The "well-known" key has no registered number; the examples in {{pointer-rr}} and {{https-rr}} cannot be loaded into a zone until it does.
+6. Registry endpoints. {{ARD-SPEC}} also points to a registry endpoint through `_search._agents.<domain>`. This document yields catalog documents only. Extending the entry point to registry endpoints is a question for DAWN.
 
 # Acknowledgments
 {:numbered="false"}
