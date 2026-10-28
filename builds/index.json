@@ -1,6 +1,12 @@
 {
  "builds": [
   {
+   "sha": "706fbef",
+   "date": "2026-10-28",
+   "subject": "pages: diff any two builds of the draft at diff.html?from=<commit>",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
    "sha": "27679fb",
    "date": "2026-10-28",
    "subject": "ci: run the Editor's Copy check on every pull request",
