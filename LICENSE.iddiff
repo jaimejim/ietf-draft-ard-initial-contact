@@ -1,4 +1,4 @@
-iddiff.ts and iddiff.js are a TypeScript port of the IETF iddiff tool
+iddiff.js is a port of the IETF iddiff tool
 (https://github.com/ietf-tools/iddiff, version 0.5.1) and of the parts of
 the CPython difflib module that it uses. The notices of both follow.
 
