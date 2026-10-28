@@ -36,8 +36,10 @@ author:
     email: jari.arkko@ericsson.com
 
 normative:
+  RFC2308:
   RFC3986:
   RFC4033:
+  RFC4035:
   RFC6335:
   RFC6762:
   RFC6763:
@@ -46,6 +48,7 @@ normative:
   RFC9110:
   RFC9111:
   RFC9460:
+  RFC9848:
   I-D.mozleywilliams-dnsop-dnsaid:
   ARD:
     title: "Agent Resource Discovery (ARD)"
@@ -71,8 +74,6 @@ normative:
       Internet-Draft: draft-bu-dawn-ard-architecture
 
 informative:
-  RFC2308:
-  RFC4035:
   RFC4343:
   RFC9457:
   RFC2132:
@@ -216,7 +217,7 @@ The client forms the entry point as follows:
 * The authority is the TargetName, with the port from the "port" key or 443. The TargetName MUST be a host name without underscore labels, as in {{Section 3.2 of I-D.mozleywilliams-dnsop-dnsaid}}, so that a publicly issued certificate can name it. A record whose TargetName is "." yields no entry point.
 * The path is "/.well-known/ard.json". The response determines whether a manifest is present.
 * Address records of the TargetName absent from the Additional section ({{Section 4.1 of RFC9460}}) are resolved by the client.
-* The "mandatory" key is processed as in {{Section 8 of RFC9460}}: a record whose mandatory list names a key the client does not implement is ignored. The "alpn", "port", "ipv4hint", "ipv6hint", and "ech" keys apply with their {{RFC9460}} semantics. Other keys are ignored.
+* The "mandatory" key is processed as in {{Section 8 of RFC9460}}: a record whose mandatory list names a key the client does not implement is ignored. The "alpn", "port", "ipv4hint", and "ipv6hint" keys apply with their {{RFC9460}} semantics, and the "ech" key with its {{RFC9848}} semantics. Other keys are ignored.
 * One AliasMode indirection is followed ({{Section 2.4.2 of RFC9460}}); a second ends the attempt ({{depth}}). An AliasMode record whose TargetName is "." yields no entry point.
 
 In the example, the entry point is "https://ard.example.net/.well-known/ard.json". The client validates the TLS certificate for "ard.example.net" and records `_index._agents.example.com` as the source. An RRset MAY contain several ServiceMode records; each yields one entry point, and SvcPriority orders them. If the TargetName serves no manifest at the well-known path, the outcome is "no manifest" ({{depth}}); the host can still serve an index in another format, which this document does not interpret.
@@ -360,7 +361,7 @@ On shared hosting, the well-known URI can be served by a tenant rather than the 
 
 # Privacy Considerations {#privacy}
 
-A DNS query for `_index._agents.example.com` or `_ard._tcp.example.com` reveals to the resolver, and to any observer on the path, that the client is querying for agent manifests of example.com. Encrypted DNS transports, discovered as described in {{RFC9462}}, limit the observers to the resolver. The well-known fetch is indistinguishable from an ordinary connection to the domain. The TLS Server Name Indication reveals the TargetName host unless the "ech" key is used, and DNSSEC validation adds DNSKEY and DS queries to the parent zones.
+A DNS query for `_index._agents.example.com` or `_ard._tcp.example.com` reveals to the resolver, and to any observer on the path, that the client is querying for agent manifests of example.com. Encrypted DNS transports, discovered as described in {{RFC9462}}, limit the observers to the resolver. The well-known fetch is indistinguishable from an ordinary connection to the domain. The TLS Server Name Indication reveals the TargetName host unless the "ech" key {{RFC9848}} is used, and DNSSEC validation adds DNSKEY and DS queries to the parent zones.
 
 Browsing over Multicast DNS reveals to all hosts on the link that the client is looking for agent manifests, and a responding host reveals that it advertises one. Deployments where this is a concern can use unicast DNS-SD through a Discovery Proxy {{RFC8766}} with access control on the zone, or configuration. The service instance names under `_ard._tcp.<domain>` can be enumerated by any party; they identify manifests that a publisher has chosen to make discoverable, and they do not identify people or individual agents.
 
