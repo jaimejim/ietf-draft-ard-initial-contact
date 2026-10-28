@@ -2,42 +2,31 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Draft diff</title>
+<title>Compare builds</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Side-by-side diff of two builds of the draft, in the layout and colours
-     of the IETF iddiff/rfcdiff tool, rendered in the browser from
-     builds/<sha>.txt. Query: ?from=<sha>[&to=<sha>]; "to" defaults to the
-     latest build. -->
+<!-- Runs the IETF iddiff tool (https://github.com/ietf-tools/iddiff, vendored
+     as iddiff.py) in the browser with Pyodide, on two builds of the draft
+     stored as builds/<sha>.txt. Query: ?from=<sha>[&to=<sha>]; "to" defaults
+     to the latest build. Output is iddiff's own side-by-side HTML. -->
 <style>
-  body { font-family: monospace; margin: 0; }
-  header { font-family: system-ui, sans-serif; font-size: 13px; padding: 8px 12px; border-bottom: 1px solid #ccc;
-           display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: baseline; }
-  header b { font-size: 15px; }
-  select { font: inherit; max-width: 40vw; }
-  #status { padding: 12px; font-family: system-ui, sans-serif; color: #555; }
-  table { border-spacing: 0; width: 100%; table-layout: fixed; }
-  th { padding: 2px 0; text-align: center; font-size: 0.86em; }
-  td { padding: 0 4px; white-space: pre-wrap; word-wrap: break-word; vertical-align: top; font-size: 0.86em; }
-  td.n { width: 3.2em; color: #888; text-align: right; padding: 0 4px 0 0; white-space: nowrap; }
-  .left { background-color: #EEE; }
-  .right { background-color: #FFF; }
-  .lblock { background-color: #BFB; }
-  .rblock { background-color: #FF8; }
-  .skip td { text-align: center; color: #666; background: #ddd; font-style: italic; }
-  .w-delete { color: #F00; text-decoration: line-through; }
-  .w-insert { color: #008000; font-weight: bold; }
+  html, body { height: 100%; margin: 0; }
+  body { display: flex; flex-direction: column; font-family: system-ui, sans-serif; font-size: 14px; color: #222; }
+  header { padding: 10px 14px; border-bottom: 1px solid #ccc; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
+  header b { font-size: 16px; margin-right: 6px; }
+  select { font: inherit; font-size: 13px; max-width: 38vw; padding: 3px; }
+  #status { color: #555; font-size: 13px; }
+  iframe { flex: 1; border: 0; width: 100%; }
 </style>
 </head>
 <body>
 <header>
-  <b>Draft diff</b>
+  <b>Compare builds</b>
   <label>from <select id="from"></select></label>
   <label>to <select id="to"></select></label>
-  <span id="summary"></span>
+  <span id="status">Loading…</span>
 </header>
-<div id="status">Loading…</div>
-<table id="diff"></table>
-<script src="diff.min.js"></script>
+<iframe id="out" title="diff"></iframe>
+<script src="https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js"></script>
 <script>
 (async () => {
   const q = new URLSearchParams(location.search);
@@ -61,61 +50,27 @@
       location.search = `?from=${f}` + (t === builds[0].sha ? '' : `&to=${t}`);
     };
   }
-  document.title = `Draft diff ${from.sha}..${to.sha}`;
+  document.title = `Compare builds ${from.sha}..${to.sha}`;
 
-  // Drop page breaks, running headers and footers, as rfcdiff does.
-  const clean = t => t.replace(/\r/g, '').split('\n')
-    .filter(l => !/^\f/.test(l) && !/\[Page \d+\]\s*$/.test(l)
-                 && !/^(Internet-Draft|RFC \d+)\s{3,}\S.*\s{3,}\S+ \d{4}\s*$/.test(l))
-    .join('\n').replace(/\n{3,}/g, '\n\n');
-  const [oldText, newText] = await Promise.all([from, to].map(
-    async b => clean(await (await fetch(`builds/${b.sha}.txt`)).text())));
-
-  const esc = s => s.replace(/[&<>]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;'}[c]));
-  const table = document.getElementById('diff');
-  const label = b => `${b.file.replace(/\.txt$/, '')} @ ${b.sha} (${b.date})`;
-  table.innerHTML = `<tr><th colspan="2">${esc(label(from))}</th><th colspan="2">${esc(label(to))}</th></tr>`;
-  const row = (cls, ln, l, rn, r) => {
-    const tr = document.createElement('tr'); if (cls === 'skip') tr.className = 'skip';
-    tr.innerHTML = cls === 'skip'
-      ? `<td colspan="4">${l}</td>`
-      : `<td class="n">${ln}</td><td class="${cls === 'ctx' ? 'left' : 'lblock'}">${l}</td>` +
-        `<td class="n">${rn}</td><td class="${cls === 'ctx' ? 'right' : 'rblock'}">${r}</td>`;
-    table.appendChild(tr);
-  };
-  const CTX = 3;
-  const parts = Diff.diffLines(oldText, newText);
-  let ln = 1, rn = 1, changes = 0, first = true;
-  const lines = v => v.replace(/\n$/, '').split('\n');
-  for (let i = 0; i < parts.length; i++) {
-    const p = parts[i];
-    if (!p.added && !p.removed) {
-      const ls = lines(p.value);
-      const head = first ? [] : ls.slice(0, CTX);
-      const last = i === parts.length - 1;
-      const tail = last ? [] : ls.slice(Math.max(head.length, ls.length - CTX));
-      const skipped = ls.length - head.length - tail.length;
-      head.forEach(l => row('ctx', ln++, esc(l), rn++, esc(l)));
-      if (skipped > 0) { row('skip', 0, `skipping to change at line ${ln + skipped}`); ln += skipped; rn += skipped; }
-      tail.forEach(l => row('ctx', ln++, esc(l), rn++, esc(l)));
-      first = false; continue;
-    }
-    let oldV = '', newV = '';
-    if (p.removed) { oldV = p.value; if (parts[i + 1] && parts[i + 1].added) { newV = parts[i + 1].value; i++; } }
-    else newV = p.value;
-    let l = '', r = '';
-    for (const w of Diff.diffWordsWithSpace(oldV, newV)) {
-      if (w.removed) l += `<span class="w-delete">${esc(w.value)}</span>`;
-      else if (w.added) r += `<span class="w-insert">${esc(w.value)}</span>`;
-      else { l += esc(w.value); r += esc(w.value); }
-    }
-    const lc = oldV ? lines(oldV).length : 0, rc = newV ? lines(newV).length : 0;
-    row('chg', lc ? ln : '', l.replace(/\n$/, ''), rc ? rn : '', r.replace(/\n$/, ''));
-    ln += lc; rn += rc; changes++; first = false;
-  }
-  status.remove();
-  document.getElementById('summary').textContent =
-    changes ? `${changes} change${changes > 1 ? 's' : ''}` : 'No differences';
+  status.textContent = 'Loading the Python runtime for iddiff (a few seconds the first time)…';
+  const [py, code, oldText, newText] = await Promise.all([
+    loadPyodide(),
+    (await fetch('iddiff.py')).text(),
+    (await fetch(`builds/${from.sha}.txt`)).text(),
+    (await fetch(`builds/${to.sha}.txt`)).text(),
+  ]);
+  status.textContent = 'Running iddiff…';
+  const name = b => `${b.file.replace(/\.txt$/, '')}-${b.sha}.txt`;
+  py.FS.writeFile('/tmp/' + name(from), oldText);
+  py.FS.writeFile('/tmp/' + name(to), newText);
+  py.FS.writeFile('/tmp/iddiff.py', code);
+  const html = py.runPython(`
+import sys; sys.path.insert(0, '/tmp')
+import iddiff
+iddiff.get_iddiff('/tmp/${name(from)}', '/tmp/${name(to)}')
+`);
+  document.getElementById('out').srcdoc = html;
+  status.textContent = 'iddiff side-by-side';
 })().catch(e => { document.getElementById('status').textContent = 'Error: ' + e.message; });
 </script>
 </body>
