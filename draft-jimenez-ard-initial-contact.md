@@ -181,7 +181,7 @@ URI:
 Source:
 : The mechanism that produced the entry point and, where applicable, the DNS name or network interface from which it was obtained. The client retains the source to rank entry points ({{procedure}}), to rate-limit failing sources, and to apply local policy.
 
-An entry point is a hint until the client has retrieved the catalog from the URI and authenticated the origin ({{security}}). A DNS answer or a multicast response does not make a catalog authoritative for a publisher. The publisher of a catalog is established by the catalog content, as specified in {{ARD}}.
+An entry point is a hint until the client has retrieved the catalog from the URI and authenticated the origin ({{security}}). A DNS answer or a multicast response does not make a catalog authoritative for a publisher. The publisher of each entry is established from the entry itself, as specified in {{ARD}}; the host that serves the catalog establishes no publisher authority.
 
 A domain can publish more than one catalog. Each mechanism can return several entry points, and the client treats them as a set. A catalog can link to further catalogs; following those links is part of lookup and is outside the scope of this document.
 
@@ -352,11 +352,11 @@ Not permitted:
 
 # Security Considerations {#security}
 
-Initial contact takes place before any authenticated relationship exists between the client and the publisher. In each mechanism, an attacker who controls the channel can direct the client to a catalog of the attacker's choosing. The mitigation is the same for all mechanisms: the client treats the result as a hint, retrieves the catalog from the URI, authenticates the origin, and relies on the catalog content, as specified in {{ARD}}, to determine the publisher of the catalog.
+Initial contact takes place before any authenticated relationship exists between the client and the publisher. In each mechanism, an attacker who controls the channel can direct the client to a catalog of the attacker's choosing. The mitigation is the same for all mechanisms: the client treats the result as a hint, retrieves the catalog from the URI, authenticates the origin, and relies on the content of each entry, as specified in {{ARD}}, to determine its publisher.
 
 ## Hints and Authority {#sec-hints}
 
-A client MUST authenticate the TLS server for the host named in the entry point URI ({{Section 4.3.3 of RFC9110}}). For the well-known URI and the HTTPS record, that host is the publisher's own domain. For the pointer record, for DNS-SD, and for a link whose target is on another origin, the host is taken from the answer or the link, and a spoofed answer can direct the client to a host for which the attacker holds a valid certificate. A client SHOULD validate DNS answers with DNSSEC {{RFC4033}} where the zone is signed and SHOULD rank unvalidated answers below validated ones ({{procedure}}). This document does not establish that a catalog reached through `_catalog._agents.example.com` is published by "example.com"; the recorded source is the input to the publisher check that {{ARD}} defines.
+A client MUST authenticate the TLS server for the host named in the entry point URI ({{Section 4.3.3 of RFC9110}}). For the well-known URI and the HTTPS record, that host is the publisher's own domain. For the pointer record, for DNS-SD, and for a link whose target is on another origin, the host is taken from the answer or the link, and a spoofed answer can direct the client to a host for which the attacker holds a valid certificate. A client SHOULD validate DNS answers with DNSSEC {{RFC4033}} where the zone is signed and SHOULD rank unvalidated answers below validated ones ({{procedure}}). This document does not establish that a catalog reached through `_catalog._agents.example.com` is published by "example.com"; the recorded source is an input to the per-entry publisher check that {{ARD}} defines.
 
 Carrying a digest or a public key for the catalog in the DNS record, as {{I-D.nemethi-dawn-aid}} does for its objects, was considered and not adopted, since a catalog changes with every published entry.
 
@@ -370,7 +370,7 @@ A client MUST NOT fall back to "http" when an "https" entry point fails, and MUS
 
 ## Well-Known URI Squatting {#sec-well-known}
 
-On shared hosting, the well-known URI can be served by a tenant rather than the domain owner ({{Section 4 of RFC8615}}). The publisher check of {{ARD}} applies to catalogs found through the well-known URI as it does to any other; a tenant can serve a catalog, but its entries will not pass the publisher check as entries of the domain owner.
+On shared hosting, the well-known URI can be served by a tenant rather than the domain owner ({{Section 4 of RFC8615}}). The per-entry publisher check of {{ARD}} applies to a catalog found through the well-known URI as to any other; a tenant can serve a catalog, but its entries will not pass the check as entries of the domain owner.
 
 # Privacy Considerations {#privacy}
 
