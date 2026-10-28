@@ -60,11 +60,13 @@ informative:
     author:
       - name: Junjie Bu
       - name: R.V. Guha
+      - name: Shaun Smith
       - name: Jaime Jiménez
+      - name: Jeffrey Damick
     date: 2026-10
-    target: https://mindpower.github.io/ietf-draft-agent-resources-discovery/draft-bu-agent-resources-discovery.html
+    target: https://mindpower.github.io/ietf-draft-agent-resources-discovery/draft-bu-dawn-ard-discovery.html
     seriesinfo:
-      Internet-Draft: draft-bu-agent-resources-discovery
+      Internet-Draft: draft-bu-dawn-ard-discovery
   RFC2132:
   RFC3646:
   RFC8106:
