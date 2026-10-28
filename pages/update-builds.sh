@@ -16,7 +16,8 @@ here=$(cd "$(dirname "$0")" && pwd)
 src=$(cd "$here/.." && pwd)
 
 mkdir -p "$gp/builds"
-cp -f "$here/diff.html" "$here/diff.min.js" "$here/LICENSE.jsdiff" "$gp/"
+cp -f "$here/diff.html" "$here/iddiff.py" "$here/LICENSE.iddiff" "$gp/"
+rm -f "$gp/diff.min.js" "$gp/LICENSE.jsdiff"
 
 python3 -I - "$gp" "$src" <<'EOF'
 import json, os, re, subprocess, sys, datetime as dt

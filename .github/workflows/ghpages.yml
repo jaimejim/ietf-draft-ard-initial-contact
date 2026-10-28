@@ -79,7 +79,7 @@ jobs:
         git clone -q --branch gh-pages --single-branch \
           "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" /tmp/gh-pages
         pages/update-builds.sh /tmp/gh-pages
-        git -C /tmp/gh-pages add -A builds diff.html diff.min.js LICENSE.jsdiff
+        git -C /tmp/gh-pages add -A builds diff.html iddiff.py LICENSE.iddiff diff.min.js LICENSE.jsdiff
         git -C /tmp/gh-pages -c user.name='github-actions[bot]' \
           -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
           commit -qm "Script storing build ${GITHUB_SHA::7} for diffs. [ci skip]" || exit 0
