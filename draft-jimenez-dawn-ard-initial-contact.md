@@ -273,7 +273,7 @@ The registration of the suffix is in {{iana-well-known}}.
 
 ### Link Relation {#link-relation}
 
-A publisher MAY include a link to a manifest in any HTTP response using the "ard" link relation {{RFC8288}} in a Link header field. The link target is an ARD manifest. A publisher supporting this mechanism SHOULD respond to a HEAD request for the root resource of its origin with a Link header field carrying the relation, following {{Section 2 of RFC9727}}. The following is an example:
+A publisher MAY include a link to a manifest in any HTTP response using the "ard" link relation {{RFC8288}} in a Link header field. The link target is an ARD manifest. A publisher supporting this mechanism SHOULD respond to a HEAD request for the root resource of its origin with a Link header field carrying the relation, as in the example of {{Section 3 of RFC9727}}, where the "api-catalog" relation appears in the response to the root resource. The following is an example:
 
 ~~~ http-message
 HEAD / HTTP/1.1
