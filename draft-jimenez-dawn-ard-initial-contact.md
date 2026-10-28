@@ -398,7 +398,7 @@ Relation name:
 : ard
 
 Description:
-: Refers to an Agent Resource Discovery (ARD) manifest of the publisher of the link context.
+: Refers to an Agent Resource Discovery (ARD) manifest, a document listing agent resources.
 
 Reference:
 : This document, {{link-relation}}.
@@ -444,7 +444,7 @@ The following questions are to be settled before the document is stable. This se
 
 1. API catalog profile. Issue #2 on the ARD repository proposes publishing the manifest as an {{RFC9727}} API catalog under "/.well-known/api-catalog" with an ARD profile. If adopted, this document registers no suffix.
 2. Pointer label. This document uses the DNS-AID organization index `_index._agents`, whose data format DNS-AID leaves out of scope. The DNS-AID reference implementation publishes `_catalog._agents` and {{ARD-SPEC}} lists `_entries._agents` for the same pointer; both are to be aligned with this document. DNS-AID, as the owner of "_agents" in the {{RFC8552}} registry, is asked to list an ARD manifest as one kind of index target.
-3. Suffix. "ard.json" matches {{ARD-SPEC}} and deployed code. A suffix without the extension, "ard", was considered.
+3. Suffix and relation name. "ard.json" matches {{ARD-SPEC}} and deployed code. A suffix without the extension, "ard", was considered. The link relation name "ard" also matches {{ARD-SPEC}}; the registry expert may ask for a descriptive name such as "ard-manifest".
 4. Reference status. {{ARD}} is a normative reference to a companion individual draft submitted together with this document. {{I-D.mozleywilliams-dnsop-dnsaid}} is an individual draft cited normatively, for the index record name and the TargetName rule of {{pointer-rr}}.
 5. HTTPS record at the apex. An earlier version let the HTTPS record of a domain announce the suffix through the "well-known" SvcParamKey of {{I-D.mk-dnsop-svcb-well-known}}. The mechanism was removed because the key has no registered number, syntax, or encoding yet; it is to be reconsidered once the key is registered.
 6. Registry endpoints. {{ARD-SPEC}} also points to a registry endpoint through `_search._agents.<domain>`. This document yields manifests only. Extending the entry point to registry endpoints is a question for DAWN.
