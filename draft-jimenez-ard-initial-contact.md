@@ -302,7 +302,7 @@ Link: <https://agents.example.com/catalog>; rel="ard"
 
 ~~~
 
-The client reads the Link field of the root response regardless of its status code and does not follow a redirect of the root resource. Links in a response from the publisher's own origin have that origin as their source. Links in third-party documents are hints with the third party as their source. The registration of the relation is in {{iana-link-relation}}.
+The client reads the Link field of the root response regardless of its status code and does not follow a redirect of the root resource. The relation MAY also appear in an HTML link element in the root resource ({{Appendix A.1 of RFC8288}}), for publishers that cannot set header fields. A client that retrieves the root resource with GET reads link elements in an HTML response in the same way as the Link header field. Links in a response from the publisher's own origin have that origin as their source. Links in third-party documents are hints with the third party as their source. The registration of the relation is in {{iana-link-relation}}.
 
 ## Local Network Mechanisms {#local-mechanisms}
 
