@@ -36,10 +36,9 @@ About This Document
    contact/.
 
    Discussion of this document takes place on the Discovery of Agents
-   With Names (DAWN) Proposed Working Group mailing list
-   (mailto:dawn@ietf.org), which is archived at
-   https://mailarchive.ietf.org/arch/browse/dawn/.  Subscribe at
-   https://www.ietf.org/mailman/listinfo/dawn/.
+   With Names (DAWN) Working Group mailing list (mailto:dawn@ietf.org),
+   which is archived at https://mailarchive.ietf.org/arch/browse/dawn/.
+   Subscribe at https://www.ietf.org/mailman/listinfo/dawn/.
 
 Status of This Memo
 
@@ -117,7 +116,7 @@ Table of Contents
    that describes the resource in its native protocol, such as an Agent
    Card [A2A] or an MCP server description [MCP].  ARD also defines a
    lookup interface over the catalog.  Both require the URI of the
-   catalog.
+   catalog.  The ARD architecture is described in [ARD-ARCH].
 
    ARD does not specify how a client obtains that URI.  The applicable
    IETF mechanisms, well-known URIs [RFC8615], web linking [RFC8288],
@@ -718,6 +717,12 @@ Table of Contents
               <https://datatracker.ietf.org/doc/draft-bu-dawn-ard-
               discovery/>.
 
+   [ARD-ARCH] Bu, J., Guha, R.V., and J. Arkko, "Agent Resource
+              Discovery (ARD) Architecture", Work in Progress, Internet-
+              Draft, draft-bu-dawn-ard-architecture, October 2026,
+              <https://datatracker.ietf.org/doc/draft-bu-dawn-ard-
+              architecture/>.
+
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
@@ -786,8 +791,8 @@ Table of Contents
               <https://agenticresourcediscovery.org/spec/>.
 
    [DAWN-CHARTER]
-              IETF, "Discovery of Agents With Names (DAWN) - Proposed
-              Charter", 2026,
+              IETF, "Discovery of Agents With Names (DAWN) Charter",
+              2026,
               <https://datatracker.ietf.org/doc/charter-ietf-dawn/>.
 
    [I-D.besleaga-agentic-knowledge-wellknown]
