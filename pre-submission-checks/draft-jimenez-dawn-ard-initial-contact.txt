@@ -298,9 +298,9 @@ Table of Contents
 
    *  The "mandatory" key is processed as in Section 8 of [RFC9460]: a
       record whose mandatory list names a key the client does not
-      implement is ignored.  The "alpn", "port", "ipv4hint", "ipv6hint",
-      and "ech" keys apply with their [RFC9460] semantics.  Other keys
-      are ignored.
+      implement is ignored.  The "alpn", "port", "ipv4hint", and
+      "ipv6hint" keys apply with their [RFC9460] semantics, and the
+      "ech" key with its [RFC9848] semantics.  Other keys are ignored.
 
    *  One AliasMode indirection is followed (Section 2.4.2 of
       [RFC9460]); a second ends the attempt (Section 5.1).  An AliasMode
@@ -620,8 +620,8 @@ Table of Contents
    transports, discovered as described in [RFC9462], limit the observers
    to the resolver.  The well-known fetch is indistinguishable from an
    ordinary connection to the domain.  The TLS Server Name Indication
-   reveals the TargetName host unless the "ech" key is used, and DNSSEC
-   validation adds DNSKEY and DS queries to the parent zones.
+   reveals the TargetName host unless the "ech" key [RFC9848] is used,
+   and DNSSEC validation adds DNSKEY and DS queries to the parent zones.
 
    Browsing over Multicast DNS reveals to all hosts on the link that the
    client is looking for agent manifests, and a responding host reveals
@@ -725,6 +725,10 @@ Table of Contents
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/rfc/rfc2119>.
 
+   [RFC2308]  Andrews, M., "Negative Caching of DNS Queries (DNS
+              NCACHE)", RFC 2308, DOI 10.17487/RFC2308, March 1998,
+              <https://www.rfc-editor.org/rfc/rfc2308>.
+
    [RFC3986]  Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
               Resource Identifier (URI): Generic Syntax", STD 66,
               RFC 3986, DOI 10.17487/RFC3986, January 2005,
@@ -734,6 +738,11 @@ Table of Contents
               Rose, "DNS Security Introduction and Requirements",
               RFC 4033, DOI 10.17487/RFC4033, March 2005,
               <https://www.rfc-editor.org/rfc/rfc4033>.
+
+   [RFC4035]  Arends, R., Austein, R., Larson, M., Massey, D., and S.
+              Rose, "Protocol Modifications for the DNS Security
+              Extensions", RFC 4035, DOI 10.17487/RFC4035, March 2005,
+              <https://www.rfc-editor.org/rfc/rfc4035>.
 
    [RFC6335]  Cotton, M., Eggert, L., Touch, J., Westerlund, M., and S.
               Cheshire, "Internet Assigned Numbers Authority (IANA)
@@ -776,6 +785,11 @@ Table of Contents
               and Parameter Specification via the DNS (SVCB and HTTPS
               Resource Records)", RFC 9460, DOI 10.17487/RFC9460,
               November 2023, <https://www.rfc-editor.org/rfc/rfc9460>.
+
+   [RFC9848]  Schwartz, B., Bishop, M., and E. Nygren, "Bootstrapping
+              TLS Encrypted ClientHello with DNS Service Bindings",
+              RFC 9848, DOI 10.17487/RFC9848, March 2026,
+              <https://www.rfc-editor.org/rfc/rfc9848>.
 
 9.2.  Informative References
 
@@ -892,19 +906,10 @@ Table of Contents
               Extensions", RFC 2132, DOI 10.17487/RFC2132, March 1997,
               <https://www.rfc-editor.org/rfc/rfc2132>.
 
-   [RFC2308]  Andrews, M., "Negative Caching of DNS Queries (DNS
-              NCACHE)", RFC 2308, DOI 10.17487/RFC2308, March 1998,
-              <https://www.rfc-editor.org/rfc/rfc2308>.
-
    [RFC3646]  Droms, R., Ed., "DNS Configuration options for Dynamic
               Host Configuration Protocol for IPv6 (DHCPv6)", RFC 3646,
               DOI 10.17487/RFC3646, December 2003,
               <https://www.rfc-editor.org/rfc/rfc3646>.
-
-   [RFC4035]  Arends, R., Austein, R., Larson, M., Massey, D., and S.
-              Rose, "Protocol Modifications for the DNS Security
-              Extensions", RFC 4035, DOI 10.17487/RFC4035, March 2005,
-              <https://www.rfc-editor.org/rfc/rfc4035>.
 
    [RFC4343]  Eastlake 3rd, D., "Domain Name System (DNS) Case
               Insensitivity Clarification", RFC 4343,

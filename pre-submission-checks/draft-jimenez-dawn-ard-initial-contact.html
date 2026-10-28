@@ -1410,7 +1410,7 @@ _index._agents.example.com. 3600 IN SVCB 1 ard.example.net. (
               <p id="section-4.2.1-4.4.1">Address records of the TargetName absent from the Additional section (<span><a href="https://rfc-editor.org/rfc/rfc9460#section-4.1" class="relref">Section 4.1</a> of [<a href="#RFC9460" class="cite xref">RFC9460</a>]</span>) are resolved by the client.<a href="#section-4.2.1-4.4.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-4.2.1-4.5">
-              <p id="section-4.2.1-4.5.1">The "mandatory" key is processed as in <span><a href="https://rfc-editor.org/rfc/rfc9460#section-8" class="relref">Section 8</a> of [<a href="#RFC9460" class="cite xref">RFC9460</a>]</span>: a record whose mandatory list names a key the client does not implement is ignored. The "alpn", "port", "ipv4hint", "ipv6hint", and "ech" keys apply with their <span>[<a href="#RFC9460" class="cite xref">RFC9460</a>]</span> semantics. Other keys are ignored.<a href="#section-4.2.1-4.5.1" class="pilcrow">¶</a></p>
+              <p id="section-4.2.1-4.5.1">The "mandatory" key is processed as in <span><a href="https://rfc-editor.org/rfc/rfc9460#section-8" class="relref">Section 8</a> of [<a href="#RFC9460" class="cite xref">RFC9460</a>]</span>: a record whose mandatory list names a key the client does not implement is ignored. The "alpn", "port", "ipv4hint", and "ipv6hint" keys apply with their <span>[<a href="#RFC9460" class="cite xref">RFC9460</a>]</span> semantics, and the "ech" key with its <span>[<a href="#RFC9848" class="cite xref">RFC9848</a>]</span> semantics. Other keys are ignored.<a href="#section-4.2.1-4.5.1" class="pilcrow">¶</a></p>
 </li>
             <li class="normal" id="section-4.2.1-4.6">
               <p id="section-4.2.1-4.6.1">One AliasMode indirection is followed (<span><a href="https://rfc-editor.org/rfc/rfc9460#section-2.4.2" class="relref">Section 2.4.2</a> of [<a href="#RFC9460" class="cite xref">RFC9460</a>]</span>); a second ends the attempt (<a href="#depth" class="auto internal xref">Section 5.1</a>). An AliasMode record whose TargetName is "." yields no entry point.<a href="#section-4.2.1-4.6.1" class="pilcrow">¶</a></p>
@@ -1634,7 +1634,7 @@ Link: &lt;https://agents.example.com/manifest&gt;; rel="ard"
       <h2 id="name-privacy-considerations">
 <a href="#section-7" class="section-number selfRef">7. </a><a href="#name-privacy-considerations" class="section-name selfRef">Privacy Considerations</a>
       </h2>
-<p id="section-7-1">A DNS query for <code>_index._agents.example.com</code> or <code>_ard._tcp.example.com</code> reveals to the resolver, and to any observer on the path, that the client is querying for agent manifests of example.com. Encrypted DNS transports, discovered as described in <span>[<a href="#RFC9462" class="cite xref">RFC9462</a>]</span>, limit the observers to the resolver. The well-known fetch is indistinguishable from an ordinary connection to the domain. The TLS Server Name Indication reveals the TargetName host unless the "ech" key is used, and DNSSEC validation adds DNSKEY and DS queries to the parent zones.<a href="#section-7-1" class="pilcrow">¶</a></p>
+<p id="section-7-1">A DNS query for <code>_index._agents.example.com</code> or <code>_ard._tcp.example.com</code> reveals to the resolver, and to any observer on the path, that the client is querying for agent manifests of example.com. Encrypted DNS transports, discovered as described in <span>[<a href="#RFC9462" class="cite xref">RFC9462</a>]</span>, limit the observers to the resolver. The well-known fetch is indistinguishable from an ordinary connection to the domain. The TLS Server Name Indication reveals the TargetName host unless the "ech" key <span>[<a href="#RFC9848" class="cite xref">RFC9848</a>]</span> is used, and DNSSEC validation adds DNSKEY and DS queries to the parent zones.<a href="#section-7-1" class="pilcrow">¶</a></p>
 <p id="section-7-2">Browsing over Multicast DNS reveals to all hosts on the link that the client is looking for agent manifests, and a responding host reveals that it advertises one. Deployments where this is a concern can use unicast DNS-SD through a Discovery Proxy <span>[<a href="#RFC8766" class="cite xref">RFC8766</a>]</span> with access control on the zone, or configuration. The service instance names under <code>_ard._tcp.&lt;domain&gt;</code> can be enumerated by any party; they identify manifests that a publisher has chosen to make discoverable, and they do not identify people or individual agents.<a href="#section-7-2" class="pilcrow">¶</a></p>
 <p id="section-7-3">Retrieving the manifest reveals the client's address to the publisher.<a href="#section-7-3" class="pilcrow">¶</a></p>
 </section>
@@ -1773,6 +1773,10 @@ Link: &lt;https://agents.example.com/manifest&gt;; rel="ard"
         <dd>
 <span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
 <dd class="break"></dd>
+<dt id="RFC2308">[RFC2308]</dt>
+        <dd>
+<span class="refAuthor">Andrews, M.</span>, <span class="refTitle">"Negative Caching of DNS Queries (DNS NCACHE)"</span>, <span class="seriesInfo">RFC 2308</span>, <span class="seriesInfo">DOI 10.17487/RFC2308</span>, <time datetime="1998-03" class="refDate">March 1998</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2308">https://www.rfc-editor.org/rfc/rfc2308</a>&gt;</span>. </dd>
+<dd class="break"></dd>
 <dt id="RFC3986">[RFC3986]</dt>
         <dd>
 <span class="refAuthor">Berners-Lee, T.</span>, <span class="refAuthor">Fielding, R.</span>, and <span class="refAuthor">L. Masinter</span>, <span class="refTitle">"Uniform Resource Identifier (URI): Generic Syntax"</span>, <span class="seriesInfo">STD 66</span>, <span class="seriesInfo">RFC 3986</span>, <span class="seriesInfo">DOI 10.17487/RFC3986</span>, <time datetime="2005-01" class="refDate">January 2005</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc3986">https://www.rfc-editor.org/rfc/rfc3986</a>&gt;</span>. </dd>
@@ -1780,6 +1784,10 @@ Link: &lt;https://agents.example.com/manifest&gt;; rel="ard"
 <dt id="RFC4033">[RFC4033]</dt>
         <dd>
 <span class="refAuthor">Arends, R.</span>, <span class="refAuthor">Austein, R.</span>, <span class="refAuthor">Larson, M.</span>, <span class="refAuthor">Massey, D.</span>, and <span class="refAuthor">S. Rose</span>, <span class="refTitle">"DNS Security Introduction and Requirements"</span>, <span class="seriesInfo">RFC 4033</span>, <span class="seriesInfo">DOI 10.17487/RFC4033</span>, <time datetime="2005-03" class="refDate">March 2005</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc4033">https://www.rfc-editor.org/rfc/rfc4033</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC4035">[RFC4035]</dt>
+        <dd>
+<span class="refAuthor">Arends, R.</span>, <span class="refAuthor">Austein, R.</span>, <span class="refAuthor">Larson, M.</span>, <span class="refAuthor">Massey, D.</span>, and <span class="refAuthor">S. Rose</span>, <span class="refTitle">"Protocol Modifications for the DNS Security Extensions"</span>, <span class="seriesInfo">RFC 4035</span>, <span class="seriesInfo">DOI 10.17487/RFC4035</span>, <time datetime="2005-03" class="refDate">March 2005</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc4035">https://www.rfc-editor.org/rfc/rfc4035</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC6335">[RFC6335]</dt>
         <dd>
@@ -1814,8 +1822,12 @@ Link: &lt;https://agents.example.com/manifest&gt;; rel="ard"
 <span class="refAuthor">Fielding, R., Ed.</span>, <span class="refAuthor">Nottingham, M., Ed.</span>, and <span class="refAuthor">J. Reschke, Ed.</span>, <span class="refTitle">"HTTP Caching"</span>, <span class="seriesInfo">STD 98</span>, <span class="seriesInfo">RFC 9111</span>, <span class="seriesInfo">DOI 10.17487/RFC9111</span>, <time datetime="2022-06" class="refDate">June 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9111">https://www.rfc-editor.org/rfc/rfc9111</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC9460">[RFC9460]</dt>
-      <dd>
+        <dd>
 <span class="refAuthor">Schwartz, B.</span>, <span class="refAuthor">Bishop, M.</span>, and <span class="refAuthor">E. Nygren</span>, <span class="refTitle">"Service Binding and Parameter Specification via the DNS (SVCB and HTTPS Resource Records)"</span>, <span class="seriesInfo">RFC 9460</span>, <span class="seriesInfo">DOI 10.17487/RFC9460</span>, <time datetime="2023-11" class="refDate">November 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9460">https://www.rfc-editor.org/rfc/rfc9460</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9848">[RFC9848]</dt>
+      <dd>
+<span class="refAuthor">Schwartz, B.</span>, <span class="refAuthor">Bishop, M.</span>, and <span class="refAuthor">E. Nygren</span>, <span class="refTitle">"Bootstrapping TLS Encrypted ClientHello with DNS Service Bindings"</span>, <span class="seriesInfo">RFC 9848</span>, <span class="seriesInfo">DOI 10.17487/RFC9848</span>, <time datetime="2026-03" class="refDate">March 2026</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9848">https://www.rfc-editor.org/rfc/rfc9848</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
@@ -1898,17 +1910,9 @@ Link: &lt;https://agents.example.com/manifest&gt;; rel="ard"
         <dd>
 <span class="refAuthor">Alexander, S.</span> and <span class="refAuthor">R. Droms</span>, <span class="refTitle">"DHCP Options and BOOTP Vendor Extensions"</span>, <span class="seriesInfo">RFC 2132</span>, <span class="seriesInfo">DOI 10.17487/RFC2132</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2132">https://www.rfc-editor.org/rfc/rfc2132</a>&gt;</span>. </dd>
 <dd class="break"></dd>
-<dt id="RFC2308">[RFC2308]</dt>
-        <dd>
-<span class="refAuthor">Andrews, M.</span>, <span class="refTitle">"Negative Caching of DNS Queries (DNS NCACHE)"</span>, <span class="seriesInfo">RFC 2308</span>, <span class="seriesInfo">DOI 10.17487/RFC2308</span>, <time datetime="1998-03" class="refDate">March 1998</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2308">https://www.rfc-editor.org/rfc/rfc2308</a>&gt;</span>. </dd>
-<dd class="break"></dd>
 <dt id="RFC3646">[RFC3646]</dt>
         <dd>
 <span class="refAuthor">Droms, R., Ed.</span>, <span class="refTitle">"DNS Configuration options for Dynamic Host Configuration Protocol for IPv6 (DHCPv6)"</span>, <span class="seriesInfo">RFC 3646</span>, <span class="seriesInfo">DOI 10.17487/RFC3646</span>, <time datetime="2003-12" class="refDate">December 2003</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc3646">https://www.rfc-editor.org/rfc/rfc3646</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="RFC4035">[RFC4035]</dt>
-        <dd>
-<span class="refAuthor">Arends, R.</span>, <span class="refAuthor">Austein, R.</span>, <span class="refAuthor">Larson, M.</span>, <span class="refAuthor">Massey, D.</span>, and <span class="refAuthor">S. Rose</span>, <span class="refTitle">"Protocol Modifications for the DNS Security Extensions"</span>, <span class="seriesInfo">RFC 4035</span>, <span class="seriesInfo">DOI 10.17487/RFC4035</span>, <time datetime="2005-03" class="refDate">March 2005</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc4035">https://www.rfc-editor.org/rfc/rfc4035</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC4343">[RFC4343]</dt>
         <dd>
