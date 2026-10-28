@@ -46,13 +46,6 @@ normative:
   RFC9110:
   RFC9111:
   RFC9460:
-
-informative:
-  RFC2308:
-  RFC4035:
-  RFC4343:
-  RFC9457:
-  I-D.mozleywilliams-dnsop-dnsaid:
   ARD:
     title: "Agent Resource Discovery (ARD)"
     author:
@@ -65,6 +58,13 @@ informative:
     target: https://datatracker.ietf.org/doc/draft-bu-dawn-ard-discovery/
     seriesinfo:
       Internet-Draft: draft-bu-dawn-ard-discovery
+
+informative:
+  RFC2308:
+  RFC4035:
+  RFC4343:
+  RFC9457:
+  I-D.mozleywilliams-dnsop-dnsaid:
   RFC2132:
   RFC3646:
   RFC8106:
@@ -450,7 +450,7 @@ The following questions are to be settled before the document is stable. This se
 1. API catalog profile. Issue #2 on the ARD repository proposes publishing the catalog as an {{RFC9727}} API catalog under "/.well-known/api-catalog" with an ARD profile. If adopted, this document registers no suffix.
 2. Pointer label. `_index._agents` (DNS-AID), `_catalog._agents` (its reference implementation), and `_entries._agents` ({{ARD-SPEC}}) name the same pointer. This document uses `_catalog._agents` because it is deployed, and asks DNS-AID, as owner of "_agents" in the {{RFC8552}} registry, to list it. The fallback is a label defined in this document, "_ard".
 3. Suffix. "ard.json" matches {{ARD-SPEC}} and deployed code. A suffix without the extension, "ard", was considered.
-4. Reference status. {{ARD}} and {{I-D.mozleywilliams-dnsop-dnsaid}} are individual drafts cited informatively. {{ARD}} becomes a normative reference when the companion documents are adopted together.
+4. Reference status. {{ARD}} is a normative reference to a companion individual draft submitted together with this document. {{I-D.mozleywilliams-dnsop-dnsaid}} is an individual draft cited informatively.
 5. SvcParamKey number. The "well-known" key has no registered number; the examples in {{pointer-rr}} and {{https-rr}} cannot be loaded into a zone until it does.
 6. Registry endpoints. {{ARD-SPEC}} also points to a registry endpoint through `_search._agents.<domain>`. This document yields catalog documents only. Extending the entry point to registry endpoints is a question for DAWN.
 
