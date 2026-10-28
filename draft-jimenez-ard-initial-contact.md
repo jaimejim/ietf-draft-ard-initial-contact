@@ -143,7 +143,7 @@ This document defines the following mechanisms for obtaining the URI of an ARD c
 
 {{procedure}} specifies how a client combines these mechanisms. The DAWN charter {{DAWN-CHARTER}} calls this step "initial discovery"; this document uses the term "initial contact" for the same step. The mechanisms cover the three deployment contexts the charter identifies: the local network, an organization's own infrastructure, and discovery between organizations over the public Internet.
 
-This document does not specify the catalog representation, the lookup or search interfaces, the registration of entries, or how a catalog is bound to its publisher; these are specified in {{ARD}} and {{I-D.jimenez-agent-directory}}. It defines no new DNS resource record types, SvcParamKeys, or transport protocols. All entry point URIs use the "https" scheme.
+This document does not specify the catalog representation, the lookup or search interfaces, the registration of entries, or how a catalog is bound to its publisher; these are specified in {{ARD}} and {{I-D.jimenez-agent-directory}}. It defines no new DNS resource record types, SvcParamKeys, or transport protocols. All entry point URIs use the "https" scheme. The mechanisms and the procedure do not depend on the catalog format; the well-known suffix, the media type, and the publisher check are the parts specific to ARD.
 
 # Conventions and Definitions {#definitions}
 
