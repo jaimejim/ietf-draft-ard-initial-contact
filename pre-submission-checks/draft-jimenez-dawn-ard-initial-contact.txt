@@ -18,13 +18,13 @@ Abstract
 
    In an agent system, agents need to discover other agents, tool
    servers, and skills.  Agent Resource Discovery (ARD) defines a
-   catalog of such resources and a lookup interface over it.  This
+   manifest listing such resources and a lookup interface over it.  This
    document specifies how a client (such as an agent) initially
-   discovers an ARD catalog.  This discovery is performed through the
+   discovers an ARD manifest.  This discovery is performed through the
    use of DNS Service Binding records, DNS-Based Service Discovery (DNS-
    SD), HTTP link relations, or well-known URIs.  Each mechanism yields
-   a set of catalog URIs.  The catalog format, the lookup interface, and
-   the binding of a catalog to its publisher are specified in the
+   a set of manifest URIs.  The manifest format, the lookup interface,
+   and the binding of a manifest to its publisher are specified in the
    companion ARD documents.
 
 About This Document
@@ -109,13 +109,13 @@ Table of Contents
 
 1.  Introduction
 
-   Agent Resource Discovery (ARD) [ARD] defines a catalog of agent
-   resources, a document served over HTTPS in which a publisher lists
-   agents, tool servers, and skills.  Each entry points at the artifact
-   that describes the resource in its native protocol, such as an Agent
-   Card [A2A] or an MCP server description [MCP].  ARD also defines a
-   lookup interface over the catalog.  Both require the URI of the
-   catalog.  The ARD architecture is described in [ARD-ARCH].
+   Agent Resource Discovery (ARD) [ARD] defines the manifest, a document
+   served over HTTPS in which a publisher lists agents, tool servers,
+   and skills.  Each entry points at the artifact that describes the
+   resource in its native protocol, such as an Agent Card [A2A] or an
+   MCP server description [MCP].  ARD also defines a lookup interface
+   over the manifest.  Both require the URI of the manifest.  The ARD
+   architecture is described in [ARD-ARCH].
 
    ARD does not specify how a client obtains that URI.  The applicable
    IETF mechanisms, well-known URIs [RFC8615], web linking [RFC8288],
@@ -125,11 +125,11 @@ Table of Contents
    interpretation of the answer.
 
    This document defines the following mechanisms for obtaining the URI
-   of an ARD catalog:
+   of an ARD manifest:
 
    *  the organization index record _index._agents defined by DNS for AI
       Discovery [I-D.mozleywilliams-dnsop-dnsaid], a Service Binding
-      record [RFC9460] with an ARD catalog as its target
+      record [RFC9460] with an ARD manifest as its target
       (Section 4.2.1);
 
    *  a DNS-SD service type [RFC6763], "_ard._tcp", for use over unicast
@@ -138,25 +138,27 @@ Table of Contents
    *  a well-known URI [RFC8615] with the suffix "ard.json"
       (Section 4.3.1);
 
-   *  a link relation [RFC8288], "ard", whose target is an ARD catalog
+   *  a link relation [RFC8288], "ard", whose target is an ARD manifest
       (Section 4.3.2).
 
    Section 5 specifies how a client combines these mechanisms.  The DAWN
    charter [DAWN-CHARTER] calls this step "initial discovery"; this
-   document uses the term "initial contact" for the same step.  The
-   mechanisms cover the three deployment contexts the charter
-   identifies: the local network, an organization's own infrastructure,
-   and discovery between organizations over the public Internet.
+   document uses the term "initial contact" for the same step, and the
+   term "manifest", from [ARD], for the catalog that the charter names
+   as a service that furthers discovery.  The mechanisms cover the three
+   deployment contexts the charter identifies: the local network, an
+   organization's own infrastructure, and discovery between
+   organizations over the public Internet.
 
-   This document does not specify the catalog representation, the lookup
-   or search interfaces, the registration of entries, or how a catalog
-   is bound to its publisher; these are specified in [ARD] and
+   This document does not specify the manifest representation, the
+   lookup or search interfaces, the registration of entries, or how a
+   manifest is bound to its publisher; these are specified in [ARD] and
    [I-D.jimenez-agent-directory].  It defines no new DNS resource record
    types, underscored node names, SvcParamKeys, or transport protocols.
    All entry point URIs use the "https" scheme.  The mechanisms and the
-   procedure do not depend on the catalog format; the well-known suffix,
-   the media type, and the publisher check are the parts specific to
-   ARD.
+   procedure do not depend on the manifest format; the well-known
+   suffix, the media type, and the publisher check are the parts
+   specific to ARD.
 
 2.  Conventions and Definitions
 
@@ -171,15 +173,15 @@ Table of Contents
    [RFC6763], and the HTTP terms "origin" and "authoritative" from
    Sections 4.3.1 and 4.3.3 of [RFC9110].
 
-   ARD catalog:
+   ARD manifest:
       A document listing agent resources in the format defined in [ARD].
 
    Entry point:
-      The URI of an ARD catalog, together with the source from which the
-      client learned it (Section 3).
+      The URI of an ARD manifest, together with the source from which
+      the client learned it (Section 3).
 
    Publisher:
-      The party that controls a domain name and publishes a catalog of
+      The party that controls a domain name and publishes a manifest of
       agent resources under it.
 
    Client:
@@ -202,8 +204,8 @@ Table of Contents
    An entry point consists of two elements:
 
    URI:
-      The "https" URI [RFC9110] of the catalog.  Retrieving it returns
-      an ARD catalog in a representation defined by [ARD].
+      The "https" URI [RFC9110] of the manifest.  Retrieving it returns
+      an ARD manifest in a representation defined by [ARD].
 
    Source:
       The mechanism that produced the entry point and, where applicable,
@@ -211,30 +213,30 @@ Table of Contents
       client retains the source to rank entry points (Section 5), to
       rate-limit failing sources, and to apply local policy.
 
-   An entry point is a hint until the client has retrieved the catalog
+   An entry point is a hint until the client has retrieved the manifest
    from the URI and authenticated the origin (Section 6).  A DNS answer
-   or a multicast response does not make a catalog authoritative for a
+   or a multicast response does not make a manifest authoritative for a
    publisher.  The publisher of each entry is established from the entry
-   itself, as specified in [ARD]; the host that serves the catalog
+   itself, as specified in [ARD]; the host that serves the manifest
    establishes no publisher authority.
 
-   A domain can publish more than one catalog.  Each mechanism can
+   A domain can publish more than one manifest.  Each mechanism can
    return several entry points, and the client treats them as a set.  A
-   catalog can link to further catalogs, and can consist of a single
+   manifest can link to further manifests, and can consist of a single
    entry that points at a registry endpoint [ARD]; following those links
    is part of lookup and is outside the scope of this document.  Initial
-   contact ends at the catalog.
+   contact ends at the manifest.
 
 4.  Discovery Mechanisms
 
    The well-known URI of Section 4.3.1 is mandatory to implement.  A
-   publisher that makes its catalog discoverable MUST serve it at the
+   publisher that makes its manifest discoverable MUST serve it at the
    well-known URI, directly or through one redirect, and every client
    MUST implement the well-known fetch.  The other mechanisms are
    OPTIONAL for publishers and supplement the well-known URI: they let a
    client learn an entry point before it connects, enumerate several
-   catalogs, or find a catalog without a domain name.  A client that
-   supports discovery of catalogs on the local network MUST implement
+   manifests, or find a manifest without a domain name.  A client that
+   supports discovery of manifests on the local network MUST implement
    the Multicast DNS browse of Section 4.4.2.
 
    The mechanisms of Section 4.2 and Section 4.3 take a domain name as
@@ -247,7 +249,7 @@ Table of Contents
    application that includes the client.  A configured entry point has
    the source "configuration", is tried before any discovered entry
    point, and is verified in the same way as a discovered entry point.
-   Configuration is also used for catalogs that a publisher does not
+   Configuration is also used for manifests that a publisher does not
    advertise.
 
    A configured entry point is a URI.  The client retrieves it directly;
@@ -259,10 +261,10 @@ Table of Contents
 4.2.  DNS-Based Mechanisms
 
    DNS records allow a publisher to advertise an entry point before the
-   client opens a connection, to send the client to a catalog host other
-   than the domain apex without the redirect at the apex, and to
-   enumerate several catalogs.  The well-known URI of Section 4.3.1
-   remains in place: the apex serves the catalog or redirects to it
+   client opens a connection, to send the client to a manifest host
+   other than the domain apex without the redirect at the apex, and to
+   enumerate several manifests.  The well-known URI of Section 4.3.1
+   remains in place: the apex serves the manifest or redirects to it
    (Section 4).
 
 4.2.1.  Organization Index Record
@@ -272,11 +274,11 @@ Table of Contents
    [RFC9460] at _index._agents.<domain> whose TargetName identifies a
    host that serves a registry of the organization's agents.  DNS-AID
    leaves the data served by that host out of scope.  This section
-   specifies the case where the host serves an ARD catalog at the well-
-   known URI of Section 4.3.1, and how a client that expects a catalog
+   specifies the case where the host serves an ARD manifest at the well-
+   known URI of Section 4.3.1, and how a client that expects a manifest
    interprets the record.  The following is an example for example.com:
 
-   _index._agents.example.com. 3600 IN SVCB 1 catalog.example.net. (
+   _index._agents.example.com. 3600 IN SVCB 1 ard.example.net. (
        alpn="h2"
    )
 
@@ -291,7 +293,7 @@ Table of Contents
       TargetName is "." yields no entry point.
 
    *  The path is "/.well-known/ard.json".  The response determines
-      whether a catalog is present.
+      whether a manifest is present.
 
    *  Address records of the TargetName absent from the Additional
       section (Section 4.1 of [RFC9460]) are resolved by the client.
@@ -306,30 +308,29 @@ Table of Contents
       [RFC9460]); a second ends the attempt (Section 5.1).  An AliasMode
       record whose TargetName is "." yields no entry point.
 
-   In the example, the entry point is
-   "https://catalog.example.net/.well-known/ard.json".  The client
-   validates the TLS certificate for "catalog.example.net" and records
-   _index._agents.example.com as the source.  An RRset MAY contain
-   several ServiceMode records; each yields one entry point, and
-   SvcPriority orders them.  If no catalog is found at the well-known
-   path of a TargetName, the record yields no entry point; the host can
-   still serve an index in another format, which this document does not
-   interpret.
+   In the example, the entry point is "https://ard.example.net/.well-
+   known/ard.json".  The client validates the TLS certificate for
+   "ard.example.net" and records _index._agents.example.com as the
+   source.  An RRset MAY contain several ServiceMode records; each
+   yields one entry point, and SvcPriority orders them.  If no manifest
+   is found at the well-known path of a TargetName, the record yields no
+   entry point; the host can still serve an index in another format,
+   which this document does not interpret.
 
 4.2.2.  DNS-SD Service Type "_ard._tcp"
 
-   A publisher MAY advertise catalogs as DNS-SD service instances
+   A publisher MAY advertise manifests as DNS-SD service instances
    [RFC6763] of the service type "_ard._tcp", for instance to name and
-   enumerate several catalogs, or in networks that run DNS-SD.  A client
-   browses by querying PTR records at _ard._tcp.<domain> and resolves
-   each service instance name to its SRV and TXT records.  The following
-   is an example for example.com with two catalogs:
+   enumerate several manifests, or in networks that run DNS-SD.  A
+   client browses by querying PTR records at _ard._tcp.<domain> and
+   resolves each service instance name to its SRV and TXT records.  The
+   following is an example for example.com with two manifests:
 
    _ard._tcp.example.com. 3600 IN PTR Travel._ard._tcp.example.com.
    _ard._tcp.example.com. 3600 IN PTR Tools._ard._tcp.example.com.
 
    Travel._ard._tcp.example.com. 3600 IN SRV 0 0 443 (
-       catalog.example.net. )
+       ard.example.net. )
    Travel._ard._tcp.example.com. 3600 IN TXT (
        "txtvers=1"
        "path=/.well-known/ard.json"
@@ -346,8 +347,8 @@ Table of Contents
    path:
       The path and optional query component of the entry point, as an
       absolute path [RFC3986].  When the key is absent, the path is
-      "/.well-known/ard.json".  The catalog at this path can differ from
-      the catalog at the well-known URI of the same host.
+      "/.well-known/ard.json".  The manifest at this path can differ
+      from the manifest at the well-known URI of the same host.
 
    The client forms the entry point URI from the scheme "https", the SRV
    target as the host, the SRV port (omitted when it is 443), and the
@@ -357,7 +358,7 @@ Table of Contents
    Service instance names such as "Travel" are user-visible names;
    [RFC6763] allows them to change, and a server need not preserve their
    case ([RFC4343]).  A client SHOULD NOT use an instance name as a
-   persistent identifier of a catalog.
+   persistent identifier of a manifest.
 
 4.3.  Origin-Based Mechanisms
 
@@ -366,45 +367,46 @@ Table of Contents
 
 4.3.1.  Well-Known URI
 
-   A publisher makes its catalog available at the well-known URI
+   A publisher makes its manifest available at the well-known URI
    [RFC8615] with the suffix "ard.json".  For the domain example.com,
    the well-known URI is:
 
    https://example.com/.well-known/ard.json
 
    A publisher supporting this mechanism MUST respond to a GET request
-   for this URI with an ARD catalog or with a redirect to one.  The
-   catalog carries the media type defined in [ARD], and a client SHOULD
+   for this URI with an ARD manifest or with a redirect to one.  The
+   manifest carries the media type defined in [ARD], and a client SHOULD
    send it in the Accept header field.  The client MUST follow at most
    one redirect (301, 302, 303, 307, or 308 with a Location field,
    Section 15.4 of [RFC9110]) and records the final URI as the entry
    point.  A response with another media type, or a redirect to a
    further redirect, means that there is no entry point at this origin
-   (Section 5.1).  A server that hosts no catalog SHOULD respond with
+   (Section 5.1).  A server that hosts no manifest SHOULD respond with
    404 (Not Found) and MAY include Problem Details [RFC9457].
 
    Responses to the well-known URI, including redirects and 404
    responses, are cacheable under [RFC9111].  A client reuses a stored
    response while it is fresh (Section 5).  A freshness lifetime of
-   several hours is appropriate for a catalog whose location rarely
+   several hours is appropriate for a manifest whose location rarely
    changes.
 
    The scope of a well-known URI is its origin (Section 3 of [RFC8615]);
-   a catalog at "https://example.com/.well-known/ard.json" provides no
+   a manifest at "https://example.com/.well-known/ard.json" provides no
    information about "https://agents.example.com/".  A publisher with
-   catalogs on several hosts can serve a catalog at the apex that links
-   to the others, or can enumerate them with DNS-SD (Section 4.2.2).
+   manifests on several hosts can serve a manifest at the apex that
+   links to the others, or can enumerate them with DNS-SD
+   (Section 4.2.2).
 
    The registration of the suffix is in Section 8.1.
 
 4.3.2.  Link Relation
 
-   A publisher MAY include a link to a catalog in any HTTP response
+   A publisher MAY include a link to a manifest in any HTTP response
    using the "ard" link relation [RFC8288] in a Link header field.  The
-   link target is an ARD catalog.  A publisher supporting this mechanism
-   SHOULD respond to a HEAD request for the root resource of its origin
-   with a Link header field carrying the relation, following Section 2
-   of [RFC9727].  The following is an example:
+   link target is an ARD manifest.  A publisher supporting this
+   mechanism SHOULD respond to a HEAD request for the root resource of
+   its origin with a Link header field carrying the relation, following
+   Section 2 of [RFC9727].  The following is an example:
 
    HEAD / HTTP/1.1
    Host: example.com
@@ -412,7 +414,7 @@ Table of Contents
    HTTP/1.1 200 OK
    Content-Type: text/html; charset=UTF-8
    Content-Length: 1532
-   Link: <https://agents.example.com/catalog>; rel="ard"
+   Link: <https://agents.example.com/manifest>; rel="ard"
 
    The client reads the Link field of the root response regardless of
    its status code and does not follow a redirect of the root resource.
@@ -510,7 +512,7 @@ Table of Contents
    Entry points learned over Multicast DNS MUST rank last (Section 6.2).
 
    An entry point fails if the server does not respond, if the response
-   is not a catalog, or if the checks of Section 6 fail.  A client MUST
+   is not a manifest, or if the checks of Section 6 fail.  A client MUST
    NOT retry a failed entry point from the same source before a back-off
    interval of at least 30 seconds.  A client MUST NOT issue the DNS
    queries of steps 2 and 3 for the same domain name more often than the
@@ -531,11 +533,11 @@ Table of Contents
    Each attempt to resolve a hint has one of three outcomes:
 
    Entry point:
-      The URI returned an ARD catalog from an authenticated origin.
+      The URI returned an ARD manifest from an authenticated origin.
 
    No entry point:
       The URI did not respond, returned a response that is not a
-      catalog, exceeded the depth limit, or failed the checks of
+      manifest, exceeded the depth limit, or failed the checks of
       Section 6.  The failure is attributed to the source.
 
    Not permitted:
@@ -549,10 +551,10 @@ Table of Contents
 
    Initial contact takes place before any authenticated relationship
    exists between the client and the publisher.  In each mechanism, an
-   attacker who controls the channel can direct the client to a catalog
+   attacker who controls the channel can direct the client to a manifest
    of the attacker's choosing.  The mitigation is the same for all
    mechanisms: the client treats the result as a hint, retrieves the
-   catalog from the URI, authenticates the origin, and relies on the
+   manifest from the URI, authenticates the origin, and relies on the
    content of each entry, as specified in [ARD], to determine its
    publisher.
 
@@ -567,13 +569,13 @@ Table of Contents
    certificate.  A client SHOULD validate DNS answers with DNSSEC
    [RFC4033] where the zone is signed and SHOULD rank unvalidated
    answers below validated ones (Section 5).  This document does not
-   establish that a catalog reached through _index._agents.example.com
+   establish that a manifest reached through _index._agents.example.com
    is published by "example.com"; the recorded source is an input to the
    per-entry publisher check that [ARD] defines.
 
-   Carrying a digest or a public key for the catalog in the DNS record,
+   Carrying a digest or a public key for the manifest in the DNS record,
    as [I-D.nemethi-dawn-aid] does for its objects, was considered and
-   not adopted, since a catalog changes with every published entry.
+   not adopted, since a manifest changes with every published entry.
 
 6.2.  Local Network Discovery
 
@@ -581,7 +583,7 @@ Table of Contents
    MUST treat entry points learned over multicast as the least trusted
    source.  It SHOULD prefer entry points whose URI names a host it can
    authenticate with a certificate, and MAY apply local policy, such as
-   a pinned key or an allow-list of hosts.  A catalog found over
+   a pinned key or an allow-list of hosts.  A manifest found over
    multicast does not establish that the agents listed in it are present
    on the network or operated by the network's owner.  A multicast query
    produces a response from every matching host on the link; clients
@@ -598,15 +600,15 @@ Table of Contents
 
    On shared hosting, the well-known URI can be served by a tenant
    rather than the domain owner (Section 4 of [RFC8615]).  The per-entry
-   publisher check of [ARD] applies to a catalog found through the well-
-   known URI as to any other; a tenant can serve a catalog, but its
-   entries will not pass the check as entries of the domain owner.
+   publisher check of [ARD] applies to a manifest found through the
+   well-known URI as to any other; a tenant can serve a manifest, but
+   its entries will not pass the check as entries of the domain owner.
 
 7.  Privacy Considerations
 
    A DNS query for _index._agents.example.com or _ard._tcp.example.com
    reveals to the resolver, and to any observer on the path, that the
-   client is querying for agent catalogs of example.com.  Encrypted DNS
+   client is querying for agent manifests of example.com.  Encrypted DNS
    transports, discovered as described in [RFC9462], limit the observers
    to the resolver.  The well-known fetch is indistinguishable from an
    ordinary connection to the domain.  The TLS Server Name Indication
@@ -614,15 +616,16 @@ Table of Contents
    validation adds DNSKEY and DS queries to the parent zones.
 
    Browsing over Multicast DNS reveals to all hosts on the link that the
-   client is looking for agent catalogs, and a responding host reveals
+   client is looking for agent manifests, and a responding host reveals
    that it advertises one.  Deployments where this is a concern can use
    unicast DNS-SD through a Discovery Proxy [RFC8766] with access
    control on the zone, or configuration.  The service instance names
    under _ard._tcp.<domain> can be enumerated by any party; they
-   identify catalogs that a publisher has chosen to make discoverable,
+   identify manifests that a publisher has chosen to make discoverable,
    and they do not identify people or individual agents.
 
-   Retrieving the catalog reveals the client's address to the publisher.
+   Retrieving the manifest reveals the client's address to the
+   publisher.
 
 8.  IANA Considerations
 
@@ -645,7 +648,7 @@ Table of Contents
       permanent
 
    Related information:
-      The resource is an ARD catalog.
+      The resource is an ARD manifest.
 
 8.2.  Link Relation
 
@@ -656,7 +659,7 @@ Table of Contents
       ard
 
    Description:
-      Refers to an Agent Resource Discovery (ARD) catalog of the
+      Refers to an Agent Resource Discovery (ARD) manifest of the
       publisher of the link context.
 
    Reference:
@@ -681,7 +684,7 @@ Table of Contents
       IETF Chair
 
    Description:
-      Agent Resource Discovery (ARD) catalog
+      Agent Resource Discovery (ARD) manifest
 
    Reference:
       This document, Section 4.2.2.
@@ -951,7 +954,7 @@ Appendix A.  Related Work
    [I-D.jimenez-dawn-discovery-landscape] surveys agent discovery
    mechanisms and separates lookup, name, description, trust, and
    interaction.  Initial contact is the lookup component for the case
-   where the result is a catalog.  The entry point of Section 3 is a
+   where the result is a manifest.  The entry point of Section 3 is a
    subset of the minimum discoverable information of
    [I-D.cui-dawn-mdi-model], the well-known URI is the predictable entry
    point that REQ-PROTO-4 of [I-D.king-dawn-requirements] asks for, and
@@ -960,13 +963,13 @@ Appendix A.  Related Work
    DNS-AID [I-D.mozleywilliams-dnsop-dnsaid] publishes agents as SVCB
    records and an organization index under _index._agents.<domain>, and
    leaves the data behind the index out of scope.  Section 4.2.1 uses
-   the index record with an ARD catalog as its target.
+   the index record with an ARD manifest as its target.
    [I-D.mk-dnsop-svcb-well-known] defines a SvcParamKey through which an
    SVCB or HTTPS record announces the well-known URI suffixes a host
    serves; once the key is registered, the HTTPS record of a domain can
    announce the suffix of Section 4.3.1 before the client connects.  The
    DNS-AID reference implementation follows an off-domain pointer only
-   when the record is DNSSEC-validated or the catalog is signed against
+   when the record is DNSSEC-validated or the manifest is signed against
    the domain's key set, and refuses redirects; Section 5.1 allows one
    redirect, and the trust decision for off-domain pointers is left to
    the publisher check of [ARD].  The ARD specification [ARD-SPEC], from
@@ -977,14 +980,14 @@ Appendix A.  Related Work
    [I-D.nemethi-dawn-aid], [I-D.morrison-mcp-dns-discovery], and
    [I-D.seethiraju-dawn-dan] locate individual agents or MCP servers
    through DNS records at _agent.<domain>, at _mcp.<domain>, or in new
-   resource record types; none defines a catalog entry point.
+   resource record types; none defines a manifest entry point.
    [I-D.jakab-dawn-agent-discovery-mdns] browses for agents on the local
    link under "_agent._tcp".  [I-D.zahed-acap],
    [I-D.pro-adp-agent-discovery], and
    [I-D.besleaga-agentic-knowledge-wellknown] publish operator-level
    discovery documents at well-known URIs.  The last publishes an
    [RFC9264] link set, which is the closest existing design to
-   publishing an ARD catalog as an [RFC9727] API catalog (Appendix B).
+   publishing an ARD manifest as an [RFC9727] API catalog (Appendix B).
 
    Section 4.1 of [RFC9176] lists how a CoRE endpoint finds a Resource
    Directory: configuration, a Router Advertisement option, DNS-SD, and
@@ -999,8 +1002,8 @@ Appendix B.  Open Issues
    stable.  This section is to be removed before publication.
 
    1.  API catalog profile.  Issue #2 on the ARD repository proposes
-       publishing the catalog as an [RFC9727] API catalog under "/.well-
-       known/api-catalog" with an ARD profile.  If adopted, this
+       publishing the manifest as an [RFC9727] API catalog under
+       "/.well-known/api-catalog" with an ARD profile.  If adopted, this
        document registers no suffix.
 
    2.  Pointer label.  This document uses the DNS-AID organization index
@@ -1009,7 +1012,7 @@ Appendix B.  Open Issues
        and [ARD-SPEC] lists _entries._agents for the same pointer; both
        are to be aligned with this document.  DNS-AID, as the owner of
        "_agents" in the [RFC8552] registry, is asked to list an ARD
-       catalog as one kind of index target.
+       manifest as one kind of index target.
 
    3.  Suffix. "ard.json" matches [ARD-SPEC] and deployed code.  A
        suffix without the extension, "ard", was considered.
@@ -1029,8 +1032,8 @@ Appendix B.  Open Issues
 
    6.  Registry endpoints.  [ARD-SPEC] also points to a registry
        endpoint through _search._agents.<domain>.  This document yields
-       catalog documents only.  Extending the entry point to registry
-       endpoints is a question for DAWN.
+       manifests only.  Extending the entry point to registry endpoints
+       is a question for DAWN.
 
 Acknowledgments
 
