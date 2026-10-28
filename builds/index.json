@@ -1,6 +1,12 @@
 {
  "builds": [
   {
+   "sha": "294c654",
+   "date": "2026-10-28",
+   "subject": "pages: diff page in the iddiff layout; README links it under Editor's Copy",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
    "sha": "706fbef",
    "date": "2026-10-28",
    "subject": "pages: diff any two builds of the draft at diff.html?from=<commit>",
