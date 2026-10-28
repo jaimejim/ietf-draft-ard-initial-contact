@@ -4,10 +4,10 @@
 
 This is the working area for the individual Internet-Draft, "Agent Resource Discovery (ARD): Initial Contact".
 
-* [Editor's Copy](https://jaimejim.github.io/ietf-draft-ard-initial-contact/#go.draft-jimenez-ard-initial-contact.html)
-* [Datatracker Page](https://datatracker.ietf.org/doc/draft-jimenez-ard-initial-contact)
-* [Individual Draft](https://datatracker.ietf.org/doc/html/draft-jimenez-ard-initial-contact)
-* [Compare Editor's Copy to Individual Draft](https://jaimejim.github.io/ietf-draft-ard-initial-contact/#go.draft-jimenez-ard-initial-contact.diff)
+* [Editor's Copy](https://jaimejim.github.io/ietf-draft-ard-initial-contact/#go.draft-jimenez-dawn-ard-initial-contact.html)
+* [Datatracker Page](https://datatracker.ietf.org/doc/draft-jimenez-dawn-ard-initial-contact)
+* [Individual Draft](https://datatracker.ietf.org/doc/html/draft-jimenez-dawn-ard-initial-contact)
+* [Compare Editor's Copy to Individual Draft](https://jaimejim.github.io/ietf-draft-ard-initial-contact/#go.draft-jimenez-dawn-ard-initial-contact.diff)
 
 
 ## Contributing
