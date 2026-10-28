@@ -17,7 +17,7 @@ keyword:
  - DAWN
 venue:
   group: "Discovery of Agents With Names (DAWN)"
-  type: "Proposed Working Group"
+  type: "Working Group"
   mail: "dawn@ietf.org"
   arch: "https://mailarchive.ietf.org/arch/browse/dawn/"
 
@@ -58,6 +58,16 @@ normative:
     target: https://datatracker.ietf.org/doc/draft-bu-dawn-ard-discovery/
     seriesinfo:
       Internet-Draft: draft-bu-dawn-ard-discovery
+  ARD-ARCH:
+    title: "Agent Resource Discovery (ARD) Architecture"
+    author:
+      - name: Junjie Bu
+      - name: R.V. Guha
+      - name: Jari Arkko
+    date: 2026-10
+    target: https://datatracker.ietf.org/doc/draft-bu-dawn-ard-architecture/
+    seriesinfo:
+      Internet-Draft: draft-bu-dawn-ard-architecture
 
 informative:
   RFC2308:
@@ -96,7 +106,7 @@ informative:
     date: 2026-10
     target: https://agenticresourcediscovery.org/spec/
   DAWN-CHARTER:
-    title: "Discovery of Agents With Names (DAWN) - Proposed Charter"
+    title: "Discovery of Agents With Names (DAWN) Charter"
     author:
       - org: IETF
     date: 2026
@@ -122,7 +132,7 @@ In an agent system, agents need to discover other agents, tool servers, and skil
 
 # Introduction {#intro}
 
-Agent Resource Discovery (ARD) {{ARD}} defines a catalog of agent resources, a document served over HTTPS in which a publisher lists agents, tool servers, and skills. Each entry points at the artifact that describes the resource in its native protocol, such as an Agent Card {{A2A}} or an MCP server description {{MCP}}. ARD also defines a lookup interface over the catalog. Both require the URI of the catalog.
+Agent Resource Discovery (ARD) {{ARD}} defines a catalog of agent resources, a document served over HTTPS in which a publisher lists agents, tool servers, and skills. Each entry points at the artifact that describes the resource in its native protocol, such as an Agent Card {{A2A}} or an MCP server description {{MCP}}. ARD also defines a lookup interface over the catalog. Both require the URI of the catalog. The ARD architecture is described in {{ARD-ARCH}}.
 
 ARD does not specify how a client obtains that URI. The applicable IETF mechanisms, well-known URIs {{RFC8615}}, web linking {{RFC8288}}, Service Binding records {{RFC9460}}, and DNS-SD {{RFC6763}} with Multicast DNS {{RFC6762}}, each require an application-specific binding that defines the names to query, the parameters to publish, and the interpretation of the answer.
 
