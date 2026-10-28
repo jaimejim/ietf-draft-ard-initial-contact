@@ -1,5 +1,5 @@
-// iddiff.js, generated from iddiff.ts by iddiff-build.mjs: the IETF iddiff tool (https://github.com/ietf-tools/iddiff,
-// version 0.5.1) in TypeScript, for use in the browser.
+// iddiff.js: the IETF iddiff tool (https://github.com/ietf-tools/iddiff,
+// version 0.5.1) in JavaScript, for use in the browser.
 //
 // The output is the side-by-side HTML that `iddiff FILE1 FILE2` prints,
 // byte for byte. To get there, the parts of CPython's difflib that iddiff
@@ -11,10 +11,11 @@
 // The wdiff, hwdiff, chbars and abdiff modes of iddiff run external
 // programs (GNU wdiff, diff) and are not ported.
 //
-// Exports one function, iddiff(), and has no dependencies. Only erasable
-// TypeScript syntax is used, so Node and Deno run this file as is;
-// iddiff.js, the copy served next to diff.html, is generated from it by
-// `node iddiff-build.mjs`. The license notices are in LICENSE.iddiff.
+// Exports one function, iddiff(), and has no dependencies. This file is
+// generated from a TypeScript source, iddiff.ts, published next to the
+// draft at https://jaime.win/ietf-draft-ard-initial-contact/iddiff.ts
+// together with the script that generates this file. The license notices
+// are in LICENSE.iddiff.
 
 // ---------------------------------------------------------------------------
 // Python string helpers

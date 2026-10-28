@@ -34,5 +34,17 @@ for (let i = 0; i < stripped.length; ) {
 const tsLines = ts.split('\n');
 const lines = js.split('\n').filter((line, n) => line.trim() !== '' || tsLines[n].trim() === '');
 js = lines.join('\n').replace(/[ \t]+$/gm, '').replace(/\n{3,}/g, '\n\n');
-js = js.replace(/^\/\/ iddiff\.ts: /, '// iddiff.js, generated from iddiff.ts by iddiff-build.mjs: ');
+// The header of the JavaScript file names it and the public home of the source.
+js = js
+  .replace(/^\/\/ iddiff\.ts: /, '// iddiff.js: ')
+  .replace('in TypeScript, for use in the browser.', 'in JavaScript, for use in the browser.')
+  .replace(
+    /\/\/ Exports one function[\s\S]*?LICENSE\.iddiff\.\n/,
+    `// Exports one function, iddiff(), and has no dependencies. This file is
+// generated from a TypeScript source, iddiff.ts, published next to the
+// draft at https://jaime.win/ietf-draft-ard-initial-contact/iddiff.ts
+// together with the script that generates this file. The license notices
+// are in LICENSE.iddiff.
+`,
+  );
 writeFileSync(join(here, 'iddiff.js'), js);

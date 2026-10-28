@@ -7,8 +7,8 @@
 # For each gh-pages commit "Script updating gh-pages from <sha>", the draft
 # text of that commit is stored as builds/<draft>-<sha>.txt (idempotent, so a
 # lost builds/ directory is rebuilt from history). builds/index.json lists the
-# builds newest first, each with the drafts it contains. diff.html and
-# iddiff.js are copied from pages/. The caller commits and pushes.
+# builds newest first, each with the drafts it contains. diff.html, iddiff.js,
+# its TypeScript source and generator, and the license file are copied from pages/. The caller commits and pushes.
 set -euo pipefail
 
 gp=${1:?usage: update-builds.sh <gh-pages checkout>}
@@ -16,7 +16,8 @@ here=$(cd "$(dirname "$0")" && pwd)
 src=$(cd "$here/.." && pwd)
 
 mkdir -p "$gp/builds"
-cp -f "$here/diff.html" "$here/iddiff.js" "$here/LICENSE.iddiff" "$gp/"
+cp -f "$here/diff.html" "$here/iddiff.js" "$here/iddiff.ts" "$here/iddiff-build.mjs" \
+      "$here/LICENSE.iddiff" "$gp/"
 # Files of earlier versions of this page.
 rm -f "$gp/diff.min.js" "$gp/LICENSE.jsdiff" "$gp/iddiff.py" "$gp"/builds/[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].txt
 
