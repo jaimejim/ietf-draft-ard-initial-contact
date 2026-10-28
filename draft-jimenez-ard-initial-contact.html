@@ -1052,7 +1052,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Jiménez, et al.</td>
-<td class="center">Expires 24 April 2027</td>
+<td class="center">Expires 1 May 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1065,12 +1065,12 @@ svg {
 <dd class="internet-draft">draft-jimenez-ard-initial-contact-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-10-21" class="published">21 October 2026</time>
+<time datetime="2026-10-28" class="published">28 October 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-04-24">24 April 2027</time></dd>
+<dd class="expires"><time datetime="2027-05-01">1 May 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1128,7 +1128,7 @@ svg {
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 24 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 1 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1302,7 +1302,7 @@ svg {
 </li>
       </ul>
 <p id="section-1-5"><a href="#procedure" class="auto internal xref">Section 5</a> specifies how a client combines these mechanisms. The DAWN charter <span>[<a href="#DAWN-CHARTER" class="cite xref">DAWN-CHARTER</a>]</span> calls this step "initial discovery"; this document uses the term "initial contact" for the same step. The mechanisms cover the three deployment contexts the charter identifies: the local network, an organization's own infrastructure, and discovery between organizations over the public Internet.<a href="#section-1-5" class="pilcrow">¶</a></p>
-<p id="section-1-6">This document does not specify the catalog representation, the lookup or search interfaces, the registration of entries, or how a catalog is bound to its publisher; these are specified in <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> and <span>[<a href="#I-D.jimenez-agent-directory" class="cite xref">I-D.jimenez-agent-directory</a>]</span>. It defines no new DNS resource record types, SvcParamKeys, or transport protocols. All entry point URIs use the "https" scheme.<a href="#section-1-6" class="pilcrow">¶</a></p>
+<p id="section-1-6">This document does not specify the catalog representation, the lookup or search interfaces, the registration of entries, or how a catalog is bound to its publisher; these are specified in <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> and <span>[<a href="#I-D.jimenez-agent-directory" class="cite xref">I-D.jimenez-agent-directory</a>]</span>. It defines no new DNS resource record types, SvcParamKeys, or transport protocols. All entry point URIs use the "https" scheme. The mechanisms and the procedure do not depend on the catalog format; the well-known suffix, the media type, and the publisher check are the parts specific to ARD.<a href="#section-1-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="definitions">
@@ -1367,7 +1367,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
 </dd>
       <dd class="break"></dd>
 </dl>
-<p id="section-3-3">An entry point is a hint until the client has retrieved the catalog from the URI and authenticated the origin (<a href="#security" class="auto internal xref">Section 6</a>). A DNS answer or a multicast response does not make a catalog authoritative for a publisher. The publisher of a catalog is established by the catalog content, as specified in <span>[<a href="#ARD" class="cite xref">ARD</a>]</span>.<a href="#section-3-3" class="pilcrow">¶</a></p>
+<p id="section-3-3">An entry point is a hint until the client has retrieved the catalog from the URI and authenticated the origin (<a href="#security" class="auto internal xref">Section 6</a>). A DNS answer or a multicast response does not make a catalog authoritative for a publisher. The publisher of each entry is established from the entry itself, as specified in <span>[<a href="#ARD" class="cite xref">ARD</a>]</span>; the host that serves the catalog establishes no publisher authority.<a href="#section-3-3" class="pilcrow">¶</a></p>
 <p id="section-3-4">A domain can publish more than one catalog. Each mechanism can return several entry points, and the client treats them as a set. A catalog can link to further catalogs; following those links is part of lookup and is outside the scope of this document.<a href="#section-3-4" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1530,7 +1530,7 @@ Link: &lt;https://agents.example.com/catalog&gt;; rel="ard"
 
 </pre><a href="#section-4.3.2-3" class="pilcrow">¶</a>
 </div>
-<p id="section-4.3.2-4">The client reads the Link field of the root response regardless of its status code and does not follow a redirect of the root resource. Links in a response from the publisher's own origin have that origin as their source. Links in third-party documents are hints with the third party as their source. The registration of the relation is in <a href="#iana-link-relation" class="auto internal xref">Section 8.2</a>.<a href="#section-4.3.2-4" class="pilcrow">¶</a></p>
+<p id="section-4.3.2-4">The client reads the Link field of the root response regardless of its status code and does not follow a redirect of the root resource. The relation <span class="bcp14">MAY</span> also appear in an HTML link element in the root resource (<span><a href="https://rfc-editor.org/rfc/rfc8288#appendix-A.1" class="relref">Appendix A.1</a> of [<a href="#RFC8288" class="cite xref">RFC8288</a>]</span>), for publishers that cannot set header fields. A client that retrieves the root resource with GET reads link elements in an HTML response in the same way as the Link header field. Links in a response from the publisher's own origin have that origin as their source. Links in third-party documents are hints with the third party as their source. The registration of the relation is in <a href="#iana-link-relation" class="auto internal xref">Section 8.2</a>.<a href="#section-4.3.2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1621,13 +1621,13 @@ Link: &lt;https://agents.example.com/catalog&gt;; rel="ard"
       <h2 id="name-security-considerations">
 <a href="#section-6" class="section-number selfRef">6. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
-<p id="section-6-1">Initial contact takes place before any authenticated relationship exists between the client and the publisher. In each mechanism, an attacker who controls the channel can direct the client to a catalog of the attacker's choosing. The mitigation is the same for all mechanisms: the client treats the result as a hint, retrieves the catalog from the URI, authenticates the origin, and relies on the catalog content, as specified in <span>[<a href="#ARD" class="cite xref">ARD</a>]</span>, to determine the publisher of the catalog.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<p id="section-6-1">Initial contact takes place before any authenticated relationship exists between the client and the publisher. In each mechanism, an attacker who controls the channel can direct the client to a catalog of the attacker's choosing. The mitigation is the same for all mechanisms: the client treats the result as a hint, retrieves the catalog from the URI, authenticates the origin, and relies on the content of each entry, as specified in <span>[<a href="#ARD" class="cite xref">ARD</a>]</span>, to determine its publisher.<a href="#section-6-1" class="pilcrow">¶</a></p>
 <div id="sec-hints">
 <section id="section-6.1">
         <h3 id="name-hints-and-authority">
 <a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-hints-and-authority" class="section-name selfRef">Hints and Authority</a>
         </h3>
-<p id="section-6.1-1">A client <span class="bcp14">MUST</span> authenticate the TLS server for the host named in the entry point URI (<span><a href="https://rfc-editor.org/rfc/rfc9110#section-4.3.3" class="relref">Section 4.3.3</a> of [<a href="#RFC9110" class="cite xref">RFC9110</a>]</span>). For the well-known URI and the HTTPS record, that host is the publisher's own domain. For the pointer record, for DNS-SD, and for a link whose target is on another origin, the host is taken from the answer or the link, and a spoofed answer can direct the client to a host for which the attacker holds a valid certificate. A client <span class="bcp14">SHOULD</span> validate DNS answers with DNSSEC <span>[<a href="#RFC4033" class="cite xref">RFC4033</a>]</span> where the zone is signed and <span class="bcp14">SHOULD</span> rank unvalidated answers below validated ones (<a href="#procedure" class="auto internal xref">Section 5</a>). This document does not establish that a catalog reached through <code>_catalog._agents.example.com</code> is published by "example.com"; the recorded source is the input to the publisher check that <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> defines.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<p id="section-6.1-1">A client <span class="bcp14">MUST</span> authenticate the TLS server for the host named in the entry point URI (<span><a href="https://rfc-editor.org/rfc/rfc9110#section-4.3.3" class="relref">Section 4.3.3</a> of [<a href="#RFC9110" class="cite xref">RFC9110</a>]</span>). For the well-known URI and the HTTPS record, that host is the publisher's own domain. For the pointer record, for DNS-SD, and for a link whose target is on another origin, the host is taken from the answer or the link, and a spoofed answer can direct the client to a host for which the attacker holds a valid certificate. A client <span class="bcp14">SHOULD</span> validate DNS answers with DNSSEC <span>[<a href="#RFC4033" class="cite xref">RFC4033</a>]</span> where the zone is signed and <span class="bcp14">SHOULD</span> rank unvalidated answers below validated ones (<a href="#procedure" class="auto internal xref">Section 5</a>). This document does not establish that a catalog reached through <code>_catalog._agents.example.com</code> is published by "example.com"; the recorded source is an input to the per-entry publisher check that <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> defines.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
 <p id="section-6.1-2">Carrying a digest or a public key for the catalog in the DNS record, as <span>[<a href="#I-D.nemethi-dawn-aid" class="cite xref">I-D.nemethi-dawn-aid</a>]</span> does for its objects, was considered and not adopted, since a catalog changes with every published entry.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1652,7 +1652,7 @@ Link: &lt;https://agents.example.com/catalog&gt;; rel="ard"
         <h3 id="name-well-known-uri-squatting">
 <a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-well-known-uri-squatting" class="section-name selfRef">Well-Known URI Squatting</a>
         </h3>
-<p id="section-6.4-1">On shared hosting, the well-known URI can be served by a tenant rather than the domain owner (<span><a href="https://rfc-editor.org/rfc/rfc8615#section-4" class="relref">Section 4</a> of [<a href="#RFC8615" class="cite xref">RFC8615</a>]</span>). The publisher check of <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> applies to catalogs found through the well-known URI as it does to any other; a tenant can serve a catalog, but its entries will not pass the publisher check as entries of the domain owner.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
+<p id="section-6.4-1">On shared hosting, the well-known URI can be served by a tenant rather than the domain owner (<span><a href="https://rfc-editor.org/rfc/rfc8615#section-4" class="relref">Section 4</a> of [<a href="#RFC8615" class="cite xref">RFC8615</a>]</span>). The per-entry publisher check of <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> applies to a catalog found through the well-known URI as to any other; a tenant can serve a catalog, but its entries will not pass the check as entries of the domain owner.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1848,7 +1848,7 @@ Link: &lt;https://agents.example.com/catalog&gt;; rel="ard"
 <dd class="break"></dd>
 <dt id="ARD">[ARD]</dt>
         <dd>
-<span class="refAuthor">Bu, J.</span>, <span class="refAuthor">Guha, R.V.</span>, and <span class="refAuthor">J. Jiménez</span>, <span class="refTitle">"Agent Resource Discovery (ARD)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-bu-agent-resources-discovery</span>, <time datetime="2026-10" class="refDate">October 2026</time>, <span>&lt;<a href="https://mindpower.github.io/ietf-draft-agent-resources-discovery/draft-bu-agent-resources-discovery.html">https://mindpower.github.io/ietf-draft-agent-resources-discovery/draft-bu-agent-resources-discovery.html</a>&gt;</span>. </dd>
+<span class="refAuthor">Bu, J.</span>, <span class="refAuthor">Guha, R.V.</span>, <span class="refAuthor">Smith, S.</span>, <span class="refAuthor">Jiménez, J.</span>, and <span class="refAuthor">J. Damick</span>, <span class="refTitle">"Agent Resource Discovery (ARD)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-bu-dawn-ard-discovery</span>, <time datetime="2026-10" class="refDate">October 2026</time>, <span>&lt;<a href="https://mindpower.github.io/ietf-draft-agent-resources-discovery/draft-bu-dawn-ard-discovery.html">https://mindpower.github.io/ietf-draft-agent-resources-discovery/draft-bu-dawn-ard-discovery.html</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="ARD-SPEC">[ARD-SPEC]</dt>
         <dd>
@@ -1872,11 +1872,11 @@ Link: &lt;https://agents.example.com/catalog&gt;; rel="ard"
 <dd class="break"></dd>
 <dt id="I-D.farrel-dawn-terminology">[I-D.farrel-dawn-terminology]</dt>
         <dd>
-<span class="refAuthor">Farrel, A.</span>, <span class="refAuthor">Yao, K.</span>, <span class="refAuthor">Schott, R.</span>, and <span class="refAuthor">N. Williams</span>, <span class="refTitle">"Terminology for the Discovery of Agents With Names (DAWN)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-farrel-dawn-terminology-05</span>, <time datetime="2026-10-19" class="refDate">19 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-farrel-dawn-terminology-05">https://datatracker.ietf.org/doc/html/draft-farrel-dawn-terminology-05</a>&gt;</span>. </dd>
+<span class="refAuthor">Farrel, A.</span>, <span class="refAuthor">Yao, K.</span>, <span class="refAuthor">Schott, R.</span>, and <span class="refAuthor">N. Williams</span>, <span class="refTitle">"Terminology for the Discovery of Agents With Names (DAWN)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-farrel-dawn-terminology-06</span>, <time datetime="2026-10-28" class="refDate">28 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-farrel-dawn-terminology-06">https://datatracker.ietf.org/doc/html/draft-farrel-dawn-terminology-06</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.jakab-dawn-agent-discovery-mdns">[I-D.jakab-dawn-agent-discovery-mdns]</dt>
         <dd>
-<span class="refAuthor">Jakab, L.</span> and <span class="refAuthor">F. Brockners</span>, <span class="refTitle">"Zero-Configuration Agent Discovery"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-jakab-dawn-agent-discovery-mdns-00</span>, <time datetime="2026-07-06" class="refDate">6 July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-jakab-dawn-agent-discovery-mdns-00">https://datatracker.ietf.org/doc/html/draft-jakab-dawn-agent-discovery-mdns-00</a>&gt;</span>. </dd>
+<span class="refAuthor">Jakab, L.</span> and <span class="refAuthor">F. Brockners</span>, <span class="refTitle">"Zero-Configuration Agent Discovery"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-jakab-dawn-agent-discovery-mdns-01</span>, <time datetime="2026-10-28" class="refDate">28 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-jakab-dawn-agent-discovery-mdns-01">https://datatracker.ietf.org/doc/html/draft-jakab-dawn-agent-discovery-mdns-01</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.jimenez-agent-directory">[I-D.jimenez-agent-directory]</dt>
         <dd>
@@ -1896,7 +1896,7 @@ Link: &lt;https://agents.example.com/catalog&gt;; rel="ard"
 <dd class="break"></dd>
 <dt id="I-D.morrison-mcp-dns-discovery">[I-D.morrison-mcp-dns-discovery]</dt>
         <dd>
-<span class="refAuthor">Morrison, B.</span>, <span class="refTitle">"Discovery of Model Context Protocol Servers via DNS TXT Records"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-morrison-mcp-dns-discovery-08</span>, <time datetime="2026-10-08" class="refDate">8 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-morrison-mcp-dns-discovery-08">https://datatracker.ietf.org/doc/html/draft-morrison-mcp-dns-discovery-08</a>&gt;</span>. </dd>
+<span class="refAuthor">Morrison, B.</span>, <span class="refTitle">"Discovery of Model Context Protocol Servers via DNS TXT Records"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-morrison-mcp-dns-discovery-09</span>, <time datetime="2026-10-21" class="refDate">21 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-morrison-mcp-dns-discovery-09">https://datatracker.ietf.org/doc/html/draft-morrison-mcp-dns-discovery-09</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.mozleywilliams-dnsop-dnsaid">[I-D.mozleywilliams-dnsop-dnsaid]</dt>
         <dd>
@@ -1993,7 +1993,7 @@ Link: &lt;https://agents.example.com/catalog&gt;; rel="ard"
 <a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-related-work" class="section-name selfRef">Related Work</a>
       </h2>
 <p id="appendix-A-1"><span>[<a href="#I-D.jimenez-dawn-discovery-landscape" class="cite xref">I-D.jimenez-dawn-discovery-landscape</a>]</span> surveys agent discovery mechanisms and separates lookup, name, description, trust, and interaction. Initial contact is the lookup component for the case where the result is a catalog. The entry point of <a href="#entry-point" class="auto internal xref">Section 3</a> is a subset of the minimum discoverable information of <span>[<a href="#I-D.cui-dawn-mdi-model" class="cite xref">I-D.cui-dawn-mdi-model</a>]</span>, the well-known URI is the predictable entry point that REQ-PROTO-4 of <span>[<a href="#I-D.king-dawn-requirements" class="cite xref">I-D.king-dawn-requirements</a>]</span> asks for, and the terminology of <span>[<a href="#I-D.farrel-dawn-terminology" class="cite xref">I-D.farrel-dawn-terminology</a>]</span> applies.<a href="#appendix-A-1" class="pilcrow">¶</a></p>
-<p id="appendix-A-2">DNS-AID <span>[<a href="#I-D.mozleywilliams-dnsop-dnsaid" class="cite xref">I-D.mozleywilliams-dnsop-dnsaid</a>]</span> publishes agents as SVCB records and an organization index under <code>_index._agents.&lt;domain&gt;</code>. Its reference implementation <span>[<a href="#DNS-AID-IMPL" class="cite xref">DNS-AID-IMPL</a>]</span> publishes <code>_catalog._agents</code> next to it, follows an off-domain pointer only when the record is DNSSEC-validated or the catalog is signed against the domain's key set, and refuses redirects. <a href="#pointer-rr" class="auto internal xref">Section 4.2.1</a> adopts its label, <a href="#depth" class="auto internal xref">Section 5.1</a> allows one redirect, and the trust decision for off-domain pointers is left to the publisher check of <span>[<a href="#ARD" class="cite xref">ARD</a>]</span>. The ARD specification <span>[<a href="#ARD-SPEC" class="cite xref">ARD-SPEC</a>]</span>, from which <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> derives, requires the well-known fetch of "/.well-known/ard.json", lists <code>_entries._agents</code> for a static entry source, and publishes an SVCB record at <code>_ard._tcp.&lt;domain&gt;</code>; this document uses that name only as a DNS-SD service type.<a href="#appendix-A-2" class="pilcrow">¶</a></p>
+<p id="appendix-A-2">DNS-AID <span>[<a href="#I-D.mozleywilliams-dnsop-dnsaid" class="cite xref">I-D.mozleywilliams-dnsop-dnsaid</a>]</span> publishes agents as SVCB records and an organization index under <code>_index._agents.&lt;domain&gt;</code>. Its reference implementation <span>[<a href="#DNS-AID-IMPL" class="cite xref">DNS-AID-IMPL</a>]</span> publishes <code>_catalog._agents</code> next to it, follows an off-domain pointer only when the record is DNSSEC-validated or the catalog is signed against the domain's key set, and refuses redirects. <a href="#pointer-rr" class="auto internal xref">Section 4.2.1</a> adopts its label, <a href="#depth" class="auto internal xref">Section 5.1</a> allows one redirect, and the trust decision for off-domain pointers is left to the publisher check of <span>[<a href="#ARD" class="cite xref">ARD</a>]</span>. The ARD specification <span>[<a href="#ARD-SPEC" class="cite xref">ARD-SPEC</a>]</span>, from which <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> derives, requires the well-known fetch of "/.well-known/ard.json" and lists <code>_entries._agents</code> for a static entry source and <code>_search._agents</code> for a registry endpoint.<a href="#appendix-A-2" class="pilcrow">¶</a></p>
 <p id="appendix-A-3"><span>[<a href="#I-D.nemethi-dawn-aid" class="cite xref">I-D.nemethi-dawn-aid</a>]</span>, <span>[<a href="#I-D.morrison-mcp-dns-discovery" class="cite xref">I-D.morrison-mcp-dns-discovery</a>]</span>, and <span>[<a href="#I-D.seethiraju-dawn-dan" class="cite xref">I-D.seethiraju-dawn-dan</a>]</span> locate individual agents or MCP servers through DNS records at <code>_agent.&lt;domain&gt;</code>, at <code>_mcp.&lt;domain&gt;</code>, or in new resource record types; none defines a catalog entry point. <span>[<a href="#I-D.jakab-dawn-agent-discovery-mdns" class="cite xref">I-D.jakab-dawn-agent-discovery-mdns</a>]</span> browses for agents on the local link under "_agent._tcp". <span>[<a href="#I-D.zahed-acap" class="cite xref">I-D.zahed-acap</a>]</span>, <span>[<a href="#I-D.pro-adp-agent-discovery" class="cite xref">I-D.pro-adp-agent-discovery</a>]</span>, and <span>[<a href="#I-D.besleaga-agentic-knowledge-wellknown" class="cite xref">I-D.besleaga-agentic-knowledge-wellknown</a>]</span> publish operator-level discovery documents at well-known URIs. The last publishes an <span>[<a href="#RFC9264" class="cite xref">RFC9264</a>]</span> link set, which is the closest existing design to publishing an ARD catalog as an <span>[<a href="#RFC9727" class="cite xref">RFC9727</a>]</span> API catalog (<a href="#open-issues" class="auto internal xref">Appendix B</a>).<a href="#appendix-A-3" class="pilcrow">¶</a></p>
 <p id="appendix-A-4"><span><a href="https://rfc-editor.org/rfc/rfc9176#section-4.1" class="relref">Section 4.1</a> of [<a href="#RFC9176" class="cite xref">RFC9176</a>]</span> lists how a CoRE endpoint finds a Resource Directory: configuration, a Router Advertisement option, DNS-SD, and multicast. <a href="#static" class="auto internal xref">Section 4.1</a>, <a href="#provided-domain" class="auto internal xref">Section 4.4.1</a>, <a href="#dns-sd" class="auto internal xref">Section 4.2.3</a>, and <a href="#mdns" class="auto internal xref">Section 4.4.2</a> are the ARD counterparts. <span>[<a href="#RFC9461" class="cite xref">RFC9461</a>]</span> and <span>[<a href="#RFC9462" class="cite xref">RFC9462</a>]</span> are the SVCB mapping and the discovery procedure for encrypted DNS resolvers; <a href="#pointer-rr" class="auto internal xref">Section 4.2.1</a> and <a href="#procedure" class="auto internal xref">Section 5</a> follow the same structure.<a href="#appendix-A-4" class="pilcrow">¶</a></p>
 </section>
@@ -2015,13 +2015,13 @@ Link: &lt;https://agents.example.com/catalog&gt;; rel="ard"
           <p id="appendix-B-2.3.1">Suffix. "ard.json" matches <span>[<a href="#ARD-SPEC" class="cite xref">ARD-SPEC</a>]</span> and deployed code. A suffix without the extension, "ard", was considered.<a href="#appendix-B-2.3.1" class="pilcrow">¶</a></p>
 </li>
         <li id="appendix-B-2.4">
-          <p id="appendix-B-2.4.1">Ownership of registrations. <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> also requests a well-known suffix and a link relation. After the split into initial contact, lookup, and registration documents, one document carries them.<a href="#appendix-B-2.4.1" class="pilcrow">¶</a></p>
+          <p id="appendix-B-2.4.1">Reference status. <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> and <span>[<a href="#I-D.mozleywilliams-dnsop-dnsaid" class="cite xref">I-D.mozleywilliams-dnsop-dnsaid</a>]</span> are individual drafts cited informatively. <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> becomes a normative reference when the companion documents are adopted together.<a href="#appendix-B-2.4.1" class="pilcrow">¶</a></p>
 </li>
         <li id="appendix-B-2.5">
-          <p id="appendix-B-2.5.1">Reference status. <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> and <span>[<a href="#I-D.mozleywilliams-dnsop-dnsaid" class="cite xref">I-D.mozleywilliams-dnsop-dnsaid</a>]</span> are individual drafts cited informatively. <span>[<a href="#ARD" class="cite xref">ARD</a>]</span> becomes a normative reference when the companion documents are adopted together.<a href="#appendix-B-2.5.1" class="pilcrow">¶</a></p>
+          <p id="appendix-B-2.5.1">SvcParamKey number. The "well-known" key has no registered number; the examples in <a href="#pointer-rr" class="auto internal xref">Section 4.2.1</a> and <a href="#https-rr" class="auto internal xref">Section 4.2.2</a> cannot be loaded into a zone until it does.<a href="#appendix-B-2.5.1" class="pilcrow">¶</a></p>
 </li>
         <li id="appendix-B-2.6">
-          <p id="appendix-B-2.6.1">SvcParamKey number. The "well-known" key has no registered number; the examples in <a href="#pointer-rr" class="auto internal xref">Section 4.2.1</a> and <a href="#https-rr" class="auto internal xref">Section 4.2.2</a> cannot be loaded into a zone until it does.<a href="#appendix-B-2.6.1" class="pilcrow">¶</a></p>
+          <p id="appendix-B-2.6.1">Registry endpoints. <span>[<a href="#ARD-SPEC" class="cite xref">ARD-SPEC</a>]</span> also points to a registry endpoint through <code>_search._agents.&lt;domain&gt;</code>. This document yields catalog documents only. Extending the entry point to registry endpoints is a question for DAWN.<a href="#appendix-B-2.6.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
 </section>
