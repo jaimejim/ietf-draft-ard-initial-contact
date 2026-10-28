@@ -71,8 +71,8 @@ jobs:
         make: gh-pages
         token: ${{ github.token }}
 
-    # Keeps builds/<sha>.txt for every build and the diff.html viewer on
-    # gh-pages, so https://jaime.win/<repo>/diff.html?from=<sha> works.
+    # Keeps builds/<draft>-<sha>.txt for every build and the diff.html viewer
+    # on gh-pages, so https://jaime.win/<repo>/diff.html?from=<sha> works.
     - name: "Store Build for Diffs"
       if: ${{ github.event_name == 'push' }}
       run: |
