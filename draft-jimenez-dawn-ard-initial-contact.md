@@ -3,7 +3,7 @@ title: "Agent Resource Discovery (ARD): Initial Contact"
 abbrev: "ARD Initial Contact"
 category: std
 
-docname: draft-jimenez-ard-initial-contact-latest
+docname: draft-jimenez-dawn-ard-initial-contact-latest
 submissiontype: IETF
 ipr: trust200902
 v: 3
