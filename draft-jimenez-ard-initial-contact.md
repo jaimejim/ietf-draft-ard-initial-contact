@@ -60,11 +60,13 @@ informative:
     author:
       - name: Junjie Bu
       - name: R.V. Guha
+      - name: Shaun Smith
       - name: Jaime Jiménez
+      - name: Jeffrey Damick
     date: 2026-10
-    target: https://mindpower.github.io/ietf-draft-agent-resources-discovery/draft-bu-agent-resources-discovery.html
+    target: https://mindpower.github.io/ietf-draft-agent-resources-discovery/draft-bu-dawn-ard-discovery.html
     seriesinfo:
-      Internet-Draft: draft-bu-agent-resources-discovery
+      Internet-Draft: draft-bu-dawn-ard-discovery
   RFC2132:
   RFC3646:
   RFC8106:
@@ -141,7 +143,7 @@ This document defines the following mechanisms for obtaining the URI of an ARD c
 
 {{procedure}} specifies how a client combines these mechanisms. The DAWN charter {{DAWN-CHARTER}} calls this step "initial discovery"; this document uses the term "initial contact" for the same step. The mechanisms cover the three deployment contexts the charter identifies: the local network, an organization's own infrastructure, and discovery between organizations over the public Internet.
 
-This document does not specify the catalog representation, the lookup or search interfaces, the registration of entries, or how a catalog is bound to its publisher; these are specified in {{ARD}} and {{I-D.jimenez-agent-directory}}. It defines no new DNS resource record types, SvcParamKeys, or transport protocols. All entry point URIs use the "https" scheme.
+This document does not specify the catalog representation, the lookup or search interfaces, the registration of entries, or how a catalog is bound to its publisher; these are specified in {{ARD}} and {{I-D.jimenez-agent-directory}}. It defines no new DNS resource record types, SvcParamKeys, or transport protocols. All entry point URIs use the "https" scheme. The mechanisms and the procedure do not depend on the catalog format; the well-known suffix, the media type, and the publisher check are the parts specific to ARD.
 
 # Conventions and Definitions {#definitions}
 
@@ -179,7 +181,7 @@ URI:
 Source:
 : The mechanism that produced the entry point and, where applicable, the DNS name or network interface from which it was obtained. The client retains the source to rank entry points ({{procedure}}), to rate-limit failing sources, and to apply local policy.
 
-An entry point is a hint until the client has retrieved the catalog from the URI and authenticated the origin ({{security}}). A DNS answer or a multicast response does not make a catalog authoritative for a publisher. The publisher of a catalog is established by the catalog content, as specified in {{ARD}}.
+An entry point is a hint until the client has retrieved the catalog from the URI and authenticated the origin ({{security}}). A DNS answer or a multicast response does not make a catalog authoritative for a publisher. The publisher of each entry is established from the entry itself, as specified in {{ARD}}; the host that serves the catalog establishes no publisher authority.
 
 A domain can publish more than one catalog. Each mechanism can return several entry points, and the client treats them as a set. A catalog can link to further catalogs; following those links is part of lookup and is outside the scope of this document.
 
@@ -300,7 +302,7 @@ Link: <https://agents.example.com/catalog>; rel="ard"
 
 ~~~
 
-The client reads the Link field of the root response regardless of its status code and does not follow a redirect of the root resource. Links in a response from the publisher's own origin have that origin as their source. Links in third-party documents are hints with the third party as their source. The registration of the relation is in {{iana-link-relation}}.
+The client reads the Link field of the root response regardless of its status code and does not follow a redirect of the root resource. The relation MAY also appear in an HTML link element in the root resource ({{Appendix A.1 of RFC8288}}), for publishers that cannot set header fields. A client that retrieves the root resource with GET reads link elements in an HTML response in the same way as the Link header field. Links in a response from the publisher's own origin have that origin as their source. Links in third-party documents are hints with the third party as their source. The registration of the relation is in {{iana-link-relation}}.
 
 ## Local Network Mechanisms {#local-mechanisms}
 
@@ -350,11 +352,11 @@ Not permitted:
 
 # Security Considerations {#security}
 
-Initial contact takes place before any authenticated relationship exists between the client and the publisher. In each mechanism, an attacker who controls the channel can direct the client to a catalog of the attacker's choosing. The mitigation is the same for all mechanisms: the client treats the result as a hint, retrieves the catalog from the URI, authenticates the origin, and relies on the catalog content, as specified in {{ARD}}, to determine the publisher of the catalog.
+Initial contact takes place before any authenticated relationship exists between the client and the publisher. In each mechanism, an attacker who controls the channel can direct the client to a catalog of the attacker's choosing. The mitigation is the same for all mechanisms: the client treats the result as a hint, retrieves the catalog from the URI, authenticates the origin, and relies on the content of each entry, as specified in {{ARD}}, to determine its publisher.
 
 ## Hints and Authority {#sec-hints}
 
-A client MUST authenticate the TLS server for the host named in the entry point URI ({{Section 4.3.3 of RFC9110}}). For the well-known URI and the HTTPS record, that host is the publisher's own domain. For the pointer record, for DNS-SD, and for a link whose target is on another origin, the host is taken from the answer or the link, and a spoofed answer can direct the client to a host for which the attacker holds a valid certificate. A client SHOULD validate DNS answers with DNSSEC {{RFC4033}} where the zone is signed and SHOULD rank unvalidated answers below validated ones ({{procedure}}). This document does not establish that a catalog reached through `_catalog._agents.example.com` is published by "example.com"; the recorded source is the input to the publisher check that {{ARD}} defines.
+A client MUST authenticate the TLS server for the host named in the entry point URI ({{Section 4.3.3 of RFC9110}}). For the well-known URI and the HTTPS record, that host is the publisher's own domain. For the pointer record, for DNS-SD, and for a link whose target is on another origin, the host is taken from the answer or the link, and a spoofed answer can direct the client to a host for which the attacker holds a valid certificate. A client SHOULD validate DNS answers with DNSSEC {{RFC4033}} where the zone is signed and SHOULD rank unvalidated answers below validated ones ({{procedure}}). This document does not establish that a catalog reached through `_catalog._agents.example.com` is published by "example.com"; the recorded source is an input to the per-entry publisher check that {{ARD}} defines.
 
 Carrying a digest or a public key for the catalog in the DNS record, as {{I-D.nemethi-dawn-aid}} does for its objects, was considered and not adopted, since a catalog changes with every published entry.
 
@@ -368,7 +370,7 @@ A client MUST NOT fall back to "http" when an "https" entry point fails, and MUS
 
 ## Well-Known URI Squatting {#sec-well-known}
 
-On shared hosting, the well-known URI can be served by a tenant rather than the domain owner ({{Section 4 of RFC8615}}). The publisher check of {{ARD}} applies to catalogs found through the well-known URI as it does to any other; a tenant can serve a catalog, but its entries will not pass the publisher check as entries of the domain owner.
+On shared hosting, the well-known URI can be served by a tenant rather than the domain owner ({{Section 4 of RFC8615}}). The per-entry publisher check of {{ARD}} applies to a catalog found through the well-known URI as to any other; a tenant can serve a catalog, but its entries will not pass the check as entries of the domain owner.
 
 # Privacy Considerations {#privacy}
 
@@ -443,7 +445,7 @@ Reference:
 
 {{I-D.jimenez-dawn-discovery-landscape}} surveys agent discovery mechanisms and separates lookup, name, description, trust, and interaction. Initial contact is the lookup component for the case where the result is a catalog. The entry point of {{entry-point}} is a subset of the minimum discoverable information of {{I-D.cui-dawn-mdi-model}}, the well-known URI is the predictable entry point that REQ-PROTO-4 of {{I-D.king-dawn-requirements}} asks for, and the terminology of {{I-D.farrel-dawn-terminology}} applies.
 
-DNS-AID {{I-D.mozleywilliams-dnsop-dnsaid}} publishes agents as SVCB records and an organization index under `_index._agents.<domain>`. Its reference implementation {{DNS-AID-IMPL}} publishes `_catalog._agents` next to it, follows an off-domain pointer only when the record is DNSSEC-validated or the catalog is signed against the domain's key set, and refuses redirects. {{pointer-rr}} adopts its label, {{depth}} allows one redirect, and the trust decision for off-domain pointers is left to the publisher check of {{ARD}}. The ARD specification {{ARD-SPEC}}, from which {{ARD}} derives, requires the well-known fetch of "/.well-known/ard.json", lists `_entries._agents` for a static entry source, and publishes an SVCB record at `_ard._tcp.<domain>`; this document uses that name only as a DNS-SD service type.
+DNS-AID {{I-D.mozleywilliams-dnsop-dnsaid}} publishes agents as SVCB records and an organization index under `_index._agents.<domain>`. Its reference implementation {{DNS-AID-IMPL}} publishes `_catalog._agents` next to it, follows an off-domain pointer only when the record is DNSSEC-validated or the catalog is signed against the domain's key set, and refuses redirects. {{pointer-rr}} adopts its label, {{depth}} allows one redirect, and the trust decision for off-domain pointers is left to the publisher check of {{ARD}}. The ARD specification {{ARD-SPEC}}, from which {{ARD}} derives, requires the well-known fetch of "/.well-known/ard.json" and lists `_entries._agents` for a static entry source and `_search._agents` for a registry endpoint.
 
 {{I-D.nemethi-dawn-aid}}, {{I-D.morrison-mcp-dns-discovery}}, and {{I-D.seethiraju-dawn-dan}} locate individual agents or MCP servers through DNS records at `_agent.<domain>`, at `_mcp.<domain>`, or in new resource record types; none defines a catalog entry point. {{I-D.jakab-dawn-agent-discovery-mdns}} browses for agents on the local link under "_agent._tcp". {{I-D.zahed-acap}}, {{I-D.pro-adp-agent-discovery}}, and {{I-D.besleaga-agentic-knowledge-wellknown}} publish operator-level discovery documents at well-known URIs. The last publishes an {{RFC9264}} link set, which is the closest existing design to publishing an ARD catalog as an {{RFC9727}} API catalog ({{open-issues}}).
 
@@ -456,9 +458,9 @@ The following questions are to be settled before the document is stable. This se
 1. API catalog profile. Issue #2 on the ARD repository proposes publishing the catalog as an {{RFC9727}} API catalog under "/.well-known/api-catalog" with an ARD profile. If adopted, this document registers no suffix.
 2. Pointer label. `_index._agents` (DNS-AID), `_catalog._agents` (its reference implementation), and `_entries._agents` ({{ARD-SPEC}}) name the same pointer. This document uses `_catalog._agents` because it is deployed, and asks DNS-AID, as owner of "_agents" in the {{RFC8552}} registry, to list it. The fallback is a label defined in this document, "_ard".
 3. Suffix. "ard.json" matches {{ARD-SPEC}} and deployed code. A suffix without the extension, "ard", was considered.
-4. Ownership of registrations. {{ARD}} also requests a well-known suffix and a link relation. After the split into initial contact, lookup, and registration documents, one document carries them.
-5. Reference status. {{ARD}} and {{I-D.mozleywilliams-dnsop-dnsaid}} are individual drafts cited informatively. {{ARD}} becomes a normative reference when the companion documents are adopted together.
-6. SvcParamKey number. The "well-known" key has no registered number; the examples in {{pointer-rr}} and {{https-rr}} cannot be loaded into a zone until it does.
+4. Reference status. {{ARD}} and {{I-D.mozleywilliams-dnsop-dnsaid}} are individual drafts cited informatively. {{ARD}} becomes a normative reference when the companion documents are adopted together.
+5. SvcParamKey number. The "well-known" key has no registered number; the examples in {{pointer-rr}} and {{https-rr}} cannot be loaded into a zone until it does.
+6. Registry endpoints. {{ARD-SPEC}} also points to a registry endpoint through `_search._agents.<domain>`. This document yields catalog documents only. Extending the entry point to registry endpoints is a question for DAWN.
 
 # Acknowledgments
 {:numbered="false"}
