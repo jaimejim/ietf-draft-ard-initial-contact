@@ -1,6 +1,14 @@
 {
  "builds": [
   {
+   "sha": "af6530d",
+   "date": "2026-10-28",
+   "subject": "Merge pull request #34 from jaimejim/pages/iddiff-js",
+   "drafts": [
+    "draft-jimenez-dawn-ard-initial-contact"
+   ]
+  },
+  {
    "sha": "b6d3d5f",
    "date": "2026-10-28",
    "subject": "pages: iddiff in TypeScript, no Python runtime in the browser",
