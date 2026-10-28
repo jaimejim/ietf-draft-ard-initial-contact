@@ -20,8 +20,6 @@ venue:
   type: "Proposed Working Group"
   mail: "dawn@ietf.org"
   arch: "https://mailarchive.ietf.org/arch/browse/dawn/"
-  github: "jaimejim/ietf-draft-ard-initial-contact"
-  latest: "https://jaimejim.github.io/ietf-draft-ard-initial-contact/draft-jimenez-ard-initial-contact.html"
 
 author:
  -
@@ -64,7 +62,7 @@ informative:
       - name: Jaime Jiménez
       - name: Jeffrey Damick
     date: 2026-10
-    target: https://mindpower.github.io/ietf-draft-agent-resources-discovery/draft-bu-dawn-ard-discovery.html
+    target: https://datatracker.ietf.org/doc/draft-bu-dawn-ard-discovery/
     seriesinfo:
       Internet-Draft: draft-bu-dawn-ard-discovery
   RFC2132:
@@ -97,12 +95,6 @@ informative:
       - org: ARD Project
     date: 2026-10
     target: https://agenticresourcediscovery.org/spec/
-  DNS-AID-IMPL:
-    title: "dns-aid-core: DNS-based Agent Identification and Discovery, reference implementation"
-    author:
-      - org: DNS-AID Project
-    date: 2026-09
-    target: https://github.com/dns-aid/dns-aid-core
   DAWN-CHARTER:
     title: "Discovery of Agents With Names (DAWN) - Proposed Charter"
     author:
@@ -203,7 +195,7 @@ DNS records allow a publisher to advertise an entry point before the client open
 
 ### Catalog Pointer Record {#pointer-rr}
 
-DNS for AI Discovery (DNS-AID) {{I-D.mozleywilliams-dnsop-dnsaid}} places an organization's agent-related DNS records under the underscored label "_agents". This document uses the name `_catalog._agents.<domain>`, as published by the DNS-AID reference implementation {{DNS-AID-IMPL}}, for a Service Binding (SVCB) record {{RFC9460}} whose TargetName identifies a host that serves an ARD catalog at the well-known URI. The status of this name is discussed in {{open-issues}}. The following is an example for example.com:
+DNS for AI Discovery (DNS-AID) {{I-D.mozleywilliams-dnsop-dnsaid}} places an organization's agent-related DNS records under the underscored label "_agents". This document uses the name `_catalog._agents.<domain>`, as published by the DNS-AID reference implementation, for a Service Binding (SVCB) record {{RFC9460}} whose TargetName identifies a host that serves an ARD catalog at the well-known URI. The status of this name is discussed in {{open-issues}}. The following is an example for example.com:
 
 ~~~
 _catalog._agents.example.com. 3600 IN SVCB 1 catalog.example.net. (
@@ -445,7 +437,7 @@ Reference:
 
 {{I-D.jimenez-dawn-discovery-landscape}} surveys agent discovery mechanisms and separates lookup, name, description, trust, and interaction. Initial contact is the lookup component for the case where the result is a catalog. The entry point of {{entry-point}} is a subset of the minimum discoverable information of {{I-D.cui-dawn-mdi-model}}, the well-known URI is the predictable entry point that REQ-PROTO-4 of {{I-D.king-dawn-requirements}} asks for, and the terminology of {{I-D.farrel-dawn-terminology}} applies.
 
-DNS-AID {{I-D.mozleywilliams-dnsop-dnsaid}} publishes agents as SVCB records and an organization index under `_index._agents.<domain>`. Its reference implementation {{DNS-AID-IMPL}} publishes `_catalog._agents` next to it, follows an off-domain pointer only when the record is DNSSEC-validated or the catalog is signed against the domain's key set, and refuses redirects. {{pointer-rr}} adopts its label, {{depth}} allows one redirect, and the trust decision for off-domain pointers is left to the publisher check of {{ARD}}. The ARD specification {{ARD-SPEC}}, from which {{ARD}} derives, requires the well-known fetch of "/.well-known/ard.json" and lists `_entries._agents` for a static entry source and `_search._agents` for a registry endpoint.
+DNS-AID {{I-D.mozleywilliams-dnsop-dnsaid}} publishes agents as SVCB records and an organization index under `_index._agents.<domain>`. Its reference implementation publishes `_catalog._agents` next to it, follows an off-domain pointer only when the record is DNSSEC-validated or the catalog is signed against the domain's key set, and refuses redirects. {{pointer-rr}} adopts its label, {{depth}} allows one redirect, and the trust decision for off-domain pointers is left to the publisher check of {{ARD}}. The ARD specification {{ARD-SPEC}}, from which {{ARD}} derives, requires the well-known fetch of "/.well-known/ard.json" and lists `_entries._agents` for a static entry source and `_search._agents` for a registry endpoint.
 
 {{I-D.nemethi-dawn-aid}}, {{I-D.morrison-mcp-dns-discovery}}, and {{I-D.seethiraju-dawn-dan}} locate individual agents or MCP servers through DNS records at `_agent.<domain>`, at `_mcp.<domain>`, or in new resource record types; none defines a catalog entry point. {{I-D.jakab-dawn-agent-discovery-mdns}} browses for agents on the local link under "_agent._tcp". {{I-D.zahed-acap}}, {{I-D.pro-adp-agent-discovery}}, and {{I-D.besleaga-agentic-knowledge-wellknown}} publish operator-level discovery documents at well-known URIs. The last publishes an {{RFC9264}} link set, which is the closest existing design to publishing an ARD catalog as an {{RFC9727}} API catalog ({{open-issues}}).
 
