@@ -158,7 +158,7 @@ ARD manifest:
 : A document listing agent resources in the format defined in {{ARD}}.
 
 Entry point:
-: The URI of an ARD manifest, together with the source from which the client learned it ({{entry-point}}).
+: The URI of an ARD manifest, together with the source from which the client learned it ({{entry-point}}). An entry point is unverified until the client has retrieved the manifest and authenticated the origin.
 
 Publisher:
 : The party that controls a domain name and publishes a manifest of agent resources under it.
@@ -169,21 +169,18 @@ Client:
 Initial contact:
 : The process by which a client obtains one or more entry points, starting from a domain name, a local network attachment, or configuration.
 
-Hint:
-: Information about an entry point obtained from a source other than the entry point's own origin, such as a DNS answer, a multicast response, or a link in a third-party document.
-
 # The Entry Point {#entry-point}
 
 Every mechanism in this document yields zero or more entry points. An entry point consists of two elements:
 
 {:vspace}
 URI:
-: The "https" URI {{RFC9110}} of the manifest. Retrieving it returns an ARD manifest in a representation defined by {{ARD}}.
+: The "https" URI {{RFC9110}} at which, according to the source, an ARD manifest is served in a representation defined by {{ARD}}.
 
 Source:
 : The mechanism that produced the entry point and, where applicable, the DNS name or network interface from which it was obtained. The client retains the source to rank entry points ({{procedure}}), to rate-limit failing sources, and to apply local policy.
 
-An entry point is a hint until the client has retrieved the manifest from the URI and authenticated the origin ({{security}}). A DNS answer or a multicast response does not make a manifest authoritative for a publisher. The publisher of each entry is established from the entry itself, as specified in {{ARD}}; the host that serves the manifest establishes no publisher authority.
+An entry point is unverified until the client has retrieved the manifest from the URI and authenticated the origin ({{security}}); the outcomes of that retrieval are defined in {{depth}}. A DNS answer or a multicast response does not make a manifest authoritative for a publisher. The publisher of each entry is established from the entry itself, as specified in {{ARD}}; the host that serves the manifest establishes no publisher authority.
 
 A domain can publish more than one manifest. Each mechanism can return several entry points, and the client treats them as a set. A manifest can link to further manifests, and can consist of a single entry that points at a registry endpoint {{ARD}}; following those links is part of lookup and is outside the scope of this document. Initial contact ends at the manifest.
 
@@ -222,7 +219,7 @@ The client forms the entry point as follows:
 * The "mandatory" key is processed as in {{Section 8 of RFC9460}}: a record whose mandatory list names a key the client does not implement is ignored. The "alpn", "port", "ipv4hint", "ipv6hint", and "ech" keys apply with their {{RFC9460}} semantics. Other keys are ignored.
 * One AliasMode indirection is followed ({{Section 2.4.2 of RFC9460}}); a second ends the attempt ({{depth}}). An AliasMode record whose TargetName is "." yields no entry point.
 
-In the example, the entry point is "https://ard.example.net/.well-known/ard.json". The client validates the TLS certificate for "ard.example.net" and records `_index._agents.example.com` as the source. An RRset MAY contain several ServiceMode records; each yields one entry point, and SvcPriority orders them. If no manifest is found at the well-known path of a TargetName, the record yields no entry point; the host can still serve an index in another format, which this document does not interpret.
+In the example, the entry point is "https://ard.example.net/.well-known/ard.json". The client validates the TLS certificate for "ard.example.net" and records `_index._agents.example.com` as the source. An RRset MAY contain several ServiceMode records; each yields one entry point, and SvcPriority orders them. If the TargetName serves no manifest at the well-known path, the outcome is "no manifest" ({{depth}}); the host can still serve an index in another format, which this document does not interpret.
 
 ### DNS-SD Service Type "_ard._tcp" {#dns-sd}
 
@@ -265,7 +262,7 @@ A publisher makes its manifest available at the well-known URI {{RFC8615}} with 
 https://example.com/.well-known/ard.json
 ~~~
 
-A publisher supporting this mechanism MUST respond to a GET request for this URI with an ARD manifest or with a redirect to one. The manifest carries the media type defined in {{ARD}}, and a client SHOULD send it in the Accept header field. The client MUST follow at most one redirect (301, 302, 303, 307, or 308 with a Location field, {{Section 15.4 of RFC9110}}) and records the final URI as the entry point. A response with another media type, or a redirect to a further redirect, means that there is no entry point at this origin ({{depth}}). A server that hosts no manifest SHOULD respond with 404 (Not Found) and MAY include Problem Details {{RFC9457}}.
+A publisher supporting this mechanism MUST respond to a GET request for this URI with an ARD manifest or with a redirect to one. The manifest carries the media type defined in {{ARD}}, and a client SHOULD send it in the Accept header field. The client MUST follow at most one redirect (301, 302, 303, 307, or 308 with a Location field, {{Section 15.4 of RFC9110}}) and records the final URI as the entry point. A response with another media type, or a redirect to a further redirect, has the outcome "no manifest" ({{depth}}). A server that hosts no manifest SHOULD respond with 404 (Not Found) and MAY include Problem Details {{RFC9457}}.
 
 Responses to the well-known URI, including redirects and 404 responses, are cacheable under {{RFC9111}}. A client reuses a stored response while it is fresh ({{procedure}}). A freshness lifetime of several hours is appropriate for a manifest whose location rarely changes.
 
@@ -291,7 +288,7 @@ Link: <https://agents.example.com/manifest>; rel="ard"
 
 ~~~
 
-The client reads the Link field of the root response regardless of its status code and does not follow a redirect of the root resource. The relation MAY also appear in an HTML link element in the root resource ({{Appendix A.1 of RFC8288}}), for publishers that cannot set header fields. A client that retrieves the root resource with GET reads link elements in an HTML response in the same way as the Link header field. Links in a response from the publisher's own origin have that origin as their source. Links in third-party documents are hints with the third party as their source. The registration of the relation is in {{iana-link-relation}}.
+The client reads the Link field of the root response regardless of its status code and does not follow a redirect of the root resource. The relation MAY also appear in an HTML link element in the root resource ({{Appendix A.1 of RFC8288}}), for publishers that cannot set header fields. A client that retrieves the root resource with GET reads link elements in an HTML response in the same way as the Link header field. Links in a response from the publisher's own origin have that origin as their source. Links in third-party documents are entry points with the third party as their source. The registration of the relation is in {{iana-link-relation}}.
 
 ## Local Network Mechanisms {#local-mechanisms}
 
@@ -301,7 +298,7 @@ A client without a domain name can obtain one from the network through the DHCPv
 
 ### Multicast DNS {#mdns}
 
-On the local link, a client browses for "_ard._tcp.local." over Multicast DNS {{RFC6762}}, using the same PTR, SRV, and TXT records as in {{dns-sd}}. Names under "local." do not appear in certificates issued by public CAs. A publisher that advertises over Multicast DNS SHOULD set the SRV target to a unicast DNS name for which it holds a certificate, so that the entry point URI names a host the client can authenticate. The client resolves such a target through unicast DNS and ignores address records for it in a multicast answer, since a Multicast DNS responder is authoritative only for names under "local." ({{Section 6 of RFC6762}}). TLS authenticates the host in either case ({{sec-hints}}). A responder that accepts only "local." targets yields entry points the client cannot authenticate ({{sec-local}}). The client stops collecting responses after a configured interval; responses received later are processed as new hints. Where a Discovery Proxy {{RFC8766}} is deployed, the client can use {{dns-sd}} instead. Entry points learned over Multicast DNS carry the network interface as their source ({{sec-local}}).
+On the local link, a client browses for "_ard._tcp.local." over Multicast DNS {{RFC6762}}, using the same PTR, SRV, and TXT records as in {{dns-sd}}. Names under "local." do not appear in certificates issued by public CAs. A publisher that advertises over Multicast DNS SHOULD set the SRV target to a unicast DNS name for which it holds a certificate, so that the entry point URI names a host the client can authenticate. The client resolves such a target through unicast DNS and ignores address records for it in a multicast answer, since a Multicast DNS responder is authoritative only for names under "local." ({{Section 6 of RFC6762}}). TLS authenticates the host in either case ({{sec-hints}}). A responder that accepts only "local." targets yields entry points the client cannot authenticate ({{sec-local}}). The client stops collecting responses after a configured interval; responses received later are processed as new entry points. Where a Discovery Proxy {{RFC8766}} is deployed, the client can use {{dns-sd}} instead. Entry points learned over Multicast DNS carry the network interface as their source ({{sec-local}}).
 
 {{I-D.jakab-dawn-agent-discovery-mdns}} describes browsing for individual agents under "_agent._tcp". The two service types are independent.
 
@@ -315,35 +312,35 @@ The procedure takes a domain name as input, written `<domain>` below, obtained f
 2. The client queries the SVCB record for `_index._agents.<domain>` ({{pointer-rr}}).
 3. The client queries the PTR records at `_ard._tcp.<domain>` ({{dns-sd}}).
 4. The client requests `https://<domain>/.well-known/ard.json` ({{well-known}}). This step MAY be performed in parallel with steps 2 and 3.
-5. If steps 2 to 4 yield no entry point, the client sends a HEAD request to `https://<domain>/` and examines the Link header field for the "ard" relation ({{link-relation}}).
+5. If steps 2 to 4 produce no manifest, the client sends a HEAD request to `https://<domain>/` and examines the Link header field for the "ard" relation ({{link-relation}}).
 
 The procedure ends when every step has returned. A client attempts each distinct URI once per execution of the procedure and records all its sources.
 
 The default order of preference is: configuration, then DNS answers validated with DNSSEC {{RFC4033}}, then responses from the publisher's own origin (steps 4 and 5), then unvalidated DNS answers, then Multicast DNS responses. An answer is validated when the client validated it or received it with the AD bit set from a trusted validating resolver over a secure channel ({{Section 4.9.3 of RFC4035}}); Insecure and Indeterminate answers ({{Section 4.3 of RFC4035}}) are unvalidated, and Bogus answers are discarded. An entry point is validated when every answer used to form its URI was; address records do not count, since TLS authenticates the host. Within a level, entry points are ordered by step; within a source, by SvcPriority or SRV priority. A client MAY reorder entry points under local policy. Configured entry points ({{static}}) are tried first. Entry points learned over Multicast DNS MUST rank last ({{sec-local}}).
 
-An entry point fails if the server does not respond, if the response is not a manifest, or if the checks of {{security}} fail. A client MUST NOT retry a failed entry point from the same source before a back-off interval of at least 30 seconds. A client MUST NOT issue the DNS queries of steps 2 and 3 for the same domain name more often than the TTLs of the answers allow, including negative answers ({{RFC2308}}) and the DNSKEY and DS queries of validation. A client MUST NOT repeat the requests of steps 4 and 5 while a stored response is fresh ({{RFC9111}}).
+An entry point fails when the outcome of its retrieval is "no manifest" ({{depth}}). A client MUST NOT retry a failed entry point from the same source before a back-off interval of at least 30 seconds. A client MUST NOT issue the DNS queries of steps 2 and 3 for the same domain name more often than the TTLs of the answers allow, including negative answers ({{RFC2308}}) and the DNSKEY and DS queries of validation. A client MUST NOT repeat the requests of steps 4 and 5 while a stored response is fresh ({{RFC9111}}).
 
 ## Indirection Depth and Outcomes {#depth}
 
 A client follows at most one AliasMode indirection in the DNS and at most one HTTP redirect per entry point, from any mechanism; the two limits are independent. A second indirection of either kind ends the attempt. This bounds the number of round trips and prevents an attacker who controls one record or one response from leading the client through a chain of indirections.
 
-Each attempt to resolve a hint has one of three outcomes:
+Each attempt to retrieve an entry point has one of three outcomes:
 
 {:vspace}
-Entry point:
+Manifest:
 : The URI returned an ARD manifest from an authenticated origin.
 
-No entry point:
+No manifest:
 : The URI did not respond, returned a response that is not a manifest, exceeded the depth limit, or failed the checks of {{security}}. The failure is attributed to the source.
 
 Not permitted:
-: The client's own policy did not allow the fetch, for instance a host under "local." that no certificate can authenticate ({{sec-local}}), or a host not on an allow-list. The hint is retained with its source, and no failure is attributed to the source.
+: The client's own policy did not allow the fetch, for instance a host under "local." that no certificate can authenticate ({{sec-local}}), or a host not on an allow-list. The entry point is retained with its source, and no failure is attributed to the source.
 
 # Security Considerations {#security}
 
-Initial contact takes place before any authenticated relationship exists between the client and the publisher. In each mechanism, an attacker who controls the channel can direct the client to a manifest of the attacker's choosing. The mitigation is the same for all mechanisms: the client treats the result as a hint, retrieves the manifest from the URI, authenticates the origin, and relies on the content of each entry, as specified in {{ARD}}, to determine its publisher.
+Initial contact takes place before any authenticated relationship exists between the client and the publisher. In each mechanism, an attacker who controls the channel can direct the client to a manifest of the attacker's choosing. The mitigation is the same for all mechanisms: the client treats the result as unverified, retrieves the manifest from the URI, authenticates the origin, and relies on the content of each entry, as specified in {{ARD}}, to determine its publisher.
 
-## Hints and Authority {#sec-hints}
+## Entry Points and Authority {#sec-hints}
 
 A client MUST authenticate the TLS server for the host named in the entry point URI ({{Section 4.3.3 of RFC9110}}). For the well-known URI, that host is the publisher's own domain. For the index record, for DNS-SD, and for a link whose target is on another origin, the host is taken from the answer or the link, and a spoofed answer can direct the client to a host for which the attacker holds a valid certificate. A client SHOULD validate DNS answers with DNSSEC {{RFC4033}} where the zone is signed and SHOULD rank unvalidated answers below validated ones ({{procedure}}). This document does not establish that a manifest reached through `_index._agents.example.com` is published by "example.com"; the recorded source is an input to the per-entry publisher check that {{ARD}} defines.
 
