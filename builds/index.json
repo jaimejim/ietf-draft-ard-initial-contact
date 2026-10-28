@@ -1,6 +1,12 @@
 {
  "builds": [
   {
+   "sha": "a8d7a23",
+   "date": "2026-10-28",
+   "subject": "pages: run the IETF iddiff tool in the browser for build diffs",
+   "file": "draft-jimenez-dawn-ard-initial-contact.txt"
+  },
+  {
    "sha": "294c654",
    "date": "2026-10-28",
    "subject": "pages: diff page in the iddiff layout; README links it under Editor's Copy",
