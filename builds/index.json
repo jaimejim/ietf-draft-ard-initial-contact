@@ -1,6 +1,14 @@
 {
  "builds": [
   {
+   "sha": "1819832",
+   "date": "2026-10-30",
+   "subject": "header: working group name Discovery of Agents With Names (DAWN)",
+   "drafts": [
+    "draft-jimenez-dawn-ard-initial-contact"
+   ]
+  },
+  {
    "sha": "2f3ebc0",
    "date": "2026-10-30",
    "subject": "Merge pull request #36 from jaimejim/editorial/align-refs",
