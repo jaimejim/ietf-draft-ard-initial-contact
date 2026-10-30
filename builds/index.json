@@ -1,6 +1,14 @@
 {
  "builds": [
   {
+   "sha": "2f3ebc0",
+   "date": "2026-10-30",
+   "subject": "Merge pull request #36 from jaimejim/editorial/align-refs",
+   "drafts": [
+    "draft-jimenez-dawn-ard-initial-contact"
+   ]
+  },
+  {
    "sha": "c1829a0",
    "date": "2026-10-30",
    "subject": "editorial: align references and SVCB pointer wording for -00",
