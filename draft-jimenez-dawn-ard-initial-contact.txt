@@ -2,7 +2,7 @@
 
 
 
-Network Working Group                                         J. Jiménez
+Discovery of Agents With Names (DAWN)                         J. Jiménez
 Internet-Draft                                                  Ericsson
 Intended status: Standards Track                                   J. Bu
 Expires: 3 May 2027                                               Google
@@ -906,9 +906,9 @@ Table of Contents
               Seethiraju, R. R., Thakar, S., Shyamsunder, K., and E.
               Osterweil, "DNS-Based Agent Naming (DAN): AIDISCA and
               AIINDEX Resource Records for AI Agent Discovery", Work in
-              Progress, Internet-Draft, draft-seethiraju-dawn-dan-00, 5
-              June 2026, <https://datatracker.ietf.org/doc/html/draft-
-              seethiraju-dawn-dan-00>.
+              Progress, Internet-Draft, draft-seethiraju-dawn-dan-01, 30
+              October 2026, <https://datatracker.ietf.org/doc/html/
+              draft-seethiraju-dawn-dan-01>.
 
    [I-D.zahed-acap]
               Sarker, Z. and T. Reddy.K, "Agent Capability Advertisement
