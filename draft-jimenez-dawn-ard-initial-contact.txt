@@ -5,10 +5,10 @@
 Network Working Group                                         J. Jiménez
 Internet-Draft                                                  Ericsson
 Intended status: Standards Track                                   J. Bu
-Expires: 1 May 2027                                               Google
+Expires: 3 May 2027                                               Google
                                                                 J. Arkko
                                                                 Ericsson
-                                                         28 October 2026
+                                                         30 October 2026
 
 
             Agent Resource Discovery (ARD): Initial Contact
@@ -55,7 +55,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 1 May 2027.
+   This Internet-Draft will expire on 3 May 2027.
 
 Copyright Notice
 
@@ -127,10 +127,9 @@ Table of Contents
    This document defines the following mechanisms for obtaining the URI
    of an ARD manifest:
 
-   *  the organization index record _index._agents defined by DNS for AI
-      Discovery [I-D.mozleywilliams-dnsop-dnsaid], a Service Binding
-      record [RFC9460] with an ARD manifest as its target
-      (Section 4.2.1);
+   *  a Service Binding (SVCB) record [RFC9460] at the organization
+      index name _index._agents.<domain> with an ARD manifest as its
+      target (Section 4.2.1);
 
    *  a DNS-SD service type [RFC6763], "_ard._tcp", for use over unicast
       DNS and Multicast DNS [RFC6762] (Section 4.2.2, Section 4.4.2);
@@ -267,14 +266,12 @@ Table of Contents
 
 4.2.1.  Organization Index Record
 
-   DNS for AI Discovery (DNS-AID) [I-D.mozleywilliams-dnsop-dnsaid]
-   defines the organization index: a Service Binding (SVCB) record
-   [RFC9460] at _index._agents.<domain> whose TargetName identifies a
-   host that serves a registry of the organization's agents.  DNS-AID
-   leaves the data served by that host out of scope.  This section
-   specifies the case where the host serves an ARD manifest at the well-
-   known URI of Section 4.3.1, and how a client that expects a manifest
-   interprets the record.  The following is an example for example.com:
+   A publisher MAY publish a Service Binding (SVCB) record [RFC9460] at
+   _index._agents.<domain> whose TargetName identifies a host that
+   serves an ARD manifest at the well-known URI of Section 4.3.1 (this
+   owner name is also used as an organization index pointer in
+   [I-D.mozleywilliams-dnsop-dnsaid], which leaves the index document
+   format out of scope).  The following is an example for example.com:
 
    _index._agents.example.com. 3600 IN SVCB 1 ard.example.net. (
        alpn="h2"
@@ -286,9 +283,8 @@ Table of Contents
 
    *  The authority is the TargetName, with the port from the "port" key
       or 443.  The TargetName MUST be a host name without underscore
-      labels, as in Section 3.2 of [I-D.mozleywilliams-dnsop-dnsaid], so
-      that a publicly issued certificate can name it.  A record whose
-      TargetName is "." yields no entry point.
+      labels, so that a publicly issued certificate can name it.  A
+      record whose TargetName is "." yields no entry point.
 
    *  The path is "/.well-known/ard.json".  The response determines
       whether a manifest is present.
@@ -724,18 +720,11 @@ Table of Contents
               <https://datatracker.ietf.org/doc/draft-bu-dawn-ard-
               discovery/>.
 
-   [ARD-ARCH] Bu, J., Guha, R.V., and J. Arkko, "Agent Resource
-              Discovery (ARD) Architecture", Work in Progress, Internet-
-              Draft, draft-bu-dawn-ard-architecture, October 2026,
-              <https://datatracker.ietf.org/doc/draft-bu-dawn-ard-
+   [ARD-ARCH] Bu, J., Guha, R.V., Arkko, J., and J. Jiménez, "Agent
+              Resource Discovery (ARD) Architecture", Work in Progress,
+              Internet-Draft, draft-bu-dawn-ard-architecture, October
+              2026, <https://datatracker.ietf.org/doc/draft-bu-dawn-ard-
               architecture/>.
-
-   [I-D.mozleywilliams-dnsop-dnsaid]
-              Mozley, J., Williams, N., Sarikaya, B., Schott, R., and J.
-              Damick, "DNS for AI Discovery", Work in Progress,
-              Internet-Draft, draft-mozleywilliams-dnsop-dnsaid-02, 27
-              May 2026, <https://datatracker.ietf.org/doc/html/draft-
-              mozleywilliams-dnsop-dnsaid-02>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -893,6 +882,13 @@ Table of Contents
               <https://datatracker.ietf.org/doc/html/draft-morrison-mcp-
               dns-discovery-09>.
 
+   [I-D.mozleywilliams-dnsop-dnsaid]
+              Mozley, J., Williams, N., Sarikaya, B., Schott, R., and J.
+              Damick, "DNS for AI Discovery", Work in Progress,
+              Internet-Draft, draft-mozleywilliams-dnsop-dnsaid-02, 27
+              May 2026, <https://datatracker.ietf.org/doc/html/draft-
+              mozleywilliams-dnsop-dnsaid-02>.
+
    [I-D.nemethi-dawn-aid]
               Nemethi, B., "Agent Identity and Discovery (AID)", Work in
               Progress, Internet-Draft, draft-nemethi-dawn-aid-00, 2
@@ -1041,13 +1037,13 @@ Appendix B.  Open Issues
        catalog" with an ARD profile.  If adopted, this document
        registers no suffix.
 
-   2.  Pointer label.  This document uses the DNS-AID organization index
-       _index._agents, whose data format DNS-AID leaves out of scope.
-       The DNS-AID reference implementation publishes _catalog._agents
-       and [ARD-SPEC] lists _entries._agents for the same pointer; both
-       are to be aligned with this document.  DNS-AID, as the owner of
-       "_agents" in the [RFC8552] registry, is asked to list an ARD
-       manifest as one kind of index target.
+   2.  Pointer label.  This document uses _index._agents.<domain> for
+       the organization index pointer (which is also used by
+       [I-D.mozleywilliams-dnsop-dnsaid], whose reference implementation
+       publishes _catalog._agents), whereas [ARD-SPEC] lists
+       _entries._agents for a static manifest and _search._agents for a
+       registry endpoint.  Consolidating the underscored pointer
+       label(s) and their [RFC8552] registration is a topic for DAWN.
 
    3.  Suffix and relation name. "ard.json" matches [ARD-SPEC] and
        deployed code.  A suffix without the extension, "ard", was
@@ -1055,11 +1051,9 @@ Appendix B.  Open Issues
        [ARD-SPEC]; the registry expert may ask for a descriptive name
        such as "ard-manifest".
 
-   4.  Reference status.  [ARD] is a normative reference to a companion
-       individual draft submitted together with this document.
-       [I-D.mozleywilliams-dnsop-dnsaid] is an individual draft cited
-       normatively, for the index record name and the TargetName rule of
-       Section 4.2.1.
+   4.  Reference status.  [ARD] and [ARD-ARCH] are normative references
+       to companion individual drafts submitted together with this
+       document.
 
    5.  HTTPS record at the apex.  An earlier version let the HTTPS
        record of a domain announce the suffix through the "well-known"
