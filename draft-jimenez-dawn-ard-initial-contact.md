@@ -8,6 +8,7 @@ submissiontype: IETF
 ipr: trust200902
 v: 3
 area: "Internet"
+wg: Discovery of Agents With Names (DAWN)
 keyword:
  - agent discovery
  - well-known URI
