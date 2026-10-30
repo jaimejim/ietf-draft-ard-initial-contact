@@ -1,6 +1,14 @@
 {
  "builds": [
   {
+   "sha": "c1829a0",
+   "date": "2026-10-30",
+   "subject": "editorial: align references and SVCB pointer wording for -00",
+   "drafts": [
+    "draft-jimenez-dawn-ard-initial-contact"
+   ]
+  },
+  {
    "sha": "0a35558",
    "date": "2026-10-28",
    "subject": "pages: publish iddiff.ts and its generator next to iddiff.js",
