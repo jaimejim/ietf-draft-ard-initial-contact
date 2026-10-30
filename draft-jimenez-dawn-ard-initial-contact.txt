@@ -715,8 +715,9 @@ Table of Contents
 9.1.  Normative References
 
    [ARD]      Bu, J., Guha, R.V., Smith, S., Jiménez, J., and J. Damick,
-              "Agent Resource Discovery (ARD)", Work in Progress,
-              Internet-Draft, draft-bu-dawn-ard-discovery, October 2026,
+              "Agent Resource Discovery (ARD): Manifest and Lookup",
+              Work in Progress, Internet-Draft, draft-bu-dawn-ard-
+              discovery, October 2026,
               <https://datatracker.ietf.org/doc/draft-bu-dawn-ard-
               discovery/>.
 
