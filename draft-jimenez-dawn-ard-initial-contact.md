@@ -50,7 +50,6 @@ normative:
   RFC9111:
   RFC9460:
   RFC9848:
-  I-D.mozleywilliams-dnsop-dnsaid:
   ARD:
     title: "Agent Resource Discovery (ARD)"
     author:
@@ -69,6 +68,7 @@ normative:
       - name: Junjie Bu
       - name: R.V. Guha
       - name: Jari Arkko
+      - name: Jaime Jiménez
     date: 2026-10
     target: https://datatracker.ietf.org/doc/draft-bu-dawn-ard-architecture/
     seriesinfo:
@@ -88,6 +88,7 @@ informative:
   RFC9462:
   RFC9499:
   RFC9727:
+  I-D.mozleywilliams-dnsop-dnsaid:
   I-D.mk-dnsop-svcb-well-known:
   I-D.nemethi-dawn-aid:
   I-D.seethiraju-dawn-dan:
@@ -140,7 +141,7 @@ Agent Resource Discovery (ARD) {{ARD}} defines the manifest, a document served o
 
 This document defines the following mechanisms for obtaining the URI of an ARD manifest:
 
-* the organization index record `_index._agents` defined by DNS for AI Discovery {{I-D.mozleywilliams-dnsop-dnsaid}}, a Service Binding record {{RFC9460}} with an ARD manifest as its target ({{pointer-rr}});
+* a Service Binding (SVCB) record {{RFC9460}} at the organization index name `_index._agents.<domain>` with an ARD manifest as its target ({{pointer-rr}});
 * a DNS-SD service type {{RFC6763}}, "_ard._tcp", for use over unicast DNS and Multicast DNS {{RFC6762}} ({{dns-sd}}, {{mdns}});
 * a well-known URI {{RFC8615}} with the suffix "ard.json" ({{well-known}});
 * a link relation {{RFC8288}}, "ard", whose target is an ARD manifest ({{link-relation}}).
@@ -204,7 +205,7 @@ DNS records allow a publisher to advertise an entry point before the client open
 
 ### Organization Index Record {#pointer-rr}
 
-DNS for AI Discovery (DNS-AID) {{I-D.mozleywilliams-dnsop-dnsaid}} defines the organization index: a Service Binding (SVCB) record {{RFC9460}} at `_index._agents.<domain>` whose TargetName identifies a host that serves a registry of the organization's agents. DNS-AID leaves the data served by that host out of scope. This section specifies the case where the host serves an ARD manifest at the well-known URI of {{well-known}}, and how a client that expects a manifest interprets the record. The following is an example for example.com:
+A publisher MAY publish a Service Binding (SVCB) record {{RFC9460}} at `_index._agents.<domain>` whose TargetName identifies a host that serves an ARD manifest at the well-known URI of {{well-known}} (this owner name is also used as an organization index pointer in {{I-D.mozleywilliams-dnsop-dnsaid}}, which leaves the index document format out of scope). The following is an example for example.com:
 
 ~~~
 _index._agents.example.com. 3600 IN SVCB 1 ard.example.net. (
@@ -215,7 +216,7 @@ _index._agents.example.com. 3600 IN SVCB 1 ard.example.net. (
 The client forms the entry point as follows:
 
 * The scheme is "https".
-* The authority is the TargetName, with the port from the "port" key or 443. The TargetName MUST be a host name without underscore labels, as in {{Section 3.2 of I-D.mozleywilliams-dnsop-dnsaid}}, so that a publicly issued certificate can name it. A record whose TargetName is "." yields no entry point.
+* The authority is the TargetName, with the port from the "port" key or 443. The TargetName MUST be a host name without underscore labels, so that a publicly issued certificate can name it. A record whose TargetName is "." yields no entry point.
 * The path is "/.well-known/ard.json". The response determines whether a manifest is present.
 * Address records of the TargetName absent from the Additional section ({{Section 4.1 of RFC9460}}) are resolved by the client.
 * The "mandatory" key is processed as in {{Section 8 of RFC9460}}: a record whose mandatory list names a key the client does not implement is ignored. The "alpn", "port", "ipv4hint", and "ipv6hint" keys apply with their {{RFC9460}} semantics, and the "ech" key with its {{RFC9848}} semantics. Other keys are ignored.
@@ -444,9 +445,9 @@ DNS-AID {{I-D.mozleywilliams-dnsop-dnsaid}} publishes agents as SVCB records and
 The following questions are to be settled before the document is stable. This section is to be removed before publication.
 
 1. API catalog profile. A proposal on the ARD side is to publish the manifest as an {{RFC9727}} API catalog under "/.well-known/api-catalog" with an ARD profile. If adopted, this document registers no suffix.
-2. Pointer label. This document uses the DNS-AID organization index `_index._agents`, whose data format DNS-AID leaves out of scope. The DNS-AID reference implementation publishes `_catalog._agents` and {{ARD-SPEC}} lists `_entries._agents` for the same pointer; both are to be aligned with this document. DNS-AID, as the owner of "_agents" in the {{RFC8552}} registry, is asked to list an ARD manifest as one kind of index target.
+2. Pointer label. This document uses `_index._agents.<domain>` for the organization index pointer (which is also used by {{I-D.mozleywilliams-dnsop-dnsaid}}, whose reference implementation publishes `_catalog._agents`), whereas {{ARD-SPEC}} lists `_entries._agents` for a static manifest and `_search._agents` for a registry endpoint. Consolidating the underscored pointer label(s) and their {{RFC8552}} registration is a topic for DAWN.
 3. Suffix and relation name. "ard.json" matches {{ARD-SPEC}} and deployed code. A suffix without the extension, "ard", was considered. The link relation name "ard" also matches {{ARD-SPEC}}; the registry expert may ask for a descriptive name such as "ard-manifest".
-4. Reference status. {{ARD}} is a normative reference to a companion individual draft submitted together with this document. {{I-D.mozleywilliams-dnsop-dnsaid}} is an individual draft cited normatively, for the index record name and the TargetName rule of {{pointer-rr}}.
+4. Reference status. {{ARD}} and {{ARD-ARCH}} are normative references to companion individual drafts submitted together with this document.
 5. HTTPS record at the apex. An earlier version let the HTTPS record of a domain announce the suffix through the "well-known" SvcParamKey of {{I-D.mk-dnsop-svcb-well-known}}. The mechanism was removed because the key has no registered number, syntax, or encoding yet; it is to be reconsidered once the key is registered.
 6. Registry endpoints. {{ARD-SPEC}} also points to a registry endpoint through `_search._agents.<domain>`. This document yields manifests only. Extending the entry point to registry endpoints is a question for DAWN.
 
