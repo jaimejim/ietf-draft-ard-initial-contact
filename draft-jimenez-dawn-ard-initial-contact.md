@@ -52,7 +52,7 @@ normative:
   RFC9460:
   RFC9848:
   ARD:
-    title: "Agent Resource Discovery (ARD)"
+    title: "Agent Resource Discovery (ARD): Manifest and Lookup"
     author:
       - name: Junjie Bu
       - name: R.V. Guha
